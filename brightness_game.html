@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luma Clash: Neon Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --bg-color: #0f172a;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            user-select: none;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: white;
+            transition: background-color 0.5s ease;
+        }
+
+        h1, .game-title {
+            font-family: 'Bungee', cursive;
+        }
+
+        .key-hint {
+            @apply flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-md;
+            transition: all 0.2s;
+        }
+
+        .active-key {
+            transform: scale(0.9);
+            @apply border-white bg-white/40 shadow-[0_0_20px_rgba(255,255,255,0.5)];
+        }
+
+        .stimulus-square {
+            width: 140px;
+            height: 140px;
+            border-radius: 1rem;
+            transition: transform 0.1s;
+        }
+        
+        .stimulus-square.pop {
+            transform: scale(1.05);
+        }
+        
+        /* Ensuring invisible elements still occupy exact layout space */
+        .invisible {
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center">
+
+    <!-- Screen A: Welcome/Instructions -->
+    <div id="screen-welcome" class="max-w-3xl w-full bg-slate-900 p-10 rounded-3xl border-4 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.3)] text-center animate-in fade-in zoom-in duration-300 mx-4 overflow-y-auto max-h-[90vh]">
+        <h1 class="text-6xl text-indigo-400 mb-2 tracking-tighter">LUMA CLASH</h1>
+        <p class="text-indigo-200/60 mb-8 uppercase tracking-widest text-xs font-bold">Comparative Brightness & Metacognition Task</p>
+        
+        <div class="text-left bg-slate-800/50 p-6 rounded-2xl border border-indigo-500/30 mb-8">
+            <p class="text-white mb-4 text-center text-lg">Maintain focus on the center cross.</p>
+            
+            <ol class="list-decimal list-inside text-slate-300 space-y-4 mb-6">
+                <li>Two squares will appear simultaneously. <strong>Select the square that is <span class="text-white underline decoration-pink-500 decoration-4 font-bold">BRIGHTER</span>.</strong></li>
+                <li>Immediately after, you will be asked to <strong>rate your confidence</strong> in your choice.</li>
+                <li>Press <strong class="text-cyan-400">F</strong> for High Confidence, or <strong class="text-pink-400">J</strong> for Low Confidence.</li>
+            </ol>
+            
+            <div class="flex justify-center items-center gap-16 mt-6 pb-2">
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">LEFT SQUARE</span>
+                    <div class="key-hint mb-2 text-cyan-400 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.2)]">F</div>
+                </div>
+                
+                <div class="text-4xl text-slate-600 font-bold">+</div>
+
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">RIGHT SQUARE</span>
+                    <div class="key-hint mb-2 text-pink-400 border-pink-500/50 shadow-[0_0_15px_rgba(236,72,153,0.2)]">J</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="btn-start" class="group relative bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+            <span class="game-title text-2xl">INITIATE SEQUENCE</span>
+        </button>
+    </div>
+
+    <!-- Screen B: Active Task -->
+    <div id="screen-task" class="hidden flex flex-col items-center justify-center w-full h-full relative">
+        
+        <!-- DASHBOARD (Aligned strictly to top-center) -->
+        <div class="absolute top-0 w-full p-6 flex justify-center items-start z-10">
+            <div class="text-center bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl">
+                <span class="block text-[10px] text-indigo-400 font-bold uppercase">Trial</span>
+                <span id="trial-counter" class="text-xl font-bold">1 / 40</span>
+            </div>
+        </div>
+
+        <!-- Stimulus Display -->
+        <div id="stimulus-container" class="flex flex-col items-center justify-center w-full">
+            <div class="flex items-center justify-center space-x-16 h-48 w-full relative">
+                <div id="square-left" class="stimulus-square invisible"></div>
+                
+                <div id="center-anchor" class="w-16 flex justify-center relative h-full">
+                    <div id="fixation-cross" class="text-5xl text-slate-600 font-bold transition-opacity absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        +
+                    </div>
+                </div>
+
+                <div id="square-right" class="stimulus-square invisible"></div>
+            </div>
+        </div>
+
+        <!-- Confidence UI Overlay (Directly positioned to guarantee perfect center alignment relative to the entire task screen) -->
+        <div id="confidence-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden flex-col items-center whitespace-nowrap bg-slate-900/95 p-8 rounded-3xl border-2 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.4)] z-20">
+            <span class="text-sm text-indigo-300 font-bold tracking-widest mb-6">RATE CONFIDENCE</span>
+            <div class="flex space-x-16">
+                <div class="flex flex-col items-center">
+                    <span id="conf-f-label" class="text-xs mb-3 tracking-widest font-bold text-green-400">HIGH</span>
+                    <div id="key-conf-f" class="key-hint text-white text-2xl border-white/50">F</div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span id="conf-j-label" class="text-xs mb-3 tracking-widest font-bold text-slate-400">LOW</span>
+                    <div id="key-conf-j" class="key-hint text-white text-2xl border-white/50">J</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Control Display (Left and Right aligned to balance screen layout and map directly to hands) -->
+        <div id="footer-controls" class="absolute bottom-12 left-0 right-0 px-8 md:px-16 lg:px-24 flex justify-between w-full max-w-7xl mx-auto opacity-50 transition-opacity">
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-cyan-400 mb-2 font-bold tracking-widest">LEFT SQUARE</span>
+                <div id="key-f" class="key-hint text-cyan-400 text-2xl border-cyan-500/50">F</div>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-pink-400 mb-2 font-bold tracking-widest">RIGHT SQUARE</span>
+                <div id="key-j" class="key-hint text-pink-400 text-2xl border-pink-500/50">J</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen C: Results -->
+    <div id="screen-results" class="hidden max-w-5xl w-full bg-slate-900 p-8 rounded-3xl border-4 border-indigo-500 shadow-2xl fade-in mx-4 overflow-y-auto max-h-[95vh]">
+        <h2 class="text-4xl font-bold text-indigo-400 mb-8 text-center game-title">METACOGNITION ANALYSIS</h2>
+        
+        <h3 class="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-sm text-center">Performance & Confidence by Condition</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <!-- LL -->
+            <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-600 flex flex-col">
+                <span class="text-xs text-slate-400 uppercase font-bold leading-tight mb-3 text-center">Low Diff / Low Abs</span>
+                <div class="flex flex-col space-y-2 bg-slate-900/50 p-3 rounded-lg flex-grow">
+                    <div class="flex flex-col border-b border-white/10 pb-2">
+                        <span class="text-xs text-green-400 font-bold flex justify-between">CORRECT <span id="res-LL-corr-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-LL-corr-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                    <div class="flex flex-col pt-1">
+                        <span class="text-xs text-red-400 font-bold flex justify-between">WRONG <span id="res-LL-wrong-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-LL-wrong-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- LH -->
+            <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-600 flex flex-col">
+                <span class="text-xs text-slate-400 uppercase font-bold leading-tight mb-3 text-center">Low Diff / High Abs</span>
+                <div class="flex flex-col space-y-2 bg-slate-900/50 p-3 rounded-lg flex-grow">
+                    <div class="flex flex-col border-b border-white/10 pb-2">
+                        <span class="text-xs text-green-400 font-bold flex justify-between">CORRECT <span id="res-LH-corr-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-LH-corr-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                    <div class="flex flex-col pt-1">
+                        <span class="text-xs text-red-400 font-bold flex justify-between">WRONG <span id="res-LH-wrong-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-LH-wrong-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- HL -->
+            <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-600 flex flex-col">
+                <span class="text-xs text-slate-400 uppercase font-bold leading-tight mb-3 text-center">High Diff / Low Abs</span>
+                <div class="flex flex-col space-y-2 bg-slate-900/50 p-3 rounded-lg flex-grow">
+                    <div class="flex flex-col border-b border-white/10 pb-2">
+                        <span class="text-xs text-green-400 font-bold flex justify-between">CORRECT <span id="res-HL-corr-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-HL-corr-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                    <div class="flex flex-col pt-1">
+                        <span class="text-xs text-red-400 font-bold flex justify-between">WRONG <span id="res-HL-wrong-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-HL-wrong-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- HH -->
+            <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-600 flex flex-col">
+                <span class="text-xs text-slate-400 uppercase font-bold leading-tight mb-3 text-center">High Diff / High Abs</span>
+                <div class="flex flex-col space-y-2 bg-slate-900/50 p-3 rounded-lg flex-grow">
+                    <div class="flex flex-col border-b border-white/10 pb-2">
+                        <span class="text-xs text-green-400 font-bold flex justify-between">CORRECT <span id="res-HH-corr-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-HH-corr-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                    <div class="flex flex-col pt-1">
+                        <span class="text-xs text-red-400 font-bold flex justify-between">WRONG <span id="res-HH-wrong-count" class="text-white text-lg ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-500 mt-1">High Conf: <span id="res-HH-wrong-conf" class="text-white font-bold">0%</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-indigo-950/30 p-6 rounded-2xl border border-indigo-500/30 mb-8">
+            <h3 class="text-indigo-400 font-bold mb-2 uppercase tracking-widest text-sm italic">Psychophysical Insight:</h3>
+            <p id="interpretation-text" class="text-indigo-100/80 leading-relaxed text-sm"></p>
+        </div>
+
+        <div class="flex justify-center space-x-4">
+            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl">
+                RECALIBRATE
+            </button>
+            <button id="btn-download" class="bg-indigo-600 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-500 active:scale-95 game-title text-xl border-2 border-indigo-400">
+                DOWNLOAD CSV
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Sound Engine (Web Audio API) ---
+        const AudioEngine = {
+            ctx: null,
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            playTone(freq, type, duration, volume) {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            tick() {
+                this.playTone(800, 'sine', 0.02, 0.02);
+            },
+            boop() {
+                this.playTone(400, 'sine', 0.1, 0.05); // Neutral tone for stimulus selection
+            },
+            beep() {
+                this.playTone(600, 'sine', 0.1, 0.05); // Neutral tone for confidence selection
+            },
+            start() {
+                this.playTone(440, 'square', 0.1, 0.1);
+                setTimeout(() => this.playTone(554.37, 'square', 0.1, 0.1), 100);
+                setTimeout(() => this.playTone(659.25, 'square', 0.3, 0.1), 200);
+            },
+            complete() {
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, 'sine', 0.4, 0.1), i * 150);
+                });
+            }
+        };
+
+        // --- Task Conditions & Configuration ---
+        const CONDITIONS = [
+            { id: 'LL', diff: 'Low', abs: 'Low', vals: [55, 75] },
+            { id: 'LH', diff: 'Low', abs: 'High', vals: [200, 220] },
+            { id: 'HL', diff: 'High', abs: 'Low', vals: [40, 120] },
+            { id: 'HH', diff: 'High', abs: 'High', vals: [160, 240] }
+        ];
+
+        const CONFIG = {
+            trialsPerCondition: 10, // 40 trials total
+            timing: { fixation: 400, timeout: 3500, isi: 600 } 
+        };
+
+        let state = {
+            phase: 'idle', // 'idle', 'stimulus', 'confidence'
+            currentTrialIndex: 0,
+            trials: [],
+            results: [],
+            tempResult: null,
+            startTime: null,
+            confidenceStartTime: null,
+            isAcceptingInput: false,
+            timeoutId: null,
+            confidenceMapping: { f: 'high', j: 'low' } // Fixed mapping
+        };
+
+        const screens = {
+            welcome: document.getElementById('screen-welcome'),
+            task: document.getElementById('screen-task'),
+            results: document.getElementById('screen-results')
+        };
+        
+        function generateTrials() {
+            let trials = [];
+            CONDITIONS.forEach(cond => {
+                for(let i = 0; i < CONFIG.trialsPerCondition; i++) {
+                    const isLeftBrighter = Math.random() > 0.5;
+                    trials.push({
+                        condId: cond.id,
+                        leftColor: isLeftBrighter ? cond.vals[1] : cond.vals[0],
+                        rightColor: isLeftBrighter ? cond.vals[0] : cond.vals[1],
+                        correctKey: isLeftBrighter ? 'f' : 'j'
+                    });
+                }
+            });
+            
+            // Fisher-Yates Shuffle
+            for (let i = trials.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [trials[i], trials[j]] = [trials[j], trials[i]];
+            }
+            return trials;
+        }
+
+        async function nextTrial() {
+            if (state.currentTrialIndex >= state.trials.length) {
+                finishGame();
+                return;
+            }
+
+            const trial = state.trials[state.currentTrialIndex];
+            document.getElementById('trial-counter').innerText = `${state.currentTrialIndex + 1} / ${state.trials.length}`;
+            
+            // Reset Display for Stimulus Phase
+            state.phase = 'stimulus';
+            document.getElementById('confidence-container').classList.add('hidden');
+            document.getElementById('square-left').classList.add('invisible');
+            document.getElementById('square-right').classList.add('invisible');
+            document.getElementById('fixation-cross').classList.remove('invisible');
+            document.getElementById('fixation-cross').classList.remove('opacity-20');
+            document.getElementById('footer-controls').classList.remove('opacity-0');
+
+            // 1. Fixation Phase
+            AudioEngine.tick();
+            await new Promise(r => setTimeout(r, CONFIG.timing.fixation));
+
+            // 2. Stimulus Phase
+            const sqLeft = document.getElementById('square-left');
+            const sqRight = document.getElementById('square-right');
+            
+            sqLeft.style.backgroundColor = `rgb(${trial.leftColor}, ${trial.leftColor}, ${trial.leftColor})`;
+            sqRight.style.backgroundColor = `rgb(${trial.rightColor}, ${trial.rightColor}, ${trial.rightColor})`;
+            
+            sqLeft.classList.remove('invisible');
+            sqRight.classList.remove('invisible');
+            document.getElementById('fixation-cross').classList.add('opacity-20'); // Dim fixation
+            
+            sqLeft.classList.add('pop');
+            sqRight.classList.add('pop');
+            setTimeout(() => {
+                sqLeft.classList.remove('pop');
+                sqRight.classList.remove('pop');
+            }, 100);
+
+            state.startTime = performance.now();
+            state.isAcceptingInput = true;
+
+            state.timeoutId = setTimeout(() => {
+                if (state.isAcceptingInput && state.phase === 'stimulus') handleInput(null); // Time out
+            }, CONFIG.timing.timeout);
+        }
+
+        function handleInput(key) {
+            if (!state.isAcceptingInput) return;
+
+            if (state.phase === 'stimulus') {
+                clearTimeout(state.timeoutId);
+                state.isAcceptingInput = false;
+
+                const rt = performance.now() - state.startTime;
+                const trial = state.trials[state.currentTrialIndex];
+                
+                let isCorrect = false;
+                if (key !== null) {
+                    isCorrect = (key === trial.correctKey);
+                }
+                
+                state.tempResult = { 
+                    trialNum: state.currentTrialIndex + 1,
+                    condId: trial.condId, 
+                    leftColor: trial.leftColor,
+                    rightColor: trial.rightColor,
+                    correctKey: trial.correctKey,
+                    responseKey: key || 'timeout',
+                    rt: key ? Math.round(rt) : null, 
+                    isCorrect: isCorrect 
+                };
+
+                // Hide stimuli to maintain space without showing color
+                document.getElementById('square-left').classList.add('invisible');
+                document.getElementById('square-right').classList.add('invisible');
+
+                if (key === null) {
+                    // Missed trial. Skip confidence.
+                    state.tempResult.confidence = 'missed';
+                    state.tempResult.confidenceKey = 'none';
+                    state.tempResult.confidenceRT = null;
+                    state.results.push(state.tempResult);
+                    AudioEngine.playTone(150, 'sawtooth', 0.2, 0.1); // Dull buzz for timeout
+                    
+                    setTimeout(() => {
+                        state.currentTrialIndex++;
+                        nextTrial();
+                    }, CONFIG.timing.isi);
+                    return;
+                }
+
+                AudioEngine.boop();
+                promptConfidence();
+
+            } else if (state.phase === 'confidence') {
+                const conf = state.confidenceMapping[key];
+                if (!conf) return; // ignore if they somehow pressed a different key
+                
+                state.isAcceptingInput = false;
+                state.tempResult.confidence = conf;
+                state.tempResult.confidenceKey = key;
+                state.tempResult.confidenceRT = Math.round(performance.now() - state.confidenceStartTime);
+                state.results.push(state.tempResult);
+                
+                AudioEngine.beep();
+
+                document.getElementById('confidence-container').classList.add('hidden');
+                
+                setTimeout(() => {
+                    state.currentTrialIndex++;
+                    nextTrial();
+                }, CONFIG.timing.isi);
+            }
+        }
+
+        function promptConfidence() {
+            state.phase = 'confidence';
+            document.getElementById('fixation-cross').classList.add('invisible');
+            document.getElementById('footer-controls').classList.add('opacity-0'); 
+            
+            document.getElementById('confidence-container').classList.remove('hidden');
+            
+            state.confidenceStartTime = performance.now();
+            
+            // Small debounce to prevent accidental double tap from stimulus phase
+            setTimeout(() => { state.isAcceptingInput = true; }, 250); 
+        }
+
+        function finishGame() {
+            AudioEngine.complete();
+            screens.task.classList.add('hidden');
+            screens.results.classList.remove('hidden');
+            
+            // Calculate accuracy and confidence per condition
+            CONDITIONS.forEach(c => {
+                const conditionTrials = state.results.filter(r => r.condId === c.id && r.confidence !== 'missed');
+                
+                const correctTrials = conditionTrials.filter(r => r.isCorrect);
+                const wrongTrials = conditionTrials.filter(r => !r.isCorrect);
+                
+                const correctHighConf = correctTrials.filter(r => r.confidence === 'high').length;
+                const wrongHighConf = wrongTrials.filter(r => r.confidence === 'high').length;
+                
+                const correctHighConfPct = correctTrials.length > 0 ? Math.round((correctHighConf / correctTrials.length) * 100) : 0;
+                const wrongHighConfPct = wrongTrials.length > 0 ? Math.round((wrongHighConf / wrongTrials.length) * 100) : 0;
+                
+                // Populate DOM
+                document.getElementById(`res-${c.id}-corr-count`).innerText = correctTrials.length;
+                document.getElementById(`res-${c.id}-corr-conf`).innerText = `${correctHighConfPct}%`;
+                
+                document.getElementById(`res-${c.id}-wrong-count`).innerText = wrongTrials.length;
+                document.getElementById(`res-${c.id}-wrong-conf`).innerText = `${wrongHighConfPct}%`;
+            });
+
+            // Interpretation Logic
+            const totalTrials = state.results.filter(r => r.confidence !== 'missed').length;
+            const totalCorrect = state.results.filter(r => r.isCorrect && r.confidence !== 'missed').length;
+            const overallAcc = totalTrials > 0 ? Math.round((totalCorrect / totalTrials) * 100) : 0;
+            
+            let message = `Overall Accuracy: ${overallAcc}%. `;
+            message += `By assessing your confidence against your actual performance, we measure your metacognitive sensitivity (d-prime). `;
+            message += `A high confidence rating on wrong answers indicates an illusion of precision, which is especially common in the harder conditions due to Weber's Law limitations.`;
+            
+            document.getElementById('interpretation-text').innerText = message;
+        }
+
+        function downloadCSV() {
+            if (state.results.length === 0) return;
+            
+            const headers = ['trialNum', 'condId', 'leftColor', 'rightColor', 'correctKey', 'responseKey', 'rt', 'isCorrect', 'confidence', 'confidenceKey', 'confidenceRT'];
+            
+            let csvContent = "data:text/csv;charset=utf-8," 
+                + headers.join(",") + "\n"
+                + state.results.map(r => {
+                    return headers.map(header => {
+                        let val = r[header];
+                        return val === null || val === undefined ? '' : val;
+                    }).join(",");
+                }).join("\n");
+                
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `luma_clash_data_${new Date().getTime()}.csv`);
+            document.body.appendChild(link); // Required for Firefox
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (['f', 'j'].includes(key)) {
+                e.preventDefault();
+                
+                // Visual feedback for key press (Context sensitive)
+                const targetId = state.phase === 'confidence' ? `key-conf-${key}` : `key-${key}`;
+                const keyEl = document.getElementById(targetId);
+                
+                if (keyEl) {
+                    keyEl.classList.add('active-key');
+                    setTimeout(() => keyEl.classList.remove('active-key'), 100);
+                }
+                
+                handleInput(key);
+            }
+        });
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            AudioEngine.start();
+            state.currentTrialIndex = 0;
+            state.results = [];
+            state.trials = generateTrials();
+            screens.welcome.classList.add('hidden');
+            screens.task.classList.remove('hidden');
+            nextTrial();
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            screens.results.classList.add('hidden');
+            screens.welcome.classList.remove('hidden');
+        });
+
+        document.getElementById('btn-download').addEventListener('click', downloadCSV);
+
+    </script>
+</body>
+</html>

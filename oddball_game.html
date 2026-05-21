@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oddball Dash: Neon Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --bg-color: #0f172a;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            user-select: none;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: white;
+            transition: background-color 0.5s ease;
+        }
+
+        h1, .game-title {
+            font-family: 'Bungee', cursive;
+        }
+
+        .stimulus-text {
+            font-size: 8rem;
+            line-height: 1;
+            min-height: 10rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            font-family: 'Bungee', cursive;
+        }
+
+        .combo-text {
+            font-family: 'Bungee', cursive;
+            animation: bounce 0.3s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .shake {
+            animation: shake 0.2s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .key-hint {
+            @apply flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-md;
+            transition: all 0.2s;
+        }
+
+        .active-key {
+            transform: scale(0.9);
+            @apply border-white bg-white/30;
+        }
+
+        #feedback-container {
+            height: 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fire-effect {
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff0, 0 0 30px #f0f, 0 0 40px #0ff;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center">
+
+    <!-- Screen A: Welcome/Instructions -->
+    <div id="screen-welcome" class="max-w-2xl bg-slate-900 p-10 rounded-3xl border-4 border-cyan-500 shadow-[0_0_50px_rgba(6,182,212,0.3)] text-center animate-in fade-in zoom-in duration-300">
+        <h1 class="text-6xl text-cyan-400 mb-2 tracking-tighter">ODDBALL DASH</h1>
+        <p class="text-cyan-200/60 mb-8 uppercase tracking-widest text-xs font-bold">The Ultimate Anomaly Detection Challenge</p>
+        
+        <div class="text-left bg-slate-800/50 p-6 rounded-2xl border border-cyan-500/30 mb-8">
+            <p class="text-white mb-4 text-center">Maintain focus! A <span class="text-cyan-400 font-bold">STANDARD</span> shape appears most of the time. <span class="text-red-400 font-bold">DO NOT REACT.</span> But watch out for the rare <span class="text-pink-400 font-bold">ODDBALL</span> and strike!</p>
+            
+            <div class="flex justify-center gap-12 mt-6">
+                <div class="flex flex-col items-center bg-slate-900 p-4 rounded-xl border border-cyan-500/50 w-40 opacity-50">
+                    <span class="text-xs text-slate-400 mb-2 font-bold tracking-wider">FREQUENT (80%)</span>
+                    <div class="game-title text-5xl text-cyan-400 mb-4 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">O</div>
+                    <div class="text-cyan-400 text-sm font-bold mt-2">DO NOTHING</div>
+                </div>
+                <div class="flex flex-col items-center bg-slate-900 p-4 rounded-xl border border-pink-500/50 w-40 shadow-[0_0_15px_rgba(236,72,153,0.2)]">
+                    <span class="text-xs text-pink-300 mb-2 font-bold tracking-wider animate-pulse">RARE (20%)</span>
+                    <div class="game-title text-5xl text-pink-500 mb-4 drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]">X</div>
+                    <div class="key-hint mb-2 text-pink-500">J</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="btn-start" class="group relative bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+            <span class="game-title text-2xl">INSERT COIN (START)</span>
+        </button>
+    </div>
+
+    <!-- Screen B: Active Task -->
+    <div id="screen-task" class="hidden flex flex-col items-center justify-center w-full h-full relative">
+        
+        <!-- DASHBOARD -->
+        <div class="absolute top-0 w-full p-6 flex justify-between items-start z-10">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Score</span>
+                <span id="stat-score" class="text-4xl font-bold game-title">00000</span>
+            </div>
+
+            <div class="flex space-x-8 bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl">
+                <div class="text-center">
+                    <span class="block text-[10px] text-slate-500 font-bold uppercase">Accuracy</span>
+                    <span id="stat-acc" class="text-xl font-bold text-green-400">0%</span>
+                </div>
+                <div class="text-center">
+                    <span class="block text-[10px] text-slate-500 font-bold uppercase">Avg Speed</span>
+                    <span id="stat-rt" class="text-xl font-bold text-blue-400">0ms</span>
+                </div>
+                <div class="text-center border-l border-white/10 pl-8">
+                    <span class="block text-[10px] text-cyan-400 font-bold uppercase">Trial</span>
+                    <span id="trial-counter" class="text-xl font-bold">1 / 30</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] text-orange-400 font-bold uppercase tracking-widest">Combo</span>
+                <span id="stat-combo" class="text-4xl font-bold combo-text text-orange-500">x0</span>
+            </div>
+        </div>
+
+        <!-- Stimulus Display -->
+        <div id="stimulus-container" class="flex flex-col items-center justify-center w-full">
+            <div id="display-area" class="stimulus-text text-center transition-transform duration-100"></div>
+            <div id="feedback-container">
+                <div id="feedback-area" class="game-title text-2xl opacity-0 transition-all duration-75"></div>
+            </div>
+        </div>
+
+        <!-- Footer Control Display -->
+        <div class="absolute bottom-12 flex space-x-24 items-center">
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-pink-500 mb-2 font-bold tracking-widest opacity-50">ODDBALL</span>
+                <div id="key-j" class="key-hint text-pink-500 text-2xl">J</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen C: Results -->
+    <div id="screen-results" class="hidden max-w-4xl w-full bg-slate-900 p-10 rounded-3xl border-4 border-cyan-500 shadow-2xl fade-in mx-4">
+        <h2 class="text-5xl font-bold text-cyan-400 mb-8 text-center game-title">SESSION COMPLETE</h2>
+        
+        <div class="grid grid-cols-3 gap-6 mb-10">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center">
+                <span class="text-xs text-slate-500 uppercase font-bold">Final Score</span>
+                <div id="final-score" class="text-4xl font-bold text-white game-title mt-2">0</div>
+            </div>
+            <div id="result-standard" class="bg-slate-800 p-6 rounded-2xl border border-cyan-500/30 text-center">
+                <span class="text-xs text-cyan-400/70 uppercase font-bold">Standard Acc</span>
+                <div class="text-2xl font-bold text-cyan-400 mt-2"><span class="acc-val">0</span>%</div>
+            </div>
+            <div id="result-oddball" class="bg-slate-800 p-6 rounded-2xl border border-pink-500/50 text-center shadow-[0_0_15px_rgba(236,72,153,0.1)]">
+                <span class="text-xs text-pink-400/70 uppercase font-bold">Oddball Speed</span>
+                <div class="text-2xl font-bold text-pink-400 mt-2"><span class="rt-val">0</span>ms</div>
+            </div>
+        </div>
+
+        <div class="bg-cyan-950/30 p-8 rounded-2xl border border-cyan-500/30 mb-10">
+            <h3 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest text-sm italic">Cognitive Analysis:</h3>
+            <p id="interpretation-text" class="text-cyan-100/80 leading-relaxed"></p>
+        </div>
+
+        <div class="flex justify-center">
+            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-12 rounded-2xl transition-all shadow-xl hover:bg-cyan-400 active:scale-95 game-title text-xl">
+                PLAY AGAIN
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Sound Engine (Web Audio API) ---
+        const AudioEngine = {
+            ctx: null,
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            playTone(freq, type, duration, volume, slideTo = null) {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                if (slideTo) {
+                    osc.frequency.exponentialRampToValueAtTime(slideTo, this.ctx.currentTime + duration);
+                }
+                
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            correct(combo, type) {
+                if(type === 'oddball') {
+                    // Special sound for correctly catching the oddball
+                    this.playTone(880, 'square', 0.3, 0.2, 1760);
+                } else {
+                    // Pitch increases slightly with combo for standard
+                    const baseFreq = 440 + (combo * 10);
+                    this.playTone(baseFreq, 'sine', 0.15, 0.15, baseFreq * 1.2);
+                }
+            },
+            incorrect() {
+                this.playTone(150, 'sawtooth', 0.4, 0.2, 50);
+            },
+            tick() {
+                this.playTone(1200, 'sine', 0.03, 0.02);
+            },
+            start() {
+                this.playTone(440, 'square', 0.1, 0.1);
+                setTimeout(() => this.playTone(554.37, 'square', 0.1, 0.1), 100);
+                setTimeout(() => this.playTone(659.25, 'square', 0.3, 0.1), 200);
+            },
+            complete() {
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, 'sine', 0.4, 0.1), i * 150);
+                });
+            }
+        };
+
+        const CONFIG = {
+            trials: 30,
+            oddballRatio: 0.2,
+            stimuli: {
+                standard: { char: 'O', color: '#06b6d4', key: null, type: 'standard' }, // Cyan
+                oddball: { char: 'X', color: '#ec4899', key: 'j', type: 'oddball' }    // Pink
+            },
+            timing: { fixation: 300, timeout: 1200, isi: 400 } // Tighter timeout for oddball task
+        };
+
+        let state = {
+            currentTrialIndex: 0,
+            trials: [],
+            results: [],
+            startTime: null,
+            isAcceptingInput: false,
+            score: 0,
+            combo: 0,
+            maxCombo: 0
+        };
+
+        const screens = {
+            welcome: document.getElementById('screen-welcome'),
+            task: document.getElementById('screen-task'),
+            results: document.getElementById('screen-results')
+        };
+        
+        function generateTrials() {
+            let trials = [];
+            const oddballCount = Math.floor(CONFIG.trials * CONFIG.oddballRatio);
+            const standardCount = CONFIG.trials - oddballCount;
+
+            for(let i = 0; i < standardCount; i++) trials.push({ ...CONFIG.stimuli.standard });
+            for(let i = 0; i < oddballCount; i++) trials.push({ ...CONFIG.stimuli.oddball });
+            
+            // Shuffle
+            trials.sort(() => Math.random() - 0.5);
+
+            // Force the first 2 trials to be standard to establish the baseline rhythm
+            let standardFound = 0;
+            for (let i = 0; i < trials.length; i++) {
+                if (standardFound >= 2) break;
+                if (trials[i].type !== 'standard') {
+                    const swapIdx = trials.findIndex((t, idx) => idx > i && t.type === 'standard');
+                    if (swapIdx > -1) {
+                        [trials[i], trials[swapIdx]] = [trials[swapIdx], trials[i]];
+                    }
+                }
+                standardFound++;
+            }
+
+            return trials;
+        }
+
+        function updateUI() {
+            document.getElementById('stat-score').innerText = state.score.toString().padStart(5, '0');
+            document.getElementById('stat-combo').innerText = `x${state.combo}`;
+            
+            const total = state.results.length;
+            const correct = state.results.filter(r => r.isCorrect).length;
+            const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
+            
+            const hitTrials = state.results.filter(r => r.isCorrect && r.type === 'oddball');
+            const avgRt = hitTrials.length > 0 ? Math.round(hitTrials.reduce((a,b) => a+b.rt, 0) / hitTrials.length) : 0;
+            
+            document.getElementById('stat-acc').innerText = `${acc}%`;
+            document.getElementById('stat-rt').innerText = `${avgRt}ms`;
+        }
+
+        async function nextTrial() {
+            if (state.currentTrialIndex >= state.trials.length) {
+                finishGame();
+                return;
+            }
+
+            const trial = state.trials[state.currentTrialIndex];
+            document.getElementById('trial-counter').innerText = `${state.currentTrialIndex + 1} / ${state.trials.length}`;
+            
+            document.getElementById('feedback-area').classList.add('opacity-0');
+            
+            // Fixation Cross
+            const displayArea = document.getElementById('display-area');
+            displayArea.innerText = '+';
+            displayArea.style.color = '#475569'; // Slate 600
+            displayArea.style.textShadow = 'none';
+            displayArea.classList.remove('fire-effect', 'scale-110');
+
+            AudioEngine.tick();
+            await new Promise(r => setTimeout(r, CONFIG.timing.fixation));
+
+            // Show Stimulus
+            displayArea.innerText = trial.char;
+            displayArea.style.color = trial.color;
+            displayArea.style.textShadow = `0 0 30px ${trial.color}80`;
+            
+            // Slight pop animation
+            displayArea.classList.add('scale-110');
+
+            if (state.combo > 10) displayArea.classList.add('fire-effect');
+
+            state.startTime = performance.now();
+            state.isAcceptingInput = true;
+
+            state.timeoutId = setTimeout(() => {
+                if (state.isAcceptingInput) handleInput(null);
+            }, CONFIG.timing.timeout);
+        }
+
+        function handleInput(key) {
+            if (!state.isAcceptingInput) return;
+            clearTimeout(state.timeoutId);
+            state.isAcceptingInput = false;
+
+            const rt = performance.now() - state.startTime;
+            const trial = state.trials[state.currentTrialIndex];
+            
+            let isCorrect = false;
+            
+            if (key !== null) {
+                // User pressed a key
+                isCorrect = (trial.type === 'oddball' && key === trial.key);
+            } else {
+                // Time ran out (no key pressed)
+                isCorrect = (trial.type === 'standard');
+            }
+
+            if (isCorrect) {
+                if (key !== null) {
+                    AudioEngine.correct(state.combo, trial.type);
+                    const speedBonus = Math.max(0, CONFIG.timing.timeout - Math.round(rt));
+                    state.score += (speedBonus + (500 * (1 + (state.combo * 0.1))));
+                    showFeedback("CAUGHT IT!", "text-pink-400");
+                } else {
+                    AudioEngine.correct(state.combo, 'standard');
+                    state.score += 50 * (1 + (state.combo * 0.1));
+                    showFeedback("GOOD", "text-cyan-400");
+                }
+                state.combo++;
+                state.maxCombo = Math.max(state.combo, state.maxCombo);
+            } else {
+                AudioEngine.incorrect();
+                state.combo = 0;
+                showFeedback(key === null ? "MISS!" : "FALSE ALARM!", "text-red-500");
+                document.getElementById('stimulus-container').classList.add('shake');
+                setTimeout(() => document.getElementById('stimulus-container').classList.remove('shake'), 200);
+            }
+
+            state.results.push({ type: trial.type, rt: key ? rt : null, isCorrect });
+            updateUI();
+
+            setTimeout(() => {
+                document.getElementById('display-area').innerText = '';
+                setTimeout(() => {
+                    state.currentTrialIndex++;
+                    nextTrial();
+                }, CONFIG.timing.isi);
+            }, 300);
+        }
+
+        function showFeedback(text, colorClass) {
+            const el = document.getElementById('feedback-area');
+            el.innerText = text;
+            el.className = `game-title text-2xl opacity-100 transition-all ${colorClass}`;
+        }
+
+        function finishGame() {
+            AudioEngine.complete();
+            screens.task.classList.add('hidden');
+            screens.results.classList.remove('hidden');
+            
+            document.getElementById('final-score').innerText = Math.round(state.score).toLocaleString();
+            
+            const standardCorrect = state.results.filter(x => x.type === 'standard' && x.isCorrect).length;
+            const standardTotal = state.results.filter(x => x.type === 'standard').length;
+            const standardAcc = standardTotal > 0 ? Math.round((standardCorrect / standardTotal) * 100) : 0;
+            document.querySelector('#result-standard .acc-val').innerText = standardAcc;
+
+            const oddballHits = state.results.filter(x => x.type === 'oddball' && x.isCorrect);
+            const oddballSpeed = oddballHits.length > 0 ? Math.round(oddballHits.reduce((a,b) => a+b.rt, 0) / oddballHits.length) : 0;
+            document.querySelector('#result-oddball .rt-val').innerText = oddballSpeed;
+
+            let message = "";
+            if (oddballHits.length === 0) {
+                 message = `You missed the oddballs completely! It's easy to get lulled into doing nothing.`;
+            } else if (standardAcc < 80) {
+                message = `You caught the targets at ${oddballSpeed}ms, but struggled to inhibit your reactions on standard trials (${standardAcc}% Acc). This shows impulsivity!`;
+            } else {
+                message = `Incredible vigilance and inhibition! You successfully withheld responses on standard trials and reacted to targets in ${oddballSpeed}ms. This is a classic test of sustained attention.`;
+            }
+            
+            document.getElementById('interpretation-text').innerText = `${message} Max Combo Achieved: ${state.maxCombo}.`;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (['j'].includes(key)) {
+                e.preventDefault();
+                const keyEl = document.getElementById(`key-${key}`);
+                if (keyEl) {
+                    keyEl.classList.add('active-key');
+                    setTimeout(() => keyEl.classList.remove('active-key'), 100);
+                }
+                handleInput(key);
+            }
+        });
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            AudioEngine.start();
+            state.score = 0;
+            state.combo = 0;
+            state.currentTrialIndex = 0;
+            state.results = [];
+            state.trials = generateTrials();
+            screens.welcome.classList.add('hidden');
+            screens.task.classList.remove('hidden');
+            updateUI();
+            nextTrial();
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            screens.results.classList.add('hidden');
+            screens.welcome.classList.remove('hidden');
+        });
+
+    </script>
+</body>
+</html>
+
+
