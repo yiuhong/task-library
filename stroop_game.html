@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stroop Dash: Neon Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --bg-color: #0f172a;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            user-select: none;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: white;
+            transition: background-color 0.5s ease;
+        }
+
+        h1, .game-title {
+            font-family: 'Bungee', cursive;
+        }
+
+        .stimulus-text {
+            font-size: 6rem;
+            line-height: 1;
+            min-height: 8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            font-family: 'Bungee', cursive;
+        }
+
+        .combo-text {
+            font-family: 'Bungee', cursive;
+            animation: bounce 0.3s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .shake {
+            animation: shake 0.2s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .key-hint {
+            @apply flex flex-col items-center justify-center w-16 h-16 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-md;
+            transition: all 0.2s;
+        }
+
+        .active-key {
+            transform: scale(0.9);
+            @apply border-white bg-white/30;
+        }
+
+        #feedback-container {
+            height: 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pixel-border {
+            border: 4px solid white;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+        }
+
+        .fire-effect {
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff0, 0 0 30px #f0f, 0 0 40px #0ff;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center">
+
+    <!-- Screen A: Welcome/Instructions -->
+    <div id="screen-welcome" class="max-w-2xl bg-slate-900 p-10 rounded-3xl border-4 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.3)] text-center animate-in fade-in zoom-in duration-300">
+        <h1 class="text-6xl text-indigo-400 mb-2 tracking-tighter">STROOP DASH</h1>
+        <p class="text-indigo-200/60 mb-8 uppercase tracking-widest text-xs font-bold">The Ultimate Brain Reflex Challenge</p>
+        
+        <div class="text-left bg-slate-800/50 p-6 rounded-2xl border border-indigo-500/30 mb-8">
+            <p class="text-white mb-4">Press the key that matches the <span class="text-yellow-400 font-bold underline">INK COLOR</span>. Ignore the text!</p>
+            
+            <div class="grid grid-cols-4 gap-4">
+                <div class="flex flex-col items-center">
+                    <div class="key-hint mb-2 text-red-500">R</div>
+                    <span class="text-[10px] opacity-50">RED</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="key-hint mb-2 text-green-500">G</div>
+                    <span class="text-[10px] opacity-50">GREEN</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="key-hint mb-2 text-blue-500">B</div>
+                    <span class="text-[10px] opacity-50">BLUE</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="key-hint mb-2 text-yellow-500">Y</div>
+                    <span class="text-[10px] opacity-50">YELLOW</span>
+                </div>
+            </div>
+        </div>
+
+        <button id="btn-start" class="group relative bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+            <span class="game-title text-2xl">INSERT COIN (START)</span>
+        </button>
+    </div>
+
+    <!-- Screen B: Active Task -->
+    <div id="screen-task" class="hidden flex flex-col items-center justify-center w-full h-full relative">
+        
+        <!-- DASHBOARD -->
+        <div class="absolute top-0 w-full p-6 flex justify-between items-start z-10">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Score</span>
+                <span id="stat-score" class="text-4xl font-bold game-title">00000</span>
+            </div>
+
+            <div class="flex space-x-8 bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl">
+                <div class="text-center">
+                    <span class="block text-[10px] text-slate-500 font-bold uppercase">Accuracy</span>
+                    <span id="stat-acc" class="text-xl font-bold text-green-400">0%</span>
+                </div>
+                <div class="text-center">
+                    <span class="block text-[10px] text-slate-500 font-bold uppercase">Avg Speed</span>
+                    <span id="stat-rt" class="text-xl font-bold text-blue-400">0ms</span>
+                </div>
+                <div class="text-center border-l border-white/10 pl-8">
+                    <span class="block text-[10px] text-indigo-400 font-bold uppercase">Stage</span>
+                    <span id="trial-counter" class="text-xl font-bold">1 / 20</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] text-orange-400 font-bold uppercase tracking-widest">Combo</span>
+                <span id="stat-combo" class="text-4xl font-bold combo-text text-orange-500">x0</span>
+            </div>
+        </div>
+
+        <!-- Stimulus Display -->
+        <div id="stimulus-container" class="flex flex-col items-center justify-center w-full">
+            <div id="display-area" class="stimulus-text text-center"></div>
+            <div id="feedback-container">
+                <div id="feedback-area" class="game-title text-2xl opacity-0 transition-all duration-75"></div>
+            </div>
+        </div>
+
+        <!-- Footer Control Display -->
+        <div class="absolute bottom-12 flex space-x-6 items-center">
+            <div id="key-r" class="key-hint text-red-500">R</div>
+            <div id="key-g" class="key-hint text-green-500">G</div>
+            <div id="key-b" class="key-hint text-blue-500">B</div>
+            <div id="key-y" class="key-hint text-yellow-500">Y</div>
+        </div>
+    </div>
+
+    <!-- Screen C: Results -->
+    <div id="screen-results" class="hidden max-w-4xl w-full bg-slate-900 p-10 rounded-3xl border-4 border-indigo-500 shadow-2xl fade-in mx-4">
+        <h2 class="text-5xl font-bold text-indigo-400 mb-8 text-center game-title">GAME OVER</h2>
+        
+        <div class="grid grid-cols-3 gap-6 mb-10">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center">
+                <span class="text-xs text-slate-500 uppercase font-bold">Final Score</span>
+                <div id="final-score" class="text-4xl font-bold text-white game-title mt-2">0</div>
+            </div>
+            <div id="result-congruent" class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center">
+                <span class="text-xs text-slate-500 uppercase font-bold">Congruent Speed</span>
+                <div class="text-2xl font-bold text-green-400 mt-2"><span class="rt-val">0</span>ms</div>
+            </div>
+            <div id="result-incongruent" class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center border-orange-500/50">
+                <span class="text-xs text-slate-500 uppercase font-bold">Incongruent Speed</span>
+                <div class="text-2xl font-bold text-orange-400 mt-2"><span class="rt-val">0</span>ms</div>
+            </div>
+        </div>
+
+        <div class="bg-indigo-950/50 p-8 rounded-2xl border border-indigo-500/30 mb-10">
+            <h3 class="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-sm italic">Brain Performance Log:</h3>
+            <p id="interpretation-text" class="text-indigo-100/80 leading-relaxed"></p>
+        </div>
+
+        <div class="flex justify-center">
+            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-12 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl">
+                PLAY AGAIN
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Sound Engine (Web Audio API) ---
+        const AudioEngine = {
+            ctx: null,
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            playTone(freq, type, duration, volume, slideTo = null) {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                if (slideTo) {
+                    osc.frequency.exponentialRampToValueAtTime(slideTo, this.ctx.currentTime + duration);
+                }
+                
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            correct(combo) {
+                // Pitch increases with combo
+                const baseFreq = 440 + (combo * 40);
+                this.playTone(baseFreq, 'sine', 0.2, 0.2, baseFreq * 1.5);
+            },
+            incorrect() {
+                this.playTone(150, 'square', 0.4, 0.2, 50);
+            },
+            tick() {
+                this.playTone(880, 'sine', 0.05, 0.05);
+            },
+            start() {
+                this.playTone(523.25, 'sine', 0.1, 0.1);
+                setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.1), 100);
+                setTimeout(() => this.playTone(783.99, 'sine', 0.3, 0.1), 200);
+            },
+            complete() {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, 'square', 0.4, 0.05), i * 150);
+                });
+            }
+        };
+
+        const CONFIG = {
+            colors: [
+                { name: 'RED', hex: '#ff4b4b', key: 'r' },
+                { name: 'GREEN', hex: '#44ff44', key: 'g' },
+                { name: 'BLUE', hex: '#4444ff', key: 'b' },
+                { name: 'YELLOW', hex: '#ffff44', key: 'y' }
+            ],
+            trials: 20,
+            timing: { fixation: 400, timeout: 2000, isi: 300 }
+        };
+
+        let state = {
+            currentTrialIndex: 0,
+            trials: [],
+            results: [],
+            startTime: null,
+            isAcceptingInput: false,
+            score: 0,
+            combo: 0,
+            maxCombo: 0
+        };
+
+        const screens = {
+            welcome: document.getElementById('screen-welcome'),
+            task: document.getElementById('screen-task'),
+            results: document.getElementById('screen-results')
+        };
+        
+        function generateTrials() {
+            let trials = [];
+            const half = CONFIG.trials / 2;
+            for(let i = 0; i < half; i++) {
+                const c = CONFIG.colors[i % 4];
+                trials.push({ type: 'congruent', text: c.name, inkColor: c.hex, correctKey: c.key });
+            }
+            for(let i = 0; i < half; i++) {
+                const textIdx = i % 4;
+                const inkIdx = (i + 1) % 4;
+                trials.push({ type: 'incongruent', text: CONFIG.colors[textIdx].name, inkColor: CONFIG.colors[inkIdx].hex, correctKey: CONFIG.colors[inkIdx].key });
+            }
+            return trials.sort(() => Math.random() - 0.5);
+        }
+
+        function updateUI() {
+            document.getElementById('stat-score').innerText = state.score.toString().padStart(5, '0');
+            document.getElementById('stat-combo').innerText = `x${state.combo}`;
+            
+            const total = state.results.length;
+            const correct = state.results.filter(r => r.isCorrect).length;
+            const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
+            const avgRt = correct > 0 ? Math.round(state.results.filter(r => r.isCorrect).reduce((a,b) => a+b.rt, 0) / correct) : 0;
+            
+            document.getElementById('stat-acc').innerText = `${acc}%`;
+            document.getElementById('stat-rt').innerText = `${avgRt}ms`;
+            
+            const hue = 220 + (state.combo * 10);
+            document.body.style.backgroundColor = `hsl(${hue}, 45%, 8%)`;
+        }
+
+        async function nextTrial() {
+            if (state.currentTrialIndex >= state.trials.length) {
+                finishGame();
+                return;
+            }
+
+            const trial = state.trials[state.currentTrialIndex];
+            document.getElementById('trial-counter').innerText = `${state.currentTrialIndex + 1} / ${state.trials.length}`;
+            
+            document.getElementById('feedback-area').classList.add('opacity-0');
+            document.getElementById('display-area').innerText = 'READY?';
+            document.getElementById('display-area').style.color = 'white';
+            document.getElementById('display-area').classList.remove('fire-effect');
+
+            AudioEngine.tick();
+            await new Promise(r => setTimeout(r, CONFIG.timing.fixation));
+
+            document.getElementById('display-area').innerText = trial.text;
+            document.getElementById('display-area').style.color = trial.inkColor;
+            if (state.combo > 5) document.getElementById('display-area').classList.add('fire-effect');
+
+            state.startTime = performance.now();
+            state.isAcceptingInput = true;
+
+            state.timeoutId = setTimeout(() => {
+                if (state.isAcceptingInput) handleInput(null);
+            }, CONFIG.timing.timeout);
+        }
+
+        function handleInput(key) {
+            if (!state.isAcceptingInput) return;
+            clearTimeout(state.timeoutId);
+            state.isAcceptingInput = false;
+
+            const rt = performance.now() - state.startTime;
+            const trial = state.trials[state.currentTrialIndex];
+            const isCorrect = key === trial.correctKey;
+
+            if (isCorrect) {
+                AudioEngine.correct(state.combo);
+                state.combo++;
+                state.maxCombo = Math.max(state.combo, state.maxCombo);
+                const speedBonus = Math.max(0, 1000 - Math.round(rt));
+                state.score += (speedBonus + (state.combo * 100));
+                
+                showFeedback("PERFECT!", "text-cyan-400");
+            } else {
+                AudioEngine.incorrect();
+                state.combo = 0;
+                showFeedback(key === null ? "TOO SLOW!" : "OOF!", "text-red-500");
+                document.getElementById('stimulus-container').classList.add('shake');
+                setTimeout(() => document.getElementById('stimulus-container').classList.remove('shake'), 200);
+            }
+
+            state.results.push({ type: trial.type, rt: rt, isCorrect });
+            updateUI();
+
+            setTimeout(() => {
+                document.getElementById('display-area').innerText = '';
+                setTimeout(() => {
+                    state.currentTrialIndex++;
+                    nextTrial();
+                }, CONFIG.timing.isi);
+            }, 400);
+        }
+
+        function showFeedback(text, colorClass) {
+            const el = document.getElementById('feedback-area');
+            el.innerText = text;
+            el.className = `game-title text-2xl opacity-100 transition-all ${colorClass}`;
+        }
+
+        function finishGame() {
+            AudioEngine.complete();
+            screens.task.classList.add('hidden');
+            screens.results.classList.remove('hidden');
+            
+            document.getElementById('final-score').innerText = state.score.toLocaleString();
+            
+            const stats = {};
+            ['congruent', 'incongruent'].forEach(type => {
+                const r = state.results.filter(x => x.type === type && x.isCorrect);
+                const avg = r.length ? Math.round(r.reduce((a,b) => a+b.rt, 0) / r.length) : 0;
+                stats[type] = avg;
+                document.querySelector(`#result-${type} .rt-val`).innerText = avg;
+            });
+
+            const diff = stats.incongruent - stats.congruent;
+            const message = diff > 60 
+                ? `WHOA! Your brain felt the "Stroop Interference" hard! You were ${diff}ms slower when colors didn't match.`
+                : `INSANE FOCUS! You only had a ${diff}ms delay between conditions. You're a visual filtering machine!`;
+            
+            document.getElementById('interpretation-text').innerText = `${message} Max Combo: ${state.maxCombo}.`;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (['r', 'g', 'b', 'y'].includes(key)) {
+                e.preventDefault();
+                const keyEl = document.getElementById(`key-${key}`);
+                keyEl.classList.add('active-key');
+                setTimeout(() => keyEl.classList.remove('active-key'), 100);
+                handleInput(key);
+            }
+        });
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            AudioEngine.start();
+            state.score = 0;
+            state.combo = 0;
+            state.currentTrialIndex = 0;
+            state.results = [];
+            state.trials = generateTrials();
+            screens.welcome.classList.add('hidden');
+            screens.task.classList.remove('hidden');
+            updateUI();
+            nextTrial();
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            screens.results.classList.add('hidden');
+            screens.welcome.classList.remove('hidden');
+        });
+
+    </script>
+</body>
+</html>
