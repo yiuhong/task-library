@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Task Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #0f172a;
+        }
+        h1 {
+            font-family: 'Bungee', cursive;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col justify-center items-center p-6 select-none">
+
+    <div class="text-center max-w-xl mb-12">
+        <h1 class="text-4xl md:text-5xl text-sky-400 tracking-wider mb-4">COGNITIVE LABORATORY</h1>
+        <p class="text-gray-400 text-sm md:text-base leading-relaxed">
+            Welcome to the experimental task dashboard. Select an interactive paradigm below to initiate full-screen automated testing.
+        </p>
+    </div>
+
+    <div class="w-full max-w-md space-y-4">
+        
+        <a href="stroop_game.html" class="block border-2 border-indigo-500/50 bg-indigo-950/30 hover:bg-indigo-900/50 hover:border-indigo-400 rounded-xl p-5 transition duration-300 transform hover:-translate-y-1 shadow-lg shadow-indigo-950/50 group">
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-lg text-indigo-300 group-hover:text-indigo-200">01. STROOP DASH</span>
+                <span class="text-xs bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/50">ACTIVE</span>
+            </div>
+            <p class="text-xs text-gray-400 leading-normal">
+                Measures selective attention, processing speed, and executive interference using incongruent semantic stimuli.
+            </p>
+        </a>
+
+        <div class="border-2 border-slate-800 bg-slate-900/40 rounded-xl p-5 opacity-40 cursor-not-allowed">
+            <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-lg text-slate-500">02. N-BACK MEMORY</span>
+                <span class="text-xs bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full border border-slate-700">LOCKED</span>
+            </div>
+            <p class="text-xs text-slate-500 leading-normal">
+                Evaluates working memory capacity and continuous recognition handling. (Under development)
+            </p>
+        </div>
+
+    </div>
+
+    <div class="mt-16 text-center text-[11px] text-slate-600 tracking-widest uppercase">
+        Built via JavaScript Frameworks • Open Source Architecture
+    </div>
+
+</body>
+</html>
