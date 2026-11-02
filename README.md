@@ -8,12 +8,12 @@ Project Trial is Yiu Hong Ko’s browser collection of attention, perception, an
 
 ## Wordmark
 
-Locked take B, traced as vectors in `assets/`:
+Approved black-and-white lockup, outlined in `assets/`:
 
-- [`assets/project-trial-wordmark.svg`](assets/project-trial-wordmark.svg) — black on transparent. This is the black-and-white sibling mark for the personal site.
-- [`assets/project-trial-wordmark-dark.svg`](assets/project-trial-wordmark-dark.svg) — white type and cyan instruments on transparent. This is the mark on the dark hub.
+- [`assets/project-trial-wordmark.svg`](assets/project-trial-wordmark.svg) — pure black on transparent. This is the black-and-white mark for the personal site.
+- [`assets/project-trial-wordmark-dark.svg`](assets/project-trial-wordmark-dark.svg) — white type and a cyan target on transparent. This is the mark on the dark hub.
 
-“Project” is the thin plain word. “Trial” is the letter lock: an up-arrow T, a curved r, a fixation cross for the i, a keyboard key for the a, and a vertical reaction-time scale for the l.
+“Project” is the thin sans. “Trial” is the heavy sans, set with a clear weight contrast and a slight space between the words. The tittle on the i is a target: a solid bullseye, a thin ring, and four thin crosshair ticks.
 
 ## Live on the hub
 
