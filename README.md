@@ -13,7 +13,7 @@ Locked take B, traced as vectors in `assets/`:
 - [`assets/project-trial-wordmark.svg`](assets/project-trial-wordmark.svg) — black on transparent. This is the black-and-white sibling mark for the personal site.
 - [`assets/project-trial-wordmark-dark.svg`](assets/project-trial-wordmark-dark.svg) — white type and cyan instruments on transparent. This is the mark on the dark hub.
 
-Thin “Project”, bold “Trial”: a reticle on the i, a keyboard key for the a, and a vertical reaction-time scale for the l.
+“Project” is the thin plain word. “Trial” is the letter lock: an up-arrow T, a curved r, a fixation cross for the i, a keyboard key for the a, and a vertical reaction-time scale for the l.
 
 ## Live on the hub
 
