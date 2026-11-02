@@ -13,7 +13,7 @@ Approved black-and-white lockup, outlined in `assets/`:
 - [`assets/project-trial-wordmark.svg`](assets/project-trial-wordmark.svg) — pure black on transparent. This is the black-and-white mark for the personal site.
 - [`assets/project-trial-wordmark-dark.svg`](assets/project-trial-wordmark-dark.svg) — white type and a cyan target on transparent. This is the mark on the dark hub.
 
-“Project” is the thin sans. “Trial” is the heavy sans, set with a clear weight contrast and a slight space between the words. The tittle on the i is a target: a solid bullseye, a thin ring, and four thin crosshair ticks. This lockup follows the approved larger target — the diameter across the outer ticks is wider than the i stem — and the i stem has a slanted top.
+“Project” is the thin sans, the same lettering as Project Viz. “Trial” is the bold pixel word, set with a clear weight contrast and a slight space between the words. The tittle on the i is a square reticle: a square frame, short ticks at the middle of each side, and a small center mark.
 
 ## Live on the hub
 
