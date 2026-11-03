@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Luma Clash: Neon Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -19,6 +19,7 @@
             background-color: var(--bg-color);
             color: white;
             transition: background-color 0.5s ease;
+            touch-action: manipulation;
         }
 
         h1, .game-title {
@@ -26,13 +27,68 @@
         }
 
         .key-hint {
-            @apply flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-md;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 5rem;
+            height: 5rem;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 0.75rem;
+            border-width: 2px;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.45);
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             transition: all 0.2s;
+        }
+
+        button.key-hint {
+            appearance: none;
+            -webkit-appearance: none;
+            margin: 0;
+            padding: 0;
+            font-family: inherit;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        button.key-hint:focus {
+            outline: none;
+        }
+
+        button.key-hint:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 3px;
+        }
+
+        .pad-key {
+            display: block;
+            font-family: 'Bungee', cursive;
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .pad-caption {
+            display: block;
+            margin-top: 3px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            line-height: 1;
+            opacity: 0.85;
         }
 
         .active-key {
             transform: scale(0.9);
-            @apply border-white bg-white/40 shadow-[0_0_20px_rgba(255,255,255,0.5)];
+            border-color: white;
+            background-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
 
         .stimulus-square {
@@ -50,6 +106,81 @@
         .invisible {
             visibility: hidden;
         }
+
+        #screen-task,
+        #footer-controls,
+        #confidence-container {
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 560px), (max-height: 500px) and (max-width: 900px) {
+            #screen-welcome {
+                max-height: 100dvh;
+                margin: 0.4rem;
+                padding: 1.1rem;
+            }
+
+            #screen-welcome h1 {
+                font-size: 2.4rem;
+            }
+
+            #welcome-keys {
+                gap: 1.25rem;
+            }
+
+            #hud {
+                padding: 0.45rem 0.6rem;
+            }
+
+            #screen-task {
+                padding-top: 4.2rem;
+                padding-bottom: 8.2rem;
+            }
+
+            .stimulus-square {
+                width: 92px;
+                height: 92px;
+            }
+
+            #stimulus-row {
+                height: 8.5rem;
+            }
+
+            #stimulus-row > * + * {
+                margin-left: 0.65rem;
+            }
+
+            #center-anchor {
+                width: 2rem;
+            }
+
+            #fixation-cross {
+                font-size: 2.4rem;
+            }
+
+            #footer-controls {
+                bottom: max(0.35rem, env(safe-area-inset-bottom));
+                padding-left: 0.7rem;
+                padding-right: 0.7rem;
+                padding-bottom: calc(0.3rem + env(safe-area-inset-bottom));
+                max-width: none;
+            }
+
+            #confidence-container {
+                white-space: normal;
+                padding: 1rem 0.85rem;
+                max-width: calc(100vw - 1rem);
+            }
+
+            #confidence-row > * + * {
+                margin-left: 1.25rem;
+            }
+
+            #screen-results {
+                max-height: 100dvh;
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col items-center justify-center">
@@ -63,21 +194,21 @@
             <p class="text-white mb-4 text-center text-lg">Maintain focus on the center cross.</p>
             
             <ol class="list-decimal list-inside text-slate-300 space-y-4 mb-6">
-                <li>Two squares will appear simultaneously. <strong>Select the square that is <span class="text-white underline decoration-pink-500 decoration-4 font-bold">BRIGHTER</span>.</strong></li>
+                <li>Two squares will appear together. <strong>Choose the square that is <span class="text-white underline decoration-pink-500 decoration-4 font-bold">BRIGHTER</span>.</strong> Tap the left or right pad, or press F / J.</li>
                 <li>Immediately after, you will be asked to <strong>rate your confidence</strong> in your choice.</li>
-                <li>Press <strong class="text-cyan-400">F</strong> for High Confidence, or <strong class="text-pink-400">J</strong> for Low Confidence.</li>
+                <li>Tap <strong class="text-cyan-400">High</strong> or press F. Tap <strong class="text-pink-400">Low</strong> or press J.</li>
             </ol>
             
-            <div class="flex justify-center items-center gap-16 mt-6 pb-2">
+            <div id="welcome-keys" class="flex justify-center items-center gap-16 mt-6 pb-2">
                 <div class="flex flex-col items-center">
-                    <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">LEFT SQUARE</span>
+                    <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">TAP LEFT · F</span>
                     <div class="key-hint mb-2 text-cyan-400 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.2)]">F</div>
                 </div>
                 
                 <div class="text-4xl text-slate-600 font-bold">+</div>
 
                 <div class="flex flex-col items-center">
-                    <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">RIGHT SQUARE</span>
+                    <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">TAP RIGHT · J</span>
                     <div class="key-hint mb-2 text-pink-400 border-pink-500/50 shadow-[0_0_15px_rgba(236,72,153,0.2)]">J</div>
                 </div>
             </div>
@@ -92,7 +223,7 @@
     <div id="screen-task" class="hidden flex flex-col items-center justify-center w-full h-full relative">
         
         <!-- DASHBOARD (Aligned strictly to top-center) -->
-        <div class="absolute top-0 w-full p-6 flex justify-center items-start z-10">
+        <div id="hud" class="absolute top-0 w-full p-6 flex justify-center items-start z-10">
             <div class="text-center bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl">
                 <span class="block text-[10px] text-indigo-400 font-bold uppercase">Trial</span>
                 <span id="trial-counter" class="text-xl font-bold">1 / 40</span>
@@ -101,7 +232,7 @@
 
         <!-- Stimulus Display -->
         <div id="stimulus-container" class="flex flex-col items-center justify-center w-full">
-            <div class="flex items-center justify-center space-x-16 h-48 w-full relative">
+            <div id="stimulus-row" class="flex items-center justify-center space-x-16 h-48 w-full relative">
                 <div id="square-left" class="stimulus-square invisible"></div>
                 
                 <div id="center-anchor" class="w-16 flex justify-center relative h-full">
@@ -117,27 +248,39 @@
         <!-- Confidence UI Overlay (Directly positioned to guarantee perfect center alignment relative to the entire task screen) -->
         <div id="confidence-container" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden flex-col items-center whitespace-nowrap bg-slate-900/95 p-8 rounded-3xl border-2 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.4)] z-20">
             <span class="text-sm text-indigo-300 font-bold tracking-widest mb-6">RATE CONFIDENCE</span>
-            <div class="flex space-x-16">
+            <div id="confidence-row" class="flex space-x-16">
                 <div class="flex flex-col items-center">
                     <span id="conf-f-label" class="text-xs mb-3 tracking-widest font-bold text-green-400">HIGH</span>
-                    <div id="key-conf-f" class="key-hint text-white text-2xl border-white/50">F</div>
+                    <button type="button" id="key-conf-f" class="key-hint text-white border-white/50" data-key="f" aria-label="High confidence">
+                        <span class="pad-key">F</span>
+                        <span class="pad-caption">TAP</span>
+                    </button>
                 </div>
                 <div class="flex flex-col items-center">
                     <span id="conf-j-label" class="text-xs mb-3 tracking-widest font-bold text-slate-400">LOW</span>
-                    <div id="key-conf-j" class="key-hint text-white text-2xl border-white/50">J</div>
+                    <button type="button" id="key-conf-j" class="key-hint text-white border-white/50" data-key="j" aria-label="Low confidence">
+                        <span class="pad-key">J</span>
+                        <span class="pad-caption">TAP</span>
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Footer Control Display (Left and Right aligned to balance screen layout and map directly to hands) -->
-        <div id="footer-controls" class="absolute bottom-12 left-0 right-0 px-8 md:px-16 lg:px-24 flex justify-between w-full max-w-7xl mx-auto opacity-50 transition-opacity">
+        <div id="footer-controls" class="absolute bottom-12 left-0 right-0 px-8 md:px-16 lg:px-24 flex justify-between w-full max-w-7xl mx-auto transition-opacity">
             <div class="flex flex-col items-center">
-                <span class="text-xs text-cyan-400 mb-2 font-bold tracking-widest">LEFT SQUARE</span>
-                <div id="key-f" class="key-hint text-cyan-400 text-2xl border-cyan-500/50">F</div>
+                <span class="text-xs text-cyan-400 mb-2 font-bold tracking-widest">LEFT</span>
+                <button type="button" id="key-f" class="key-hint text-cyan-400 border-cyan-500/50" data-key="f" aria-label="Left square">
+                    <span class="pad-key">F</span>
+                    <span class="pad-caption">TAP</span>
+                </button>
             </div>
             <div class="flex flex-col items-center">
-                <span class="text-xs text-pink-400 mb-2 font-bold tracking-widest">RIGHT SQUARE</span>
-                <div id="key-j" class="key-hint text-pink-400 text-2xl border-pink-500/50">J</div>
+                <span class="text-xs text-pink-400 mb-2 font-bold tracking-widest">RIGHT</span>
+                <button type="button" id="key-j" class="key-hint text-pink-400 border-pink-500/50" data-key="j" aria-label="Right square">
+                    <span class="pad-key">J</span>
+                    <span class="pad-caption">TAP</span>
+                </button>
             </div>
         </div>
     </div>
@@ -338,7 +481,7 @@
             document.getElementById('square-right').classList.add('invisible');
             document.getElementById('fixation-cross').classList.remove('invisible');
             document.getElementById('fixation-cross').classList.remove('opacity-20');
-            document.getElementById('footer-controls').classList.remove('opacity-0');
+            setFooterActive(true);
 
             // 1. Fixation Phase
             AudioEngine.tick();
@@ -442,7 +585,7 @@
         function promptConfidence() {
             state.phase = 'confidence';
             document.getElementById('fixation-cross').classList.add('invisible');
-            document.getElementById('footer-controls').classList.add('opacity-0'); 
+            setFooterActive(false); 
             
             document.getElementById('confidence-container').classList.remove('hidden');
             
@@ -513,20 +656,52 @@
             document.body.removeChild(link);
         }
 
+        function setFooterActive(active) {
+            const footer = document.getElementById('footer-controls');
+            footer.classList.toggle('opacity-0', !active);
+            footer.classList.toggle('pointer-events-none', !active);
+            if (active) footer.removeAttribute('inert');
+            else footer.setAttribute('inert', '');
+        }
+
+        function flashPad(el) {
+            if (!el) return;
+            el.classList.add('active-key');
+            setTimeout(() => el.classList.remove('active-key'), 100);
+        }
+
+        function bindResponsePad(el) {
+            const key = el.dataset.key;
+            let lastPointerAt = 0;
+            const respond = () => {
+                flashPad(el);
+                handleInput(key);
+            };
+            el.addEventListener('pointerdown', (e) => {
+                if (e.isPrimary === false) return;
+                if (typeof e.button === 'number' && e.button !== 0) return;
+                lastPointerAt = e.timeStamp || performance.now();
+                if (e.cancelable) e.preventDefault();
+                respond();
+            });
+            el.addEventListener('click', (e) => {
+                const stamp = e.timeStamp || performance.now();
+                if (stamp - lastPointerAt < 750) {
+                    e.preventDefault();
+                    return;
+                }
+                respond();
+            });
+        }
+
+        document.querySelectorAll('button.key-hint[data-key]').forEach(bindResponsePad);
+
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (['f', 'j'].includes(key)) {
+            if (key === 'f' || key === 'j') {
                 e.preventDefault();
-                
-                // Visual feedback for key press (Context sensitive)
                 const targetId = state.phase === 'confidence' ? `key-conf-${key}` : `key-${key}`;
-                const keyEl = document.getElementById(targetId);
-                
-                if (keyEl) {
-                    keyEl.classList.add('active-key');
-                    setTimeout(() => keyEl.classList.remove('active-key'), 100);
-                }
-                
+                flashPad(document.getElementById(targetId));
                 handleInput(key);
             }
         });
