@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orbital Energy Sorter - 3D Spatial Go/No-Go Task (VIVE Focus 3)</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #05070e;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <a-scene
+    id="mainScene"
+    renderer="antialias: true; colorManagement: true; highRefreshRate: true"
+    background="color: #050814"
+    fog="type: exponential; color: #050814; density: 0.045">
+
+    <!-- ======================== ENVIRONMENT: LOW-POLY TESTING DOME ======================== -->
+    <!-- Outer Wireframe Futuristic Geodesic Dome (side: double so it renders inside the dome) -->
+    <a-sky color="#050814"></a-sky>
+    <a-entity
+      geometry="primitive: icosahedron; radius: 18; detail: 2"
+      material="color: #0e294b; wireframe: true; transparent: true; opacity: 0.35; side: double">
+    </a-entity>
+    <a-entity
+      geometry="primitive: icosahedron; radius: 18.2; detail: 1"
+      material="color: #00F5D4; wireframe: true; transparent: true; opacity: 0.12; side: double">
+    </a-entity>
+
+    <!-- Floor Grid & Reference Rings -->
+    <a-cylinder
+      position="0 -0.05 0"
+      radius="16"
+      height="0.1"
+      color="#070d1f"
+      material="roughness: 0.8; metalness: 0.2">
+    </a-cylinder>
+    <a-ring
+      position="0 0.01 0"
+      rotation="-90 0 0"
+      radius-inner="1.45"
+      radius-outer="1.5"
+      color="#00F5D4"
+      material="shader: flat; opacity: 0.35; transparent: true; side: double">
+    </a-ring>
+    <a-ring
+      position="0 0.01 0"
+      rotation="-90 0 0"
+      radius-inner="3.45"
+      radius-outer="3.5"
+      color="#00F5D4"
+      material="shader: flat; opacity: 0.25; transparent: true; side: double">
+    </a-ring>
+    <a-ring
+      position="0 0.01 0"
+      rotation="-90 0 0"
+      radius-inner="5.95"
+      radius-outer="6.0"
+      color="#FF2A85"
+      material="shader: flat; opacity: 0.2; transparent: true; side: double">
+    </a-ring>
+
+    <!-- Subtle Ambient & Directional Lighting -->
+    <a-light type="ambient" color="#88aaff" intensity="0.65"></a-light>
+    <a-light type="point" position="0 6 -2" color="#00F5D4" intensity="0.8" distance="20"></a-light>
+    <a-light type="point" position="0 3 -5" color="#FF2A85" intensity="0.4" distance="15"></a-light>
+
+    <!-- ======================== CAMERA & VIVE FOCUS 3 CONTROLLERS ======================== -->
+    <a-entity id="rig" position="0 0 0">
+      <a-camera id="mainCamera" position="0 1.6 0" look-controls="pointerLockEnabled: false">
+        <a-entity
+          id="mouseCursor"
+          cursor="rayOrigin: mouse"
+          raycaster="objects: .clickable; far: 12">
+        </a-entity>
+      </a-camera>
+
+      <!-- Right Hand VIVE Focus 3 Controller (Model-independent fallback with visible tip & laser) -->
+      <a-entity
+        id="rightHand"
+        laser-controls="hand: right; model: false"
+        raycaster="objects: .clickable; far: 12; showLine: true; lineColor: #00F5D4; lineOpacity: 0.85">
+        <a-sphere
+          radius="0.018"
+          position="0 0 -0.02"
+          material="shader: flat; color: #00F5D4">
+        </a-sphere>
+        <a-cylinder
+          radius="0.012"
+          height="0.12"
+          rotation="90 0 0"
+          position="0 0 0.04"
+          material="color: #1c2d4a; metalness: 0.6; roughness: 0.3">
+        </a-cylinder>
+      </a-entity>
+
+      <!-- Left Hand VIVE Focus 3 Controller (Model-independent fallback with visible tip & laser) -->
+      <a-entity
+        id="leftHand"
+        laser-controls="hand: left; model: false"
+        raycaster="objects: .clickable; far: 12; showLine: true; lineColor: #00F5D4; lineOpacity: 0.85">
+        <a-sphere
+          radius="0.018"
+          position="0 0 -0.02"
+          material="shader: flat; color: #00F5D4">
+        </a-sphere>
+        <a-cylinder
+          radius="0.012"
+          height="0.12"
+          rotation="90 0 0"
+          position="0 0 0.04"
+          material="color: #1c2d4a; metalness: 0.6; roughness: 0.3">
+        </a-cylinder>
+      </a-entity>
+    </a-entity>
+
+    <!-- ======================== IN-WORLD 3D UI: DASHBOARD HEADER ======================== -->
+    <a-entity id="hudCluster" position="0 2.55 -3.6" rotation="10 0 0">
+      <!-- Outer Frame -->
+      <a-plane
+        width="3.26"
+        height="0.56"
+        color="#00F5D4"
+        material="shader: flat; opacity: 0.35; transparent: true"
+        position="0 0 -0.01">
+      </a-plane>
+      <!-- Inner HUD Panel -->
+      <a-plane
+        width="3.2"
+        height="0.5"
+        color="#091326"
+        material="shader: flat; opacity: 0.92; transparent: true">
+        <a-text
+          value="ORBITAL ENERGY SORTER // SPATIAL GO / NO-GO"
+          color="#72efdd"
+          align="center"
+          position="0 0.14 0.01"
+          width="2.6">
+        </a-text>
+        <a-text
+          id="hudTrialText"
+          value="Trial: 0 / 30"
+          color="#FFFFFF"
+          align="left"
+          position="-1.45 -0.06 0.01"
+          width="3.4">
+        </a-text>
+        <a-text
+          id="hudScoreText"
+          value="Score: 0000"
+          color="#00F5D4"
+          align="center"
+          position="0 -0.06 0.01"
+          width="3.6">
+        </a-text>
+        <a-text
+          id="hudStreakText"
+          value="Streak: 0"
+          color="#FFD166"
+          align="right"
+          position="1.45 -0.06 0.01"
+          width="3.4">
+        </a-text>
+      </a-plane>
+    </a-entity>
+
+    <!-- ======================== IN-WORLD 3D UI: START PANEL ======================== -->
+    <a-entity id="startPanel" position="0 1.6 -3.1">
+      <a-plane
+        width="2.96"
+        height="1.96"
+        color="#00F5D4"
+        material="shader: flat; opacity: 0.3; transparent: true"
+        position="0 0 -0.01">
+      </a-plane>
+      <a-plane
+        width="2.9"
+        height="1.9"
+        color="#091326"
+        material="shader: flat; opacity: 0.94; transparent: true">
+
+        <a-text
+          value="ORBITAL ENERGY SORTER"
+          color="#00F5D4"
+          align="center"
+          position="0 0.72 0.01"
+          width="4.2">
+        </a-text>
+
+        <a-text
+          value="3D Spatial Go / No-Go Cognitive Assessment (30 Trials)"
+          color="#A9BCD0"
+          align="center"
+          position="0 0.54 0.01"
+          width="2.6">
+        </a-text>
+
+        <!-- Visual Legend: Cyan Go Sphere -->
+        <a-sphere
+          radius="0.11"
+          position="-0.85 0.18 0.08"
+          material="shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.65">
+        </a-sphere>
+        <a-text
+          value="CYAN SPHERE (GO - 70%)\nPULL TRIGGER Quickly (< 1200ms)\n+100 pts + Speed Bonus"
+          color="#E0FBFC"
+          align="left"
+          position="-0.6 0.18 0.01"
+          width="2.5">
+        </a-text>
+
+        <!-- Visual Legend: Magenta No-Go Octahedron -->
+        <a-octahedron
+          radius="0.12"
+          position="-0.85 -0.22 0.08"
+          material="shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.65">
+        </a-octahedron>
+        <a-text
+          value="MAGENTA OCTAHEDRON (NO-GO - 30%)\nHOLD FIRE! Do NOT Shoot (1200ms)\n+50 pts Correct Rejection | -150 False Alarm"
+          color="#FFD6E8"
+          align="left"
+          position="-0.6 -0.22 0.01"
+          width="2.5">
+        </a-text>
+
+        <!-- Start Experiment 3D Button (Text is a sibling so its SDF quad never expands button hitbox) -->
+        <a-plane
+          id="startBtn"
+          class="clickable"
+          position="0 -0.68 0.03"
+          width="1.35"
+          height="0.32"
+          color="#00F5D4"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="START EXPERIMENT"
+          color="#04101E"
+          align="center"
+          position="0 -0.68 0.04"
+          width="3.2">
+        </a-text>
+      </a-plane>
+    </a-entity>
+
+    <!-- ======================== IN-WORLD 3D UI: END RESULTS BOARD ======================== -->
+    <a-entity id="resultsPanel" position="0 -999 -3.1" visible="false">
+      <a-plane
+        width="3.16"
+        height="2.16"
+        color="#00F5D4"
+        material="shader: flat; opacity: 0.35; transparent: true"
+        position="0 0 -0.01">
+      </a-plane>
+      <a-plane
+        width="3.1"
+        height="2.1"
+        color="#091326"
+        material="shader: flat; opacity: 0.95; transparent: true">
+
+        <a-text
+          value="SESSION COMPLETE // PERFORMANCE METRICS"
+          color="#00F5D4"
+          align="center"
+          position="0 0.82 0.01"
+          width="3.6">
+        </a-text>
+
+        <a-text
+          id="resultsSummaryText"
+          value="Loading metrics..."
+          color="#FFFFFF"
+          align="center"
+          position="0 0.14 0.01"
+          line-height="58"
+          width="2.9">
+        </a-text>
+
+        <a-text
+          id="storageConfirmText"
+          value="Backup saved to headset localStorage."
+          color="#72efdd"
+          align="center"
+          position="0 -0.42 0.01"
+          width="2.4">
+        </a-text>
+
+        <!-- Download CSV Button (Sibling label avoids overlapping raycast hitboxes) -->
+        <a-plane
+          id="downloadCsvBtn"
+          position="-0.72 -0.74 0.03"
+          width="1.25"
+          height="0.32"
+          color="#FFD166"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="DOWNLOAD CSV DATA"
+          color="#050814"
+          align="center"
+          position="-0.72 -0.74 0.04"
+          width="2.7">
+        </a-text>
+
+        <!-- Play Again Button (Sibling label avoids overlapping raycast hitboxes) -->
+        <a-plane
+          id="playAgainBtn"
+          position="0.72 -0.74 0.03"
+          width="1.25"
+          height="0.32"
+          color="#00F5D4"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="PLAY AGAIN"
+          color="#050814"
+          align="center"
+          position="0.72 -0.74 0.04"
+          width="2.7">
+        </a-text>
+      </a-plane>
+    </a-entity>
+
+    <!-- ======================== CENTRAL FIXATION CROSS (+) ======================== -->
+    <a-entity id="fixationCross" position="0 1.6 -3" visible="false">
+      <a-box width="0.18" height="0.03" depth="0.01" material="shader: flat; color: #FFFFFF"></a-box>
+      <a-box width="0.03" height="0.18" depth="0.01" material="shader: flat; color: #FFFFFF"></a-box>
+    </a-entity>
+
+    <!-- ======================== DYNAMIC STIMULUS & FEEDBACK CONTAINERS ======================== -->
+    <a-entity id="stimulusContainer"></a-entity>
+    <a-entity id="feedbackContainer"></a-entity>
+
+  </a-scene>
+
+  <!-- ======================== BEHAVIORAL TASK & WEBXR LOGIC ======================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // -------------------- TASK CONFIGURATION --------------------
+      const TOTAL_TRIALS = 30;
+      const GO_TRIAL_COUNT = 21;   // 70% probability
+      const NOGO_TRIAL_COUNT = 9;  // 30% probability
+      const STIMULUS_TIMEOUT_MS = 1200;
+      const ITI_MIN_MS = 800;
+      const ITI_MAX_MS = 1400;
+
+      // -------------------- STATE VARIABLES --------------------
+      let audioCtx = null;
+      let baseY = 1.6;
+      let eyeOrigin = { x: 0, y: 1.6, z: 0 };
+      let trialSchedule = [];
+      let currentTrialIndex = 0;
+      let scoreTotal = 0;
+      let currentStreak = 0;
+      let sessionLogs = [];
+
+      // Per-trial active control
+      let activeStimulusEl = null;
+      let trialTimerId = null;
+      let itiTimerId = null;
+      let trialActive = false;
+      let triggerDebounce = false;
+      let currentTrialMeta = null;
+
+      // DOM Elements
+      const sceneEl = document.getElementById('mainScene');
+      const mainCameraEl = document.getElementById('mainCamera');
+      const hudClusterEl = document.getElementById('hudCluster');
+      const hudTrialText = document.getElementById('hudTrialText');
+      const hudScoreText = document.getElementById('hudScoreText');
+      const hudStreakText = document.getElementById('hudStreakText');
+
+      const startPanelEl = document.getElementById('startPanel');
+      const startBtnEl = document.getElementById('startBtn');
+
+      const resultsPanelEl = document.getElementById('resultsPanel');
+      const resultsSummaryText = document.getElementById('resultsSummaryText');
+      const storageConfirmText = document.getElementById('storageConfirmText');
+      const downloadCsvBtnEl = document.getElementById('downloadCsvBtn');
+      const playAgainBtnEl = document.getElementById('playAgainBtn');
+
+      const fixationCrossEl = document.getElementById('fixationCross');
+      const stimulusContainerEl = document.getElementById('stimulusContainer');
+      const feedbackContainerEl = document.getElementById('feedbackContainer');
+
+      // -------------------- RAYCASTER REFRESH HELPER --------------------
+      function refreshAllRaycasters() {
+        const raycasterEls = document.querySelectorAll('[raycaster]');
+        raycasterEls.forEach(el => {
+          if (el.components && el.components.raycaster) {
+            el.components.raycaster.refreshObjects();
+          }
+        });
+      }
+
+      // -------------------- PROCEDURAL WEB AUDIO SYNTHESIS --------------------
+      function initAndResumeAudio() {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+      }
+
+      function playSound(type) {
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+        const now = audioCtx.currentTime;
+
+        if (type === 'hit') {
+          // Rising two-tone sine chime (523Hz -> 784Hz)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(783.99, now + 0.075);
+
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.23);
+        } else if (type === 'cr') {
+          // Soft tick (440Hz, 40ms)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.045);
+        } else if (type === 'error') {
+          // Low sawtooth buzz (150Hz, 250ms)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, now);
+
+          gain.gain.setValueAtTime(0.24, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.26);
+        }
+      }
+
+      // -------------------- MATH & HELPER FUNCTIONS --------------------
+      function randomRange(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function formatScore(score) {
+        const sign = score < 0 ? '-' : '';
+        const padded = String(Math.abs(score)).padStart(4, '0');
+        return `${sign}${padded}`;
+      }
+
+      function generateTrialSchedule() {
+        const list = [];
+        for (let i = 0; i < GO_TRIAL_COUNT; i++) list.push('GO');
+        for (let i = 0; i < NOGO_TRIAL_COUNT; i++) list.push('NOGO');
+
+        // Fisher-Yates shuffle
+        for (let i = list.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = list[i];
+          list[i] = list[j];
+          list[j] = temp;
+        }
+        return list;
+      }
+
+      function detectBaseHeadHeight() {
+        let detectedY = 1.6;
+        if (mainCameraEl && mainCameraEl.object3D) {
+          mainCameraEl.object3D.updateMatrixWorld(true);
+          const worldPos = new THREE.Vector3();
+          mainCameraEl.object3D.getWorldPosition(worldPos);
+          if (worldPos.y > 0.4 && worldPos.y < 2.6) {
+            detectedY = worldPos.y;
+          }
+          eyeOrigin = {
+            x: Number(worldPos.x.toFixed(3)),
+            y: Number(detectedY.toFixed(3)),
+            z: Number(worldPos.z.toFixed(3))
+          };
+        }
+        baseY = Number(detectedY.toFixed(3));
+        // Calibrate HUD and fixation cross around participant's head height
+        fixationCrossEl.setAttribute('position', `0 ${baseY} -3`);
+        hudClusterEl.setAttribute('position', `0 ${(baseY + 0.95).toFixed(2)} -3.6`);
+      }
+
+      function computeEccentricityDeg(x, y, z) {
+        // Vector from participant cyclopean eye to stimulus (x, y, z)
+        // Reference fixation vector is from eyeOrigin to fixationCross (0, baseY, -3)
+        const vx = x - eyeOrigin.x;
+        const vy = y - baseY;
+        const vz = z - eyeOrigin.z;
+
+        const refX = 0 - eyeOrigin.x;
+        const refY = 0;
+        const refZ = -3 - eyeOrigin.z;
+
+        const vMag = Math.sqrt(vx * vx + vy * vy + vz * vz);
+        const refMag = Math.sqrt(refX * refX + refY * refY + refZ * refZ);
+        if (vMag === 0 || refMag === 0) return 0;
+
+        const dot = vx * refX + vy * refY + vz * refZ;
+        const cosTheta = Math.min(1, Math.max(-1, dot / (vMag * refMag)));
+        const deg = Math.acos(cosTheta) * (180 / Math.PI);
+        return Number(deg.toFixed(2));
+      }
+
+      function updateDashboardHUD() {
+        const displayTrial = Math.min(currentTrialIndex, TOTAL_TRIALS);
+        hudTrialText.setAttribute('value', `Trial: ${displayTrial} / ${TOTAL_TRIALS}`);
+        hudScoreText.setAttribute('value', `Score: ${formatScore(scoreTotal)}`);
+        hudStreakText.setAttribute('value', `Streak: ${currentStreak}`);
+      }
+
+      function spawnFloatingFeedback(text, color, positionObj) {
+        const entity = document.createElement('a-entity');
+        entity.setAttribute('position', `${positionObj.x} ${positionObj.y + 0.35} ${positionObj.z}`);
+
+        const textEl = document.createElement('a-text');
+        textEl.setAttribute('value', text);
+        textEl.setAttribute('color', color);
+        textEl.setAttribute('align', 'center');
+        textEl.setAttribute('width', '4.2');
+        entity.appendChild(textEl);
+
+        entity.setAttribute('animation__rise', {
+          property: 'position',
+          to: `${positionObj.x} ${positionObj.y + 0.85} ${positionObj.z}`,
+          dur: 650,
+          easing: 'easeOutQuad'
+        });
+
+        feedbackContainerEl.appendChild(entity);
+        setTimeout(() => {
+          if (entity.parentNode) {
+            entity.parentNode.removeChild(entity);
+          }
+        }, 680);
+      }
+
+      // -------------------- EXPERIMENT FLOW --------------------
+      function startExperiment() {
+        initAndResumeAudio();
+        detectBaseHeadHeight();
+
+        // Hide Start and Results panels & remove clickable class so stray rays never hit them
+        startBtnEl.classList.remove('clickable');
+        startPanelEl.setAttribute('visible', 'false');
+        startPanelEl.setAttribute('position', '0 -999 -3.1');
+
+        downloadCsvBtnEl.classList.remove('clickable');
+        playAgainBtnEl.classList.remove('clickable');
+        resultsPanelEl.setAttribute('visible', 'false');
+        resultsPanelEl.setAttribute('position', '0 -999 -3.1');
+
+        refreshAllRaycasters();
+
+        // Reset session metrics
+        trialSchedule = generateTrialSchedule();
+        currentTrialIndex = 0;
+        scoreTotal = 0;
+        currentStreak = 0;
+        sessionLogs = [];
+        updateDashboardHUD();
+
+        runNextTrial();
+      }
+
+      function runNextTrial() {
+        clearTimeout(trialTimerId);
+        clearTimeout(itiTimerId);
+        clearActiveStimulus();
+
+        if (currentTrialIndex >= TOTAL_TRIALS) {
+          finishExperiment();
+          return;
+        }
+
+        const trialNum = currentTrialIndex + 1;
+        const trialType = trialSchedule[currentTrialIndex];
+        const itiMs = Math.round(randomRange(ITI_MIN_MS, ITI_MAX_MS));
+
+        hudTrialText.setAttribute('value', `Trial: ${trialNum} / ${TOTAL_TRIALS}`);
+
+        // Show Central Fixation Cross during ITI
+        fixationCrossEl.setAttribute('position', `0 ${baseY} -3`);
+        fixationCrossEl.setAttribute('visible', 'true');
+
+        itiTimerId = setTimeout(() => {
+          fixationCrossEl.setAttribute('visible', 'false');
+          spawnStimulus(trialNum, trialType, itiMs);
+        }, itiMs);
+      }
+
+      function spawnStimulus(trialNum, trialType, itiMs) {
+        triggerDebounce = false;
+        trialActive = true;
+
+        const x = Number(randomRange(-2.5, 2.5).toFixed(3));
+        const y = Number(randomRange(baseY - 0.5, baseY + 0.6).toFixed(3));
+        const z = Number(randomRange(-4.2, -2.5).toFixed(3));
+        const eccentricityDeg = computeEccentricityDeg(x, y, z);
+
+        const stimEl = document.createElement('a-entity');
+        stimEl.setAttribute('position', `${x} ${y} ${z}`);
+
+        if (trialType === 'GO') {
+          // GO Trial: Glowing CYAN sphere (#00F5D4, radius 0.35m)
+          stimEl.setAttribute('geometry', 'primitive: sphere; radius: 0.35; segmentsWidth: 24; segmentsHeight: 18');
+          stimEl.setAttribute('material', 'shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.3');
+
+          // Subtle inner energy ring
+          const ringEl = document.createElement('a-ring');
+          ringEl.setAttribute('radius-inner', '0.38');
+          ringEl.setAttribute('radius-outer', '0.42');
+          ringEl.setAttribute('material', 'shader: flat; color: #00F5D4; side: double; opacity: 0.65; transparent: true');
+          stimEl.appendChild(ringEl);
+        } else {
+          // NO-GO Lure Trial: Glowing MAGENTA octahedron (#FF2A85, radius 0.35m)
+          stimEl.setAttribute('geometry', 'primitive: octahedron; radius: 0.35');
+          stimEl.setAttribute('material', 'shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.4');
+          stimEl.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur: 2400; loop: true; easing: linear');
+        }
+
+        stimEl.classList.add('clickable');
+
+        // Attach both mousedown and click for VIVE Focus 3 trigger & desktop mouse reliability
+        stimEl.addEventListener('mousedown', onStimulusTriggerDown);
+        stimEl.addEventListener('click', onStimulusTriggerDown);
+
+        stimulusContainerEl.appendChild(stimEl);
+        activeStimulusEl = stimEl;
+        refreshAllRaycasters();
+
+        const spawnTimestamp = performance.now();
+
+        currentTrialMeta = {
+          trial_num: trialNum,
+          trial_type: trialType,
+          iti_ms: itiMs,
+          x_pos: x,
+          y_pos: y,
+          z_pos: z,
+          eccentricity_deg: eccentricityDeg,
+          spawnTime: spawnTimestamp
+        };
+
+        // 1200ms response window timeout
+        trialTimerId = setTimeout(() => {
+          if (!trialActive) return;
+          handleTrialTimeout();
+        }, STIMULUS_TIMEOUT_MS);
+      }
+
+      function onStimulusTriggerDown() {
+        if (!trialActive || triggerDebounce) return;
+        triggerDebounce = true;
+        trialActive = false;
+        clearTimeout(trialTimerId);
+
+        const pressTimestamp = performance.now();
+        const rtMs = Math.max(1, Math.round(pressTimestamp - currentTrialMeta.spawnTime));
+        const pos = {
+          x: currentTrialMeta.x_pos,
+          y: currentTrialMeta.y_pos,
+          z: currentTrialMeta.z_pos
+        };
+
+        clearActiveStimulus();
+
+        if (currentTrialMeta.trial_type === 'GO') {
+          // Hit (Shot GO on time)
+          const speedBonus = Math.round((STIMULUS_TIMEOUT_MS - rtMs) / 10);
+          const pointsEarned = 100 + Math.max(0, speedBonus);
+          scoreTotal += pointsEarned;
+          currentStreak += 1;
+
+          playSound('hit');
+          spawnFloatingFeedback(`+${pointsEarned} (${rtMs}ms)`, '#00F5D4', pos);
+
+          recordTrialOutcome({
+            response_made: 1,
+            outcome: 'HIT',
+            rt_ms: rtMs
+          });
+        } else {
+          // Commission Error / False Alarm (Shot NO-GO)
+          scoreTotal -= 150;
+          currentStreak = 0;
+
+          playSound('error');
+          spawnFloatingFeedback('FALSE ALARM! -150', '#FF2A85', pos);
+
+          recordTrialOutcome({
+            response_made: 1,
+            outcome: 'FALSE_ALARM',
+            rt_ms: rtMs
+          });
+        }
+
+        currentTrialIndex += 1;
+        updateDashboardHUD();
+        runNextTrial();
+      }
+
+      function handleTrialTimeout() {
+        if (!trialActive) return;
+        trialActive = false;
+        triggerDebounce = true;
+
+        const pos = {
+          x: currentTrialMeta.x_pos,
+          y: currentTrialMeta.y_pos,
+          z: currentTrialMeta.z_pos
+        };
+
+        clearActiveStimulus();
+
+        if (currentTrialMeta.trial_type === 'GO') {
+          // Miss (Failed to shoot GO within 1200ms)
+          currentStreak = 0;
+
+          playSound('error');
+          spawnFloatingFeedback('TOO SLOW!', '#FFD166', pos);
+
+          recordTrialOutcome({
+            response_made: 0,
+            outcome: 'MISS',
+            rt_ms: ''
+          });
+        } else {
+          // Correct Rejection (Ignored NO-GO for 1200ms)
+          scoreTotal += 50;
+          // Keep streak alive (unchanged)
+
+          playSound('cr');
+          spawnFloatingFeedback('HOLD OK +50', '#72EFDD', pos);
+
+          recordTrialOutcome({
+            response_made: 0,
+            outcome: 'CORRECT_REJECTION',
+            rt_ms: ''
+          });
+        }
+
+        currentTrialIndex += 1;
+        updateDashboardHUD();
+        runNextTrial();
+      }
+
+      function clearActiveStimulus() {
+        if (activeStimulusEl) {
+          activeStimulusEl.removeEventListener('mousedown', onStimulusTriggerDown);
+          activeStimulusEl.removeEventListener('click', onStimulusTriggerDown);
+          activeStimulusEl.classList.remove('clickable');
+          if (activeStimulusEl.parentNode) {
+            activeStimulusEl.parentNode.removeChild(activeStimulusEl);
+          }
+          activeStimulusEl = null;
+          refreshAllRaycasters();
+        }
+      }
+
+      function recordTrialOutcome({ response_made, outcome, rt_ms }) {
+        sessionLogs.push({
+          trial_num: currentTrialMeta.trial_num,
+          trial_type: currentTrialMeta.trial_type,
+          iti_ms: currentTrialMeta.iti_ms,
+          x_pos: currentTrialMeta.x_pos,
+          y_pos: currentTrialMeta.y_pos,
+          z_pos: currentTrialMeta.z_pos,
+          eccentricity_deg: currentTrialMeta.eccentricity_deg,
+          response_made: response_made,
+          outcome: outcome,
+          rt_ms: rt_ms,
+          score_total: scoreTotal,
+          streak: currentStreak
+        });
+      }
+
+      // -------------------- END OF SESSION & DATA BACKUP --------------------
+      function finishExperiment() {
+        fixationCrossEl.setAttribute('visible', 'false');
+        clearActiveStimulus();
+
+        // Compute behavioral summary metrics
+        const goTrials = sessionLogs.filter(t => t.trial_type === 'GO');
+        const nogoTrials = sessionLogs.filter(t => t.trial_type === 'NOGO');
+
+        const goHits = goTrials.filter(t => t.outcome === 'HIT');
+        const nogoFalseAlarms = nogoTrials.filter(t => t.outcome === 'FALSE_ALARM');
+
+        const hitRatePct = goTrials.length > 0
+          ? ((goHits.length / goTrials.length) * 100).toFixed(1)
+          : '0.0';
+
+        const faRatePct = nogoTrials.length > 0
+          ? ((nogoFalseAlarms.length / nogoTrials.length) * 100).toFixed(1)
+          : '0.0';
+
+        const hitRTs = goHits.map(t => Number(t.rt_ms));
+        let meanRtStr = 'N/A';
+        let sdRtStr = 'N/A';
+
+        if (hitRTs.length > 0) {
+          const mean = hitRTs.reduce((acc, v) => acc + v, 0) / hitRTs.length;
+          meanRtStr = `${mean.toFixed(1)} ms`;
+
+          if (hitRTs.length > 1) {
+            const variance = hitRTs.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / (hitRTs.length - 1);
+            sdRtStr = `${Math.sqrt(variance).toFixed(1)} ms`;
+          } else {
+            sdRtStr = '0.0 ms';
+          }
+        }
+
+        // Save backup JSON to localStorage
+        const timestampIso = new Date().toISOString().replace(/[:.]/g, '-');
+        const storageKey = `orbital_gonogo_session_${timestampIso}`;
+        try {
+          const payload = {
+            task: 'Orbital Energy Sorter - 3D Spatial Go/No-Go',
+            timestamp: new Date().toISOString(),
+            baseY_m: baseY,
+            final_score: scoreTotal,
+            go_hit_rate_pct: Number(hitRatePct),
+            nogo_fa_rate_pct: Number(faRatePct),
+            trials: sessionLogs
+          };
+          localStorage.setItem(storageKey, JSON.stringify(payload));
+          storageConfirmText.setAttribute('value', `Saved to localStorage [${storageKey}]`);
+        } catch (err) {
+          storageConfirmText.setAttribute('value', 'localStorage unavailable in private mode');
+        }
+
+        const summaryLines = [
+          `Final Score: ${scoreTotal} pts`,
+          `Go Hit Rate: ${hitRatePct}% (${goHits.length}/${goTrials.length})`,
+          `No-Go False Alarm Rate: ${faRatePct}% (${nogoFalseAlarms.length}/${nogoTrials.length})`,
+          `Mean Go Reaction Time: ${meanRtStr} (SD: ${sdRtStr})`
+        ].join('\n');
+
+        resultsSummaryText.setAttribute('value', summaryLines);
+
+        // Position and show Results Board at participant eye level
+        resultsPanelEl.setAttribute('position', `0 ${baseY} -3.1`);
+        resultsPanelEl.setAttribute('visible', 'true');
+        downloadCsvBtnEl.classList.add('clickable');
+        playAgainBtnEl.classList.add('clickable');
+        refreshAllRaycasters();
+      }
+
+      function downloadSessionCsv() {
+        if (!sessionLogs || sessionLogs.length === 0) return;
+
+        // If inside an immersive WebXR session on VIVE Focus 3, exit VR first so the browser can process the file download
+        if (sceneEl && sceneEl.is('vr-mode')) {
+          sceneEl.exitVR();
+        }
+
+        const headers = [
+          'trial_num',
+          'trial_type',
+          'iti_ms',
+          'x_pos',
+          'y_pos',
+          'z_pos',
+          'eccentricity_deg',
+          'response_made',
+          'outcome',
+          'rt_ms',
+          'score_total',
+          'streak'
+        ];
+
+        const csvRows = [headers.join(',')];
+        for (const row of sessionLogs) {
+          const values = headers.map(col => row[col] !== undefined && row[col] !== null ? row[col] : '');
+          csvRows.push(values.join(','));
+        }
+
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `orbital_gonogo_${stamp}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      // -------------------- UI BUTTON LISTENERS (MOUSEDOWN + CLICK + DEBOUNCE) --------------------
+      let uiButtonLock = false;
+      function withUiDebounce(callback) {
+        if (uiButtonLock) return;
+        uiButtonLock = true;
+        setTimeout(() => { uiButtonLock = false; }, 350);
+        callback();
+      }
+
+      function bindUiButton(btnEl, handler) {
+        const triggerHandler = () => {
+          if (!btnEl.classList.contains('clickable')) return;
+          withUiDebounce(handler);
+        };
+        btnEl.addEventListener('mousedown', triggerHandler);
+        btnEl.addEventListener('click', triggerHandler);
+      }
+
+      bindUiButton(startBtnEl, () => {
+        startExperiment();
+      });
+
+      bindUiButton(downloadCsvBtnEl, () => {
+        initAndResumeAudio();
+        playSound('cr');
+        downloadSessionCsv();
+      });
+
+      bindUiButton(playAgainBtnEl, () => {
+        startExperiment();
+      });
+
+    })();
+  </script>
+</body>
+</html>
