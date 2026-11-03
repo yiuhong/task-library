@@ -29,6 +29,8 @@ Demos that want the dark Trial look link [`assets/trial-theme.css`](assets/trial
 
 [`assets/trial-orientation.js`](assets/trial-orientation.js) is a separate opt-in. It records `screen.orientation` (type and angle when the browser provides them) at the start of a run, on each turn, and at the end. It does not lock orientation. The hub games use it. `vr.html` still has its own CSV and `localStorage` backup without this log.
 
+[`assets/trial-store.js`](assets/trial-store.js) is the hub games’ local log. Stroop, Oddball, and Brightness save each run in `localStorage` (`project-trial:stroop`, `project-trial:oddball`, `project-trial:brightness`) and can download a CSV of the trial rows plus orientation start, turn, and end rows. Clear saved removes that key. Nothing is uploaded.
+
 ## Not on the hub yet
 
 - [`noematachograph.html`](noematachograph.html) — an illustration of Franciscus Donders’ mental chronometry apparatus. It is not linked from the hub. The on-screen “reaction time” is a fixed trace, not a response you make.

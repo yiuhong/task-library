@@ -83,9 +83,10 @@
 
         <section>
             <h2>Data</h2>
-            <p>The run lives in memory on this page. Refreshing, leaving, or closing the tab drops it. There is no CSV download and nothing is written to <code>localStorage</code>. Nothing is uploaded.</p>
-            <p>Portrait and landscape both run. The page never locks the device direction. Each trial stores the orientation at the response (<code>orientationType</code>, <code>orientationAngle</code> when the browser reports <code>screen.orientation</code>, and an ISO timestamp). Turns during the run are timestamped on <code>orientationEvents</code> (<code>start</code>, <code>change</code>, <code>end</code>). A short note appears if you rotate, and the task keeps going. The results screen reports the starting orientation and how many turns were logged. Play again replaces that session log.</p>
-            <p>Play again returns to the welcome screen. The next run replaces the in-memory results, and the max combo resets.</p>
+            <p>Each run is saved in this browser under the <code>localStorage</code> key <code>project-trial:stroop</code>. Refreshing, leaving, or closing the tab keeps it. Play again appends another session and does not resume an unfinished one. Nothing is uploaded. The browser keeps the newest 100 sessions for this task.</p>
+            <p>Download CSV writes every saved session as a file on the device. Columns are trialNum, type, responseKey (<code>r</code>, <code>g</code>, <code>b</code>, <code>y</code>, or <code>timeout</code>), rt, isCorrect, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, record, sessionId, startedAt, endedAt, and complete. Trial rows use <code>record</code> = <code>trial</code>. The file name is <code>stroop_dash_data_</code> plus a timestamp.</p>
+            <p>Portrait and landscape both run. The page never locks the device direction. Each trial row stores the orientation at the response. Extra CSV rows with <code>record</code> = <code>orientation</code> are the session turns: <code>start</code>, each <code>change</code>, and <code>end</code>, with ISO time (<code>orientationAt</code>) and <code>orientationTMs</code> (milliseconds from <code>performance.now()</code>). A short note appears if you rotate, and the task keeps going. The results screen reports the starting orientation and how many turns were logged.</p>
+            <p>Clear saved removes <code>project-trial:stroop</code> from this browser. It asks for a second click. The on-screen summary stays until you leave the results screen. Download before you clear if you still want the file. Play again returns to the welcome screen, and the max combo resets.</p>
         </section>
 
         <div class="trial-actions">

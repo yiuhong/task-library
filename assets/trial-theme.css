@@ -117,6 +117,7 @@ button.trial-pad:focus {
 button.trial-pad:focus-visible,
 .trial-more:focus-visible,
 .trial-btn:focus-visible,
+.trial-data-btn:focus-visible,
 .trial-doc a:focus-visible {
     outline: 2px solid var(--trial-text);
     outline-offset: 3px;
@@ -213,6 +214,89 @@ button.trial-pad:focus-visible,
 
 .trial-orient-nudge.is-on {
     opacity: 1;
+}
+
+.trial-data {
+    width: min(100%, 36rem);
+    margin: 0.9rem auto 0.35rem;
+    text-align: center;
+}
+
+.trial-data-note {
+    margin: 0 0 0.75rem;
+    color: var(--trial-muted);
+    font-family: var(--trial-font);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    line-height: 1.45;
+}
+
+.trial-data-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.7rem;
+}
+
+button.trial-data-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 0.55rem 1rem;
+    border-radius: 0.85rem;
+    border: 2px solid transparent;
+    background: var(--trial-accent);
+    color: var(--trial-bg);
+    font-family: var(--trial-display);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+button.trial-data-btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+button.trial-data-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+button.trial-data-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+button.trial-data-clear {
+    background: transparent;
+    color: var(--trial-text);
+    border-color: var(--trial-line);
+    font-family: var(--trial-font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+button.trial-data-clear.is-armed {
+    border-color: var(--trial-accent);
+    color: var(--trial-accent);
+}
+
+@media (max-width: 560px), (max-height: 500px) and (max-width: 900px) {
+    .trial-data-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    button.trial-data-btn {
+        width: 100%;
+    }
 }
 
 .trial-more {
