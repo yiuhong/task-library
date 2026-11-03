@@ -1,0 +1,432 @@
+/*
+  Project Trial theme tokens.
+
+  Opt in with:
+    <link rel="stylesheet" href="assets/trial-theme.css">
+    <body class="trial-app">
+
+  Playable demos can add class "trial-play". Helpers (.trial-pad, .trial-hud,
+  .trial-bar, .trial-doc, …) are optional. Override any variable on the page.
+  Stimulus chrome, extra controls, and one-off layouts stay in the demo.
+  The compact helpers use the same narrow-screen breakpoint as the hub games:
+  max-width 560px, or a short landscape window (max-height 500px and max-width 900px).
+*/
+
+@import url("https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@400;700&display=swap");
+
+:root {
+    --trial-bg: #0f172a;
+    --trial-surface: rgba(15, 23, 42, 0.72);
+    --trial-text: #ffffff;
+    --trial-muted: #94a3b8;
+    --trial-faint: #64748b;
+    --trial-line: rgba(255, 255, 255, 0.12);
+    --trial-pad-border: rgba(255, 255, 255, 0.45);
+    --trial-pad-bg: rgba(255, 255, 255, 0.1);
+    --trial-pad-bg-active: rgba(255, 255, 255, 0.3);
+    --trial-pad-active-shadow: none;
+    --trial-font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --trial-display: "Bungee", "Arial Black", Impact, sans-serif;
+    --trial-accent: #818cf8;
+    --trial-pad-size: 5rem;
+    --trial-pad-size-compact: 5rem;
+    --trial-pad-min: 44px;
+    --trial-pad-radius: 0.75rem;
+    --trial-pad-key-size: 1.6rem;
+    --trial-pad-caption-size: 10px;
+    --trial-pad-caption-gap: 3px;
+    --trial-pad-caption-opacity: 0.85;
+    --trial-hud-padding: 1.5rem;
+    --trial-hud-padding-compact: 0.4rem 0.5rem;
+    --trial-readout-size: 2.25rem;
+    --trial-readout-line: 2.5rem;
+    --trial-readout-size-compact: 1.35rem;
+    --trial-readout-line-compact: 1.1;
+    --trial-stat-size: 1.25rem;
+    --trial-stat-line: 1.75rem;
+    --trial-stat-size-compact: 0.8rem;
+    --trial-stat-line-compact: 1.15;
+    --trial-stats-gap: 2rem;
+    --trial-stats-padding: 1rem;
+    --trial-stats-gap-compact: 0.35rem;
+    --trial-stats-padding-compact: 0.35rem 0.4rem;
+    --trial-stat-split: 2rem;
+    --trial-stat-split-compact: 0.4rem;
+    --trial-task-pad-top-compact: 3.6rem;
+    --trial-task-pad-bottom-compact: 6.2rem;
+    --trial-bar-bottom: 3rem;
+    --trial-bar-bottom-compact: max(0.35rem, env(safe-area-inset-bottom));
+}
+
+.trial-app {
+    font-family: var(--trial-font);
+    background-color: var(--trial-bg);
+    color: var(--trial-text);
+    margin: 0;
+}
+
+.trial-play {
+    user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+    transition: background-color 0.5s ease;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.game-title,
+.trial-display {
+    font-family: var(--trial-display);
+}
+
+.trial-pad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--trial-pad-size);
+    height: var(--trial-pad-size);
+    min-width: var(--trial-pad-min);
+    min-height: var(--trial-pad-min);
+    border-radius: var(--trial-pad-radius);
+    border: 2px solid var(--trial-pad-border);
+    background-color: var(--trial-pad-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+button.trial-pad {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+button.trial-pad:focus {
+    outline: none;
+}
+
+button.trial-pad:focus-visible,
+.trial-more:focus-visible,
+.trial-btn:focus-visible,
+.trial-doc a:focus-visible {
+    outline: 2px solid var(--trial-text);
+    outline-offset: 3px;
+}
+
+.trial-pad-key {
+    display: block;
+    font-family: var(--trial-display);
+    font-size: var(--trial-pad-key-size);
+    line-height: 1;
+}
+
+.trial-pad-caption {
+    display: block;
+    margin-top: var(--trial-pad-caption-gap);
+    font-family: var(--trial-font);
+    font-size: var(--trial-pad-caption-size);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    opacity: var(--trial-pad-caption-opacity);
+}
+
+.trial-pad.active-key {
+    transform: scale(0.9);
+    border-color: var(--trial-text);
+    background-color: var(--trial-pad-bg-active);
+    box-shadow: var(--trial-pad-active-shadow);
+}
+
+.trial-hud {
+    padding: var(--trial-hud-padding);
+    align-items: flex-start;
+}
+
+.trial-readout {
+    font-family: var(--trial-display);
+    font-size: var(--trial-readout-size);
+    line-height: var(--trial-readout-line);
+}
+
+.trial-stat {
+    font-size: var(--trial-stat-size);
+    line-height: var(--trial-stat-line);
+}
+
+.trial-stats {
+    gap: var(--trial-stats-gap);
+    padding: var(--trial-stats-padding);
+}
+
+.trial-stat-split {
+    border-left: 1px solid var(--trial-line);
+    padding-left: var(--trial-stat-split);
+}
+
+.trial-task,
+.trial-bar {
+    touch-action: manipulation;
+}
+
+.trial-bar {
+    position: absolute;
+    bottom: var(--trial-bar-bottom);
+}
+
+.trial-results {
+    max-height: 100dvh;
+    overflow-y: auto;
+}
+
+.trial-orient-nudge {
+    position: fixed;
+    z-index: 40;
+    top: max(0.4rem, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100% - 1.5rem);
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--trial-line);
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.92);
+    color: var(--trial-text);
+    font-family: var(--trial-font);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    line-height: 1.35;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.trial-orient-nudge.is-on {
+    opacity: 1;
+}
+
+.trial-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 0.35rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--trial-accent);
+}
+
+.trial-more:hover {
+    color: var(--trial-text);
+}
+
+@media (max-width: 560px), (max-height: 500px) and (max-width: 900px) {
+    .trial-hud {
+        padding: var(--trial-hud-padding-compact);
+        align-items: center;
+    }
+
+    .trial-readout {
+        font-size: var(--trial-readout-size-compact);
+        line-height: var(--trial-readout-line-compact);
+    }
+
+    .trial-stat {
+        font-size: var(--trial-stat-size-compact);
+        line-height: var(--trial-stat-line-compact);
+    }
+
+    .trial-stats {
+        gap: var(--trial-stats-gap-compact);
+        padding: var(--trial-stats-padding-compact);
+    }
+
+    .trial-stat-split {
+        padding-left: var(--trial-stat-split-compact);
+    }
+
+    .trial-task {
+        padding-top: var(--trial-task-pad-top-compact);
+        padding-bottom: var(--trial-task-pad-bottom-compact);
+    }
+
+    .trial-bar {
+        bottom: var(--trial-bar-bottom-compact);
+    }
+
+    .trial-bar .trial-pad {
+        width: var(--trial-pad-size-compact);
+        height: var(--trial-pad-size-compact);
+    }
+}
+
+/* Optional document layout for hub and task info pages. */
+.trial-doc {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 1.25rem 1.1rem 3rem;
+    line-height: 1.55;
+}
+
+.trial-doc-mark {
+    width: min(100%, 15rem);
+    height: auto;
+    display: block;
+}
+
+.trial-kicker {
+    margin: 0.85rem 0 0;
+    color: var(--trial-faint);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.trial-doc h1 {
+    margin: 0.35rem 0 0.4rem;
+    font-family: var(--trial-display);
+    font-size: clamp(2rem, 8vw, 3.4rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    color: var(--trial-accent);
+}
+
+.trial-doc .lede {
+    margin: 0 0 1rem;
+    color: var(--trial-muted);
+    font-size: 0.95rem;
+}
+
+.trial-doc section {
+    margin: 0.85rem 0;
+    padding: 0.95rem 1rem 0.35rem;
+    background: var(--trial-surface);
+    border: 1px solid var(--trial-line);
+    border-radius: 1rem;
+}
+
+.trial-doc h2 {
+    margin: 0 0 0.35rem;
+    color: var(--trial-accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.trial-doc p {
+    margin: 0 0 0.75rem;
+    font-size: 0.92rem;
+}
+
+.trial-defs {
+    margin: 0;
+}
+
+.trial-defs > div {
+    display: grid;
+    grid-template-columns: minmax(7.2rem, 34%) 1fr;
+    gap: 0.25rem 0.75rem;
+    padding: 0.55rem 0;
+    border-top: 1px solid var(--trial-line);
+}
+
+.trial-defs dt {
+    color: var(--trial-faint);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.trial-defs dd {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.trial-doc a {
+    color: var(--trial-accent);
+}
+
+.trial-doc code {
+    font-family: var(--trial-font);
+    font-size: 0.86em;
+    color: var(--trial-text);
+}
+
+.trial-doc a.trial-btn {
+    color: #0f172a;
+}
+
+.trial-doc a.trial-btn-ghost {
+    color: var(--trial-text);
+}
+
+.trial-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.1rem;
+}
+
+.trial-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.55rem 1rem;
+    border-radius: 0.85rem;
+    background: var(--trial-accent);
+    color: #0f172a;
+    font-family: var(--trial-display);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+}
+
+.trial-btn:hover {
+    filter: brightness(1.08);
+}
+
+.trial-btn-ghost {
+    background: transparent;
+    color: var(--trial-text);
+    border: 1px solid var(--trial-line);
+    font-family: var(--trial-font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.trial-doc ul {
+    margin: 0 0 0.85rem;
+    padding-left: 1.1rem;
+    font-size: 0.92rem;
+}
+
+.trial-doc li + li {
+    margin-top: 0.35rem;
+}
+
+@media (max-width: 420px) {
+    .trial-defs > div {
+        grid-template-columns: 1fr;
+        gap: 0.12rem;
+    }
+}

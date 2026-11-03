@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brightness Detection — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #818cf8">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · Brightness Detection</p>
+            <h1>Brightness Detection</h1>
+            <p class="lede">The hub card is Brightness Detection. The demo itself is titled Luma Clash. Choose the brighter square, then rate confidence as high or low.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>Two gray squares appear together. The task is which one is brighter, then how sure that choice was. Four conditions cross a small or large luminance gap with a darker or brighter pair.</p>
+            <p>The results cards count correct and wrong responses, and the share of each that was rated high confidence. They do not compute d′ or a metacognitive sensitivity index. This is a teaching demo, not a clinical or normed test.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Trials</dt>
+                    <dd>40. 10 in each condition, then a Fisher–Yates shuffle. No practice block. Which side is brighter is random on every trial.</dd>
+                </div>
+                <div>
+                    <dt>LL</dt>
+                    <dd>Low difference, low absolute level. Gray levels 55 and 75 (gap of 20).</dd>
+                </div>
+                <div>
+                    <dt>LH</dt>
+                    <dd>Low difference, high absolute level. Gray levels 200 and 220 (gap of 20).</dd>
+                </div>
+                <div>
+                    <dt>HL</dt>
+                    <dd>High difference, low absolute level. Gray levels 40 and 120 (gap of 80).</dd>
+                </div>
+                <div>
+                    <dt>HH</dt>
+                    <dd>High difference, high absolute level. Gray levels 160 and 240 (gap of 80).</dd>
+                </div>
+                <div>
+                    <dt>Squares</dt>
+                    <dd>Each square is <code>rgb(level, level, level)</code>. Fixation is a plus sign for 400 ms, then both squares.</dd>
+                </div>
+                <div>
+                    <dt>Choice window</dt>
+                    <dd>3500 ms. A timeout skips confidence, marks the trial missed, and leaves it out of the accuracy and confidence counts.</dd>
+                </div>
+                <div>
+                    <dt>Choice map</dt>
+                    <dd>Left square: F or the left pad. Right square: J or the right pad.</dd>
+                </div>
+                <div>
+                    <dt>Confidence</dt>
+                    <dd>Fixed map. F or the High pad = high. J or the Low pad = low. Input waits 250 ms so the choice tap is not also the rating. There is no time limit on the rating. The left and right pads are inactive during the rating.</dd>
+                </div>
+                <div>
+                    <dt>Between trials</dt>
+                    <dd>600 ms after the rating, or after a timeout.</dd>
+                </div>
+                <div>
+                    <dt>Feedback</dt>
+                    <dd>The choice and the rating play neutral tones. The demo does not say whether the choice was right until the results screen. A timeout plays a low buzz.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>Look at the center cross. Tap the pad on the brighter side, or press F for left and J for right. Pads call the same response path as the keyboard.</li>
+                <li>Then tap High or Low, or press F or J again.</li>
+                <li>Keys are not case-sensitive. A held key does not answer the next trial. Ctrl, Cmd, and Alt chords are ignored.</li>
+                <li>A tap is counted once. A click that follows the same press within 750 ms is ignored.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>The trial log stays in memory until you leave or refresh. Download CSV writes that log as a file on the device. Trial columns are trialNum, condId, leftColor, rightColor, correctKey, responseKey, rt, isCorrect, confidence, confidenceKey, confidenceRT, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, and record (<code>trial</code>). The file name is <code>luma_clash_data_</code> plus a timestamp.</p>
+            <p>Portrait and landscape both run. The page never locks the device direction. Each trial row stores the orientation at the moment the trial is saved. Extra CSV rows with <code>record</code> = <code>orientation</code> are the session turns: <code>start</code>, each <code>change</code>, and <code>end</code>, with ISO time and <code>orientationTMs</code> (milliseconds from <code>performance.now()</code>). A short note appears if you rotate, and the task keeps going. The same list is kept in memory as <code>orientationEvents</code> until the next run.</p>
+            <p>Nothing is written to <code>localStorage</code>, and nothing is uploaded. If you do not download, the run is gone when the page closes.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="brightness_game.html">Play Brightness Detection</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

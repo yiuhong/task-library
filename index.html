@@ -5,17 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Trial</title>
     <meta name="description" content="Project Trial — gamified cognitive and behavioral tasks you can run in the browser.">
+    <link rel="stylesheet" href="assets/trial-theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background-color: #0f172a;
-        }
-    </style>
 </head>
-<body class="text-white min-h-screen flex flex-col justify-center items-center p-6 select-none">
+<body class="trial-app text-white min-h-screen flex flex-col justify-center items-center p-6 select-none">
 
     <div class="text-center max-w-xl mb-12">
         <p class="text-[11px] text-slate-500 tracking-[0.35em] uppercase mb-4">Experimental task dashboard</p>
@@ -23,46 +16,62 @@
             <img src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" class="w-full h-auto" width="1098" height="309">
         </h1>
         <p class="text-gray-400 text-sm md:text-base leading-relaxed">
-            Gamified cognitive and behavioral tasks you can run in the browser. Select an interactive paradigm below to initiate full-screen automated testing.
+            Teaching demos for attention, perception, and reaction time. Play a task in the browser, or read its parameters first. Responses stay on this device.
         </p>
     </div>
 
     <div class="w-full max-w-md space-y-4">
         
-        <a href="stroop_game.html" class="block border-2 border-indigo-500/50 bg-indigo-950/30 hover:bg-indigo-900/50 hover:border-indigo-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-lg text-indigo-300 group-hover:text-indigo-200">01. STROOP DASH</span>
-                <span class="text-xs bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/50">ACTIVE</span>
+        <div>
+            <a href="stroop_game.html" class="group block border-2 border-indigo-500/50 bg-indigo-950/30 hover:bg-indigo-900/50 hover:border-indigo-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-lg text-indigo-300 group-hover:text-indigo-200">01. STROOP DASH</span>
+                    <span class="text-xs bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/50">ACTIVE</span>
+                </div>
+                <p class="text-xs text-gray-400 leading-normal">
+                    Measures selective attention, processing speed, and executive interference using incongruent semantic stimuli.
+                </p>
+            </a>
+            <div class="flex justify-end">
+                <a class="trial-more" style="--trial-accent: #a5b4fc" href="stroop-info.html">Parameters</a>
             </div>
-            <p class="text-xs text-gray-400 leading-normal">
-                Measures selective attention, processing speed, and executive interference using incongruent semantic stimuli.
-            </p>
-        </a>
+        </div>
 
-        <a href="oddball_game.html" class="block border-2 border-purple-500/50 bg-purple-950/30 hover:bg-purple-900/50 hover:border-purple-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-lg text-purple-300 group-hover:text-purple-200">02. ODDBALL TASK</span>
-                <span class="text-xs bg-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/50">ACTIVE</span>
+        <div>
+            <a href="oddball_game.html" class="group block border-2 border-purple-500/50 bg-purple-950/30 hover:bg-purple-900/50 hover:border-purple-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-lg text-purple-300 group-hover:text-purple-200">02. ODDBALL TASK</span>
+                    <span class="text-xs bg-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/50">ACTIVE</span>
+                </div>
+                <p class="text-xs text-gray-400 leading-normal">
+                    Evaluates attention and discrimination ability by detecting rare stimuli among frequent standard stimuli.
+                </p>
+            </a>
+            <div class="flex justify-end">
+                <a class="trial-more" style="--trial-accent: #d8b4fe" href="oddball-info.html">Parameters</a>
             </div>
-            <p class="text-xs text-gray-400 leading-normal">
-                Evaluates attention and discrimination ability by detecting rare stimuli among frequent standard stimuli.
-            </p>
-        </a>
+        </div>
 
-        <a href="brightness_game.html" class="block border-2 border-cyan-500/50 bg-cyan-950/30 hover:bg-cyan-900/50 hover:border-cyan-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-            <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-lg text-cyan-300 group-hover:text-cyan-200">03. BRIGHTNESS DETECTION</span>
-                <span class="text-xs bg-cyan-500/30 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/50">ACTIVE</span>
+        <div>
+            <a href="brightness_game.html" class="group block border-2 border-cyan-500/50 bg-cyan-950/30 hover:bg-cyan-900/50 hover:border-cyan-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-lg text-cyan-300 group-hover:text-cyan-200">03. BRIGHTNESS DETECTION</span>
+                    <span class="text-xs bg-cyan-500/30 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/50">ACTIVE</span>
+                </div>
+                <p class="text-xs text-gray-400 leading-normal">
+                    Assesses visual perception and sensitivity thresholds through luminance discrimination tasks.
+                </p>
+            </a>
+            <div class="flex justify-end">
+                <a class="trial-more" style="--trial-accent: #67e8f9" href="brightness-info.html">Parameters</a>
             </div>
-            <p class="text-xs text-gray-400 leading-normal">
-                Assesses visual perception and sensitivity thresholds through luminance discrimination tasks.
-            </p>
-        </a>
+        </div>
 
     </div>
 
-    <div class="mt-16 text-center text-[11px] text-slate-600 tracking-widest uppercase">
-        Built via JavaScript Frameworks • Open Source Architecture
+    <div class="mt-10 text-center">
+        <a class="trial-more" href="about.html">About these demos</a>
+        <p class="text-[11px] text-slate-600 tracking-widest uppercase">Runs in the browser · responses stay on this device</p>
     </div>
 
 </body>

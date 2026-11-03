@@ -4,91 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Luma Clash: Neon Edition</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        :root {
-            --bg-color: #0f172a;
-        }
-
         body {
-            font-family: 'JetBrains Mono', monospace;
-            user-select: none;
-            overflow: hidden;
-            background-color: var(--bg-color);
-            color: white;
-            transition: background-color 0.5s ease;
-            touch-action: manipulation;
-        }
-
-        h1, .game-title {
-            font-family: 'Bungee', cursive;
-        }
-
-        .key-hint {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 5rem;
-            height: 5rem;
-            min-width: 44px;
-            min-height: 44px;
-            border-radius: 0.75rem;
-            border-width: 2px;
-            border-style: solid;
-            border-color: rgba(255, 255, 255, 0.45);
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: all 0.2s;
-        }
-
-        button.key-hint {
-            appearance: none;
-            -webkit-appearance: none;
-            margin: 0;
-            padding: 0;
-            font-family: inherit;
-            cursor: pointer;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-        }
-
-        button.key-hint:focus {
-            outline: none;
-        }
-
-        button.key-hint:focus-visible {
-            outline: 2px solid white;
-            outline-offset: 3px;
-        }
-
-        .pad-key {
-            display: block;
-            font-family: 'Bungee', cursive;
-            font-size: 1.6rem;
-            line-height: 1;
-        }
-
-        .pad-caption {
-            display: block;
-            margin-top: 3px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            line-height: 1;
-            opacity: 0.85;
-        }
-
-        .active-key {
-            transform: scale(0.9);
-            border-color: white;
-            background-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            --trial-accent: #818cf8;
+            --trial-pad-size: 5rem;
+            --trial-pad-size-compact: 5rem;
+            --trial-pad-bg-active: rgba(255, 255, 255, 0.4);
+            --trial-pad-active-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            --trial-hud-padding-compact: 0.45rem 0.6rem;
+            --trial-task-pad-top-compact: 4.2rem;
+            --trial-task-pad-bottom-compact: 8.2rem;
         }
 
         .stimulus-square {
@@ -107,8 +34,6 @@
             visibility: hidden;
         }
 
-        #screen-task,
-        #footer-controls,
         #confidence-container {
             touch-action: manipulation;
         }
@@ -126,15 +51,6 @@
 
             #welcome-keys {
                 gap: 1.25rem;
-            }
-
-            #hud {
-                padding: 0.45rem 0.6rem;
-            }
-
-            #screen-task {
-                padding-top: 4.2rem;
-                padding-bottom: 8.2rem;
             }
 
             .stimulus-square {
@@ -159,7 +75,6 @@
             }
 
             #footer-controls {
-                bottom: max(0.35rem, env(safe-area-inset-bottom));
                 padding-left: 0.7rem;
                 padding-right: 0.7rem;
                 padding-bottom: calc(0.3rem + env(safe-area-inset-bottom));
@@ -183,11 +98,11 @@
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col items-center justify-center">
+<body class="trial-app trial-play h-screen w-screen flex flex-col items-center justify-center">
 
     <!-- Screen A: Welcome/Instructions -->
-    <div id="screen-welcome" class="max-w-3xl w-full bg-slate-900 p-10 rounded-3xl border-4 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.3)] text-center animate-in fade-in zoom-in duration-300 mx-4 overflow-y-auto max-h-[90vh]">
-        <h1 class="text-6xl text-indigo-400 mb-2 tracking-tighter">LUMA CLASH</h1>
+    <div id="screen-welcome" class="w-[min(48rem,calc(100%-1rem))] bg-slate-900 p-6 sm:p-10 rounded-3xl border-4 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.3)] text-center animate-in fade-in zoom-in duration-300 overflow-y-auto max-h-[100dvh]">
+        <h1 class="game-title text-6xl text-indigo-400 mb-2 tracking-tighter">LUMA CLASH</h1>
         <p class="text-indigo-200/60 mb-8 uppercase tracking-widest text-xs font-bold">Comparative Brightness & Metacognition Task</p>
         
         <div class="text-left bg-slate-800/50 p-6 rounded-2xl border border-indigo-500/30 mb-8">
@@ -202,14 +117,14 @@
             <div id="welcome-keys" class="flex justify-center items-center gap-16 mt-6 pb-2">
                 <div class="flex flex-col items-center">
                     <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">TAP LEFT · F</span>
-                    <div class="key-hint mb-2 text-cyan-400 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.2)]">F</div>
+                    <div class="trial-pad mb-2 text-cyan-400 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.2)]">F</div>
                 </div>
                 
                 <div class="text-4xl text-slate-600 font-bold">+</div>
 
                 <div class="flex flex-col items-center">
                     <span class="text-xs text-slate-400 mb-3 font-bold tracking-wider">TAP RIGHT · J</span>
-                    <div class="key-hint mb-2 text-pink-400 border-pink-500/50 shadow-[0_0_15px_rgba(236,72,153,0.2)]">J</div>
+                    <div class="trial-pad mb-2 text-pink-400 border-pink-500/50 shadow-[0_0_15px_rgba(236,72,153,0.2)]">J</div>
                 </div>
             </div>
         </div>
@@ -217,16 +132,20 @@
         <button id="btn-start" class="group relative bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
             <span class="game-title text-2xl">INITIATE SEQUENCE</span>
         </button>
+        <div class="mt-4 flex justify-center gap-2">
+            <a class="trial-more" href="index.html">Hub</a>
+            <a class="trial-more" href="brightness-info.html">Task info</a>
+        </div>
     </div>
 
     <!-- Screen B: Active Task -->
-    <div id="screen-task" class="hidden flex flex-col items-center justify-center w-full h-full relative">
+    <div id="screen-task" class="trial-task hidden flex flex-col items-center justify-center w-full h-full relative">
         
         <!-- DASHBOARD (Aligned strictly to top-center) -->
-        <div id="hud" class="absolute top-0 w-full p-6 flex justify-center items-start z-10">
+        <div id="hud" class="trial-hud absolute top-0 w-full flex justify-center z-10">
             <div class="text-center bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-2xl">
                 <span class="block text-[10px] text-indigo-400 font-bold uppercase">Trial</span>
-                <span id="trial-counter" class="text-xl font-bold">1 / 40</span>
+                <span id="trial-counter" class="trial-stat font-bold">1 / 40</span>
             </div>
         </div>
 
@@ -251,42 +170,42 @@
             <div id="confidence-row" class="flex space-x-16">
                 <div class="flex flex-col items-center">
                     <span id="conf-f-label" class="text-xs mb-3 tracking-widest font-bold text-green-400">HIGH</span>
-                    <button type="button" id="key-conf-f" class="key-hint text-white border-white/50" data-key="f" aria-label="High confidence">
-                        <span class="pad-key">F</span>
-                        <span class="pad-caption">TAP</span>
+                    <button type="button" id="key-conf-f" class="trial-pad text-white border-white/50" data-key="f" aria-label="High confidence">
+                        <span class="trial-pad-key">F</span>
+                        <span class="trial-pad-caption">TAP</span>
                     </button>
                 </div>
                 <div class="flex flex-col items-center">
                     <span id="conf-j-label" class="text-xs mb-3 tracking-widest font-bold text-slate-400">LOW</span>
-                    <button type="button" id="key-conf-j" class="key-hint text-white border-white/50" data-key="j" aria-label="Low confidence">
-                        <span class="pad-key">J</span>
-                        <span class="pad-caption">TAP</span>
+                    <button type="button" id="key-conf-j" class="trial-pad text-white border-white/50" data-key="j" aria-label="Low confidence">
+                        <span class="trial-pad-key">J</span>
+                        <span class="trial-pad-caption">TAP</span>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Footer Control Display (Left and Right aligned to balance screen layout and map directly to hands) -->
-        <div id="footer-controls" class="absolute bottom-12 left-0 right-0 px-8 md:px-16 lg:px-24 flex justify-between w-full max-w-7xl mx-auto transition-opacity">
+        <div id="footer-controls" class="trial-bar left-0 right-0 px-8 md:px-16 lg:px-24 flex justify-between w-full max-w-7xl mx-auto transition-opacity">
             <div class="flex flex-col items-center">
                 <span class="text-xs text-cyan-400 mb-2 font-bold tracking-widest">LEFT</span>
-                <button type="button" id="key-f" class="key-hint text-cyan-400 border-cyan-500/50" data-key="f" aria-label="Left square">
-                    <span class="pad-key">F</span>
-                    <span class="pad-caption">TAP</span>
+                <button type="button" id="key-f" class="trial-pad text-cyan-400 border-cyan-500/50" data-key="f" aria-label="Left square">
+                    <span class="trial-pad-key">F</span>
+                    <span class="trial-pad-caption">TAP</span>
                 </button>
             </div>
             <div class="flex flex-col items-center">
                 <span class="text-xs text-pink-400 mb-2 font-bold tracking-widest">RIGHT</span>
-                <button type="button" id="key-j" class="key-hint text-pink-400 border-pink-500/50" data-key="j" aria-label="Right square">
-                    <span class="pad-key">J</span>
-                    <span class="pad-caption">TAP</span>
+                <button type="button" id="key-j" class="trial-pad text-pink-400 border-pink-500/50" data-key="j" aria-label="Right square">
+                    <span class="trial-pad-key">J</span>
+                    <span class="trial-pad-caption">TAP</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Screen C: Results -->
-    <div id="screen-results" class="hidden max-w-5xl w-full bg-slate-900 p-8 rounded-3xl border-4 border-indigo-500 shadow-2xl fade-in mx-4 overflow-y-auto max-h-[95vh]">
+    <div id="screen-results" class="trial-results hidden w-[min(64rem,calc(100%-1rem))] bg-slate-900 p-4 sm:p-8 rounded-3xl border-4 border-indigo-500 shadow-2xl fade-in">
         <h2 class="text-4xl font-bold text-indigo-400 mb-8 text-center game-title">METACOGNITION ANALYSIS</h2>
         
         <h3 class="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-sm text-center">Performance & Confidence by Condition</h3>
@@ -355,17 +274,29 @@
             <p id="interpretation-text" class="text-indigo-100/80 leading-relaxed text-sm"></p>
         </div>
 
-        <div class="flex justify-center space-x-4">
-            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl">
-                RECALIBRATE
-            </button>
-            <button id="btn-download" class="bg-indigo-600 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-500 active:scale-95 game-title text-xl border-2 border-indigo-400">
-                DOWNLOAD CSV
-            </button>
+        <p class="text-center text-[11px] text-slate-500 mb-2">The CSV is this run only. Nothing is saved in the browser or uploaded.</p>
+        <p id="orientation-note" class="text-center text-[11px] text-slate-500 mb-6"></p>
+
+        <div class="flex flex-col items-center gap-3">
+            <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
+                <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl">
+                    RECALIBRATE
+                </button>
+                <button id="btn-download" class="bg-indigo-600 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-500 active:scale-95 game-title text-xl border-2 border-indigo-400">
+                    DOWNLOAD CSV
+                </button>
+            </div>
+            <div class="flex justify-center gap-2">
+                <a class="trial-more" href="index.html">Hub</a>
+                <a class="trial-more" href="brightness-info.html">Task info</a>
+            </div>
         </div>
     </div>
 
+    <script src="assets/trial-orientation.js"></script>
     <script>
+        const orientation = TrialOrientation.createSession({ nudge: true });
+
         // --- Sound Engine (Web Audio API) ---
         const AudioEngine = {
             ctx: null,
@@ -548,7 +479,7 @@
                     state.tempResult.confidence = 'missed';
                     state.tempResult.confidenceKey = 'none';
                     state.tempResult.confidenceRT = null;
-                    state.results.push(state.tempResult);
+                    commitTrial(state.tempResult);
                     AudioEngine.playTone(150, 'sawtooth', 0.2, 0.1); // Dull buzz for timeout
                     
                     setTimeout(() => {
@@ -569,7 +500,7 @@
                 state.tempResult.confidence = conf;
                 state.tempResult.confidenceKey = key;
                 state.tempResult.confidenceRT = Math.round(performance.now() - state.confidenceStartTime);
-                state.results.push(state.tempResult);
+                commitTrial(state.tempResult);
                 
                 AudioEngine.beep();
 
@@ -595,7 +526,14 @@
             setTimeout(() => { state.isAcceptingInput = true; }, 250); 
         }
 
+        function commitTrial(result) {
+            Object.assign(result, orientation.fields('response'), { record: 'trial' });
+            state.results.push(result);
+        }
+
         function finishGame() {
+            orientation.stop();
+            document.getElementById('orientation-note').textContent = orientation.summarize();
             AudioEngine.complete();
             screens.task.classList.add('hidden');
             screens.results.classList.remove('hidden');
@@ -626,9 +564,10 @@
             const totalCorrect = state.results.filter(r => r.isCorrect && r.confidence !== 'missed').length;
             const overallAcc = totalTrials > 0 ? Math.round((totalCorrect / totalTrials) * 100) : 0;
             
-            let message = `Overall Accuracy: ${overallAcc}%. `;
-            message += `By assessing your confidence against your actual performance, we measure your metacognitive sensitivity (d-prime). `;
-            message += `A high confidence rating on wrong answers indicates an illusion of precision, which is especially common in the harder conditions due to Weber's Law limitations.`;
+            const missed = state.results.filter(r => r.confidence === 'missed').length;
+            let message = `Accuracy on responded trials: ${overallAcc}% (${totalCorrect} of ${totalTrials}). Timeouts, which skip the confidence rating: ${missed}. `;
+            message += `Each card counts correct and wrong responses in that condition, and the share of each that was rated high confidence. This page does not compute d′. `;
+            message += `Low-difference pairs are 20 gray levels apart. High-difference pairs are 80 apart.`;
             
             document.getElementById('interpretation-text').innerText = message;
         }
@@ -636,24 +575,35 @@
         function downloadCSV() {
             if (state.results.length === 0) return;
             
-            const headers = ['trialNum', 'condId', 'leftColor', 'rightColor', 'correctKey', 'responseKey', 'rt', 'isCorrect', 'confidence', 'confidenceKey', 'confidenceRT'];
-            
-            let csvContent = "data:text/csv;charset=utf-8," 
-                + headers.join(",") + "\n"
-                + state.results.map(r => {
+            const headers = ['trialNum', 'condId', 'leftColor', 'rightColor', 'correctKey', 'responseKey', 'rt', 'isCorrect', 'confidence', 'confidenceKey', 'confidenceRT', 'orientationType', 'orientationAngle', 'orientationAt', 'orientationTMs', 'orientationReason', 'record'];
+            const eventRows = orientation.events.map(function (event) {
+                return {
+                    record: 'orientation',
+                    orientationType: event.type,
+                    orientationAngle: event.angle,
+                    orientationAt: event.at,
+                    orientationTMs: event.tMs,
+                    orientationReason: event.reason
+                };
+            });
+
+            const csv = headers.join(",") + "\n"
+                + state.results.concat(eventRows).map(r => {
                     return headers.map(header => {
                         let val = r[header];
                         return val === null || val === undefined ? '' : val;
                     }).join(",");
                 }).join("\n");
-                
-            const encodedUri = encodeURI(csvContent);
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `luma_clash_data_${new Date().getTime()}.csv`);
-            document.body.appendChild(link); // Required for Firefox
+            link.href = url;
+            link.download = `luma_clash_data_${Date.now()}.csv`;
+            document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function setFooterActive(active) {
@@ -694,9 +644,10 @@
             });
         }
 
-        document.querySelectorAll('button.key-hint[data-key]').forEach(bindResponsePad);
+        document.querySelectorAll('button.trial-pad[data-key]').forEach(bindResponsePad);
 
         window.addEventListener('keydown', (e) => {
+            if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
             const key = e.key.toLowerCase();
             if (key === 'f' || key === 'j') {
                 e.preventDefault();
@@ -711,6 +662,8 @@
             state.currentTrialIndex = 0;
             state.results = [];
             state.trials = generateTrials();
+            state.orientationEvents = orientation.events;
+            orientation.start();
             screens.welcome.classList.add('hidden');
             screens.task.classList.remove('hidden');
             nextTrial();

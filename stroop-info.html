@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stroop Dash — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #818cf8">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · Stroop Dash</p>
+            <h1>Stroop Dash</h1>
+            <p class="lede">A short teaching demo of selective attention. Name the ink color and ignore the word.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>On congruent trials the word and the ink match. On incongruent trials they do not. The results screen compares mean response time on correct trials. A slower incongruent mean is the interference contrast this demo is built to show.</p>
+            <p>The score, combo, and arcade wording are for the classroom demo. They are not a clinical or normed measure.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Trials</dt>
+                    <dd>20. 10 congruent and 10 incongruent. No practice block.</dd>
+                </div>
+                <div>
+                    <dt>Colors</dt>
+                    <dd>RED <code>#ff4b4b</code> key R, GREEN <code>#44ff44</code> key G, BLUE <code>#4444ff</code> key B, YELLOW <code>#ffff44</code> key Y.</dd>
+                </div>
+                <div>
+                    <dt>Congruent</dt>
+                    <dd>Word and ink are the same color. The 10 trials cycle RED, GREEN, BLUE, YELLOW, so the counts are 3, 3, 2, and 2.</dd>
+                </div>
+                <div>
+                    <dt>Incongruent</dt>
+                    <dd>Word index <code>i % 4</code>, ink index <code>(i + 1) % 4</code>. That yields RED/GREEN ×3, GREEN/BLUE ×3, BLUE/YELLOW ×2, YELLOW/RED ×2. The word is never the ink color.</dd>
+                </div>
+                <div>
+                    <dt>Order</dt>
+                    <dd>Fisher–Yates shuffle after the lists are built.</dd>
+                </div>
+                <div>
+                    <dt>Ready screen</dt>
+                    <dd>400 ms. The word READY? in white.</dd>
+                </div>
+                <div>
+                    <dt>Response window</dt>
+                    <dd>2000 ms, then TOO SLOW. That trial is incorrect.</dd>
+                </div>
+                <div>
+                    <dt>Between trials</dt>
+                    <dd>Feedback stays 400 ms, the word clears, then a 300 ms blank.</dd>
+                </div>
+                <div>
+                    <dt>Scoring</dt>
+                    <dd>Correct trials add <code>max(0, 1000 − rounded RT)</code> plus <code>combo × 100</code>. Combo increases before that bonus, so the first correct trial is already ×1. An error or a timeout sets combo to 0 and adds nothing.</dd>
+                </div>
+                <div>
+                    <dt>Accuracy</dt>
+                    <dd>Correct trials divided by all trials so far, including timeouts.</dd>
+                </div>
+                <div>
+                    <dt>Speed</dt>
+                    <dd>Mean RT of correct trials only. Timeouts are stored but left out of the mean. On the results screen, 0 ms means that condition had no correct trial. The interference sentence is shown only when both conditions have at least one correct trial.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>Tap the R, G, B, or Y pad, or press that key. Pads call the same response path as the keyboard.</li>
+                <li>Keys are not case-sensitive. A held key does not answer the next trial. Ctrl, Cmd, and Alt chords are ignored, so find and reload still work.</li>
+                <li>One response is accepted per trial, and only while the colored word is on screen.</li>
+                <li>A tap is counted once. A click that follows the same press within 750 ms is ignored.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>The run lives in memory on this page. Refreshing, leaving, or closing the tab drops it. There is no CSV download and nothing is written to <code>localStorage</code>. Nothing is uploaded.</p>
+            <p>Portrait and landscape both run. The page never locks the device direction. Each trial stores the orientation at the response (<code>orientationType</code>, <code>orientationAngle</code> when the browser reports <code>screen.orientation</code>, and an ISO timestamp). Turns during the run are timestamped on <code>orientationEvents</code> (<code>start</code>, <code>change</code>, <code>end</code>). A short note appears if you rotate, and the task keeps going. The results screen reports the starting orientation and how many turns were logged. Play again replaces that session log.</p>
+            <p>Play again returns to the welcome screen. The next run replaces the in-memory results, and the max combo resets.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="stroop_game.html">Play Stroop Dash</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

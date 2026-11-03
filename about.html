@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Experimental task dashboard</p>
+            <h1>About these demos</h1>
+            <p class="lede">Project Trial is Yiu Hong Ko’s browser collection of attention, perception, and reaction-time demos. The repository name is still task-library.</p>
+        </header>
+
+        <section>
+            <h2>On the hub</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Stroop Dash</dt>
+                    <dd>Name the ink, ignore the word. <a href="stroop_game.html">Play</a> · <a href="stroop-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>Oddball Dash</dt>
+                    <dd>Respond only to the rare shape. <a href="oddball_game.html">Play</a> · <a href="oddball-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>Brightness</dt>
+                    <dd>Pick the brighter square, then rate confidence. The in-game title is Luma Clash. <a href="brightness_game.html">Play</a> · <a href="brightness-info.html">Parameters</a></dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to respond</h2>
+            <p>Each demo has large pads and a matching key. A tap and a keypress call the same response path. One response counts per trial. Holding a key does not fire the next trial.</p>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>Nothing is uploaded. Stroop Dash and Oddball Dash keep the current run in memory only. Brightness Detection can download a CSV of that run. None of the hub demos write to <code>localStorage</code>. Refresh or leave the page and an undownloaded run is gone.</p>
+            <p>Portrait and landscape both run. Hub demos do not lock orientation. Each saved trial includes the orientation at that moment, and turns during the run are timestamped on the session log. See each task’s parameters page for where that log lives.</p>
+            <p>Scores are for teaching. They are not a clinical assessment.</p>
+        </section>
+
+        <section>
+            <h2>Look and future demos</h2>
+            <p>Shared colors, type, pad chrome, and HUD spacing live in <code>assets/trial-theme.css</code>. A new demo can link that file and override the variables it cares about. The helpers are optional, so a demo can still invent its own controls and stimulus layout.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>
