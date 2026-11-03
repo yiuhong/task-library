@@ -136,6 +136,13 @@
             <a class="trial-more" href="index.html">Hub</a>
             <a class="trial-more" href="brightness-info.html">Task info</a>
         </div>
+        <div class="trial-data">
+            <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
+            <div class="trial-data-actions">
+                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
+            </div>
+        </div>
     </div>
 
     <!-- Screen B: Active Task -->
@@ -274,18 +281,19 @@
             <p id="interpretation-text" class="text-indigo-100/80 leading-relaxed text-sm"></p>
         </div>
 
-        <p class="text-center text-[11px] text-slate-500 mb-2">The CSV is this run only. Nothing is saved in the browser or uploaded.</p>
-        <p id="orientation-note" class="text-center text-[11px] text-slate-500 mb-6"></p>
-
-        <div class="flex flex-col items-center gap-3">
-            <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
-                <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl">
-                    RECALIBRATE
-                </button>
-                <button id="btn-download" class="bg-indigo-600 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-500 active:scale-95 game-title text-xl border-2 border-indigo-400">
-                    DOWNLOAD CSV
-                </button>
+        <p id="orientation-note" class="text-center text-[11px] text-slate-500 mb-2"></p>
+        <div class="trial-data">
+            <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
+            <div class="trial-data-actions">
+                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
             </div>
+        </div>
+
+        <div class="flex flex-col items-center gap-3 mt-4">
+            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-8 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl">
+                RECALIBRATE
+            </button>
             <div class="flex justify-center gap-2">
                 <a class="trial-more" href="index.html">Hub</a>
                 <a class="trial-more" href="brightness-info.html">Task info</a>
@@ -294,8 +302,14 @@
     </div>
 
     <script src="assets/trial-orientation.js"></script>
+    <script src="assets/trial-store.js"></script>
     <script>
         const orientation = TrialOrientation.createSession({ nudge: true });
+        const store = TrialStore.create({
+            taskId: 'brightness',
+            fileStem: 'luma_clash_data',
+            headers: ['trialNum', 'condId', 'leftColor', 'rightColor', 'correctKey', 'responseKey', 'rt', 'isCorrect', 'confidence', 'confidenceKey', 'confidenceRT', 'orientationType', 'orientationAngle', 'orientationAt', 'orientationTMs', 'orientationReason', 'record', 'sessionId', 'startedAt', 'endedAt', 'complete']
+        });
 
         // --- Sound Engine (Web Audio API) ---
         const AudioEngine = {
@@ -529,10 +543,12 @@
         function commitTrial(result) {
             Object.assign(result, orientation.fields('response'), { record: 'trial' });
             state.results.push(result);
+            store.commitTrial(result, orientation.events);
         }
 
         function finishGame() {
             orientation.stop();
+            store.finish(orientation.events);
             document.getElementById('orientation-note').textContent = orientation.summarize();
             AudioEngine.complete();
             screens.task.classList.add('hidden');
@@ -570,40 +586,6 @@
             message += `Low-difference pairs are 20 gray levels apart. High-difference pairs are 80 apart.`;
             
             document.getElementById('interpretation-text').innerText = message;
-        }
-
-        function downloadCSV() {
-            if (state.results.length === 0) return;
-            
-            const headers = ['trialNum', 'condId', 'leftColor', 'rightColor', 'correctKey', 'responseKey', 'rt', 'isCorrect', 'confidence', 'confidenceKey', 'confidenceRT', 'orientationType', 'orientationAngle', 'orientationAt', 'orientationTMs', 'orientationReason', 'record'];
-            const eventRows = orientation.events.map(function (event) {
-                return {
-                    record: 'orientation',
-                    orientationType: event.type,
-                    orientationAngle: event.angle,
-                    orientationAt: event.at,
-                    orientationTMs: event.tMs,
-                    orientationReason: event.reason
-                };
-            });
-
-            const csv = headers.join(",") + "\n"
-                + state.results.concat(eventRows).map(r => {
-                    return headers.map(header => {
-                        let val = r[header];
-                        return val === null || val === undefined ? '' : val;
-                    }).join(",");
-                }).join("\n");
-
-            const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `luma_clash_data_${Date.now()}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function setFooterActive(active) {
@@ -664,6 +646,7 @@
             state.trials = generateTrials();
             state.orientationEvents = orientation.events;
             orientation.start();
+            store.begin(orientation.events);
             screens.welcome.classList.add('hidden');
             screens.task.classList.remove('hidden');
             nextTrial();
@@ -673,8 +656,6 @@
             screens.results.classList.add('hidden');
             screens.welcome.classList.remove('hidden');
         });
-
-        document.getElementById('btn-download').addEventListener('click', downloadCSV);
 
     </script>
 </body>

@@ -58,6 +58,11 @@
             text-shadow: 0 0 10px #fff, 0 0 20px #ff0, 0 0 30px #f0f, 0 0 40px #0ff;
         }
 
+        #screen-welcome {
+            max-height: 100dvh;
+            overflow-y: auto;
+        }
+
         @media (max-width: 560px), (max-height: 500px) and (max-width: 900px) {
             #screen-welcome {
                 max-width: calc(100vw - 1rem);
@@ -139,6 +144,13 @@
             <a class="trial-more" href="index.html">Hub</a>
             <a class="trial-more" href="oddball-info.html">Task info</a>
         </div>
+        <div class="trial-data">
+            <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
+            <div class="trial-data-actions">
+                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
+            </div>
+        </div>
     </div>
 
     <!-- Screen B: Active Task -->
@@ -216,8 +228,14 @@
             <p id="interpretation-text" class="text-cyan-100/80 leading-relaxed"></p>
         </div>
 
-        <p class="text-center text-[11px] text-slate-500 mb-2">This run stays on the page until you leave or refresh. It is not saved or uploaded.</p>
-        <p id="orientation-note" class="text-center text-[11px] text-slate-500 mb-6"></p>
+        <p id="orientation-note" class="text-center text-[11px] text-slate-500 mb-2"></p>
+        <div class="trial-data">
+            <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
+            <div class="trial-data-actions">
+                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
+            </div>
+        </div>
 
         <div class="flex flex-col items-center gap-2">
             <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-12 rounded-2xl transition-all shadow-xl hover:bg-cyan-400 active:scale-95 game-title text-xl">
@@ -231,8 +249,14 @@
     </div>
 
     <script src="assets/trial-orientation.js"></script>
+    <script src="assets/trial-store.js"></script>
     <script>
         const orientation = TrialOrientation.createSession({ nudge: true });
+        const store = TrialStore.create({
+            taskId: 'oddball',
+            fileStem: 'oddball_dash_data',
+            headers: ['trialNum', 'type', 'responseKey', 'rt', 'isCorrect', 'orientationType', 'orientationAngle', 'orientationAt', 'orientationTMs', 'orientationReason', 'record', 'sessionId', 'startedAt', 'endedAt', 'complete']
+        });
 
         // --- Sound Engine (Web Audio API) ---
         const AudioEngine = {
@@ -447,10 +471,13 @@
 
             state.results.push(Object.assign({
                 record: 'trial',
+                trialNum: state.currentTrialIndex + 1,
                 type: trial.type,
+                responseKey: key || 'withhold',
                 rt: key ? rt : null,
                 isCorrect: isCorrect
             }, orientation.fields('response')));
+            store.commitTrial(state.results[state.results.length - 1], orientation.events);
             updateUI();
 
             setTimeout(() => {
@@ -470,6 +497,7 @@
 
         function finishGame() {
             orientation.stop();
+            store.finish(orientation.events);
             document.getElementById('orientation-note').textContent = orientation.summarize();
             AudioEngine.complete();
             screens.task.classList.add('hidden');
@@ -550,6 +578,7 @@
             state.trials = generateTrials();
             state.orientationEvents = orientation.events;
             orientation.start();
+            store.begin(orientation.events);
             screens.welcome.classList.add('hidden');
             screens.task.classList.remove('hidden');
             updateUI();
