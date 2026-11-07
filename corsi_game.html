@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Project Trial — Digital Corsi Block-Tapping Task</title>
+
+  <!-- Project Trial Shared Stylesheet with Inline Fallback -->
+  <link rel="stylesheet" href="assets/trial-theme.css" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            trial: {
+              bg: '#07090e',
+              panel: '#0f1420',
+              border: '#1e293b',
+              accent: '#d946ef',
+              accentGlow: 'rgba(217, 70, 239, 0.55)',
+              accentSoft: 'rgba(217, 70, 239, 0.15)'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --trial-accent: #e879f9;
+      --bg-primary: #07090e;
+      --bg-panel: #0f1420;
+      --border-slate: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-neon: #d946ef;
+      --accent-glow: rgba(217, 70, 239, 0.6);
+      --accent-soft: rgba(217, 70, 239, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+
+    /* Subtle experimental grid backdrop */
+    .bg-experimental-grid {
+      background-image:
+        radial-gradient(circle at 50% 20%, rgba(217, 70, 239, 0.08), transparent 60%),
+        linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+    }
+
+    /* Responsive square Corsi Arena */
+    .corsi-arena {
+      position: relative;
+      width: min(86vw, 520px);
+      height: min(86vw, 520px);
+      aspect-ratio: 1 / 1;
+      background: radial-gradient(circle at center, #0d1322 0%, #070a12 100%);
+      border: 2px solid #1e293b;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), inset 0 0 30px rgba(15, 23, 42, 0.8);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .corsi-arena.arena-go {
+      border-color: var(--accent-neon);
+      box-shadow: 0 0 28px rgba(217, 70, 239, 0.28), inset 0 0 24px rgba(217, 70, 239, 0.12);
+    }
+
+    .corsi-arena.arena-watch {
+      border-color: #334155;
+    }
+
+    /* Corsi Block Styling */
+    .corsi-block {
+      position: absolute;
+      width: 14.5%;
+      height: 14.5%;
+      transform: translate(-50%, -50%);
+      border-radius: 0.75rem;
+      background: linear-gradient(145deg, #162032, #0f172a);
+      border: 2px solid #334155;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+      transition: transform 0.08s ease, background-color 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .corsi-block.disabled-block {
+      cursor: default;
+    }
+
+    /* Sequence Presentation Illumination */
+    .corsi-block.lit {
+      background: radial-gradient(circle at center, #f0abfc 0%, #d946ef 65%, #a21caf 100%);
+      border-color: #fae8ff;
+      box-shadow: 0 0 28px var(--accent-glow), 0 0 52px rgba(217, 70, 239, 0.4), inset 0 0 10px #ffffff;
+      transform: translate(-50%, -50%) scale(1.08);
+      z-index: 20;
+    }
+
+    /* User Tap Flash */
+    .corsi-block.tapped {
+      background: linear-gradient(145deg, #c026d3, #86198f);
+      border-color: #f5d0fe;
+      box-shadow: 0 0 22px var(--accent-glow);
+      transform: translate(-50%, -50%) scale(0.95);
+      z-index: 15;
+    }
+
+    /* Selected Badge During Recall */
+    .corsi-block .tap-badge {
+      opacity: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fae8ff;
+      background: rgba(15, 20, 32, 0.78);
+      border: 1px solid rgba(217, 70, 239, 0.6);
+      border-radius: 9999px;
+      width: 1.4rem;
+      height: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.12s ease;
+      pointer-events: none;
+    }
+
+    .corsi-block.selected-trace {
+      border-color: rgba(217, 70, 239, 0.75);
+      background: linear-gradient(145deg, #241434, #141829);
+    }
+
+    .corsi-block.selected-trace .tap-badge {
+      opacity: 1;
+    }
+
+    /* Neon Button */
+    .btn-neon {
+      background: linear-gradient(135deg, #d946ef 0%, #a21caf 100%);
+      color: #ffffff;
+      border: 1px solid #f0abfc;
+      box-shadow: 0 0 18px rgba(217, 70, 239, 0.4);
+      transition: all 0.15s ease;
+    }
+
+    .btn-neon:hover:not(:disabled) {
+      box-shadow: 0 0 26px rgba(217, 70, 239, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .btn-neon:active:not(:disabled) {
+      transform: translateY(0px) scale(0.98);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07090e;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body class="bg-experimental-grid min-h-screen flex flex-col justify-between text-slate-100 antialiased">
+
+  <!-- Top Telemetry Header -->
+  <header class="w-full border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-fuchsia-500 shadow-[0_0_10px_#d946ef]"></span>
+        <div>
+          <h1 class="text-sm sm:text-base font-semibold tracking-wider uppercase text-slate-100">
+            Project Trial <span class="text-fuchsia-400 font-mono">// CORSI-SPAN</span>
+          </h1>
+          <p class="text-[11px] text-slate-400 font-mono hidden sm:block">
+            Visuospatial Working Memory Assessment (v1.0)
+          </p>
+        </div>
+      </div>
+
+      <!-- Live Trial Telemetry Pills -->
+      <div id="hud-telemetry" class="hidden items-center gap-2 sm:gap-3 font-mono text-xs">
+        <div class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300">
+          PHASE: <span id="hud-phase" class="text-fuchsia-400 font-semibold">PRACTICE</span>
+        </div>
+        <div class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300">
+          SPAN: <span id="hud-span" class="text-fuchsia-400 font-semibold">3</span>
+        </div>
+        <div class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300">
+          TRIAL: <span id="hud-trial" class="text-slate-100">1/2</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl w-full mx-auto">
+
+    <!-- ==================== VIEW 1: WELCOME / INSTRUCTIONS ==================== -->
+    <section id="view-welcome" class="w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-300 text-xs font-mono mb-4">
+        TASK MODULE: VISUOSPATIAL SPAN
+      </div>
+
+      <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">
+        Digital Corsi Block-Tapping Task
+      </h2>
+
+      <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+        You will see <strong>9 blocks</strong> arranged on the board. On each trial, a sequence of blocks will flash in <span class="text-fuchsia-400 font-semibold">neon violet</span> one at a time.
+      </p>
+
+      <div class="space-y-3 bg-slate-950/70 border border-slate-800/90 rounded-xl p-4 mb-6 text-sm text-slate-300">
+        <div class="flex items-start gap-3">
+          <span class="font-mono text-fuchsia-400 font-bold">01.</span>
+          <span><strong>Watch carefully:</strong> Wait until the entire flashing sequence finishes.</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="font-mono text-fuchsia-400 font-bold">02.</span>
+          <span><strong>Wait for the "GO" cue:</strong> An audio-visual signal indicates when recall begins.</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="font-mono text-fuchsia-400 font-bold">03.</span>
+          <span><strong>Reproduce the order:</strong> Tap the blocks in the exact same order. The trial auto-submits once you reach the sequence length, or you can press <em>Clear</em> to reset your current input before finishing.</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="font-mono text-fuchsia-400 font-bold">04.</span>
+          <span><strong>Progression:</strong> Begins with a 2-trial Warmup (Span 3), followed by the Main Assessment starting at Span 3 and increasing up to Span 9.</span>
+        </div>
+      </div>
+
+      <!-- Protocol Configuration Controls -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 text-xs">
+        <div>
+          <label for="select-mode" class="block text-slate-400 font-mono mb-1">PROGRESSION MODE</label>
+          <select id="select-mode" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono focus:outline-none focus:border-fuchsia-500">
+            <option value="staircase" selected>Adaptive Staircase (Stop if 0/2 correct)</option>
+            <option value="fixed">Fixed Full Protocol (Spans 3 to 9)</option>
+          </select>
+        </div>
+        <div>
+          <label for="toggle-sound" class="block text-slate-400 font-mono mb-1">AUDIO CUES</label>
+          <select id="toggle-sound" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono focus:outline-none focus:border-fuchsia-500">
+            <option value="on" selected>Enabled (Synthesized Tone Cues)</option>
+            <option value="off">Muted (Visual Cues Only)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btn-start-practice" class="btn-neon flex-1 py-3.5 px-6 rounded-xl font-semibold text-sm sm:text-base tracking-wide uppercase cursor-pointer">
+          Start Practice Warmup (2 Trials)
+        </button>
+      </div>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="corsi-info.html">Task info</a>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: ARENA (ACTIVE TASK) ==================== -->
+    <section id="view-arena" class="hidden w-full flex-col items-center justify-center">
+
+      <!-- Status / Cue Banner -->
+      <div class="w-full max-w-[520px] mb-3 flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-2.5">
+        <div class="flex items-center gap-2.5">
+          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="status-text" class="font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-slate-200">
+            WATCH SEQUENCE
+          </span>
+        </div>
+
+        <!-- Sequence Tap Progress Dots -->
+        <div id="tap-progress" class="flex items-center gap-1.5"></div>
+      </div>
+
+      <!-- Central Square Corsi Board -->
+      <div id="corsi-arena" class="corsi-arena">
+        <!-- 9 Pseudorandom Blocks injected by JS -->
+
+        <!-- Overlay Cue Banner (Countdown / GO / Feedback) -->
+        <div id="arena-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-xs z-30 flex flex-col items-center justify-center p-6 text-center">
+          <div id="overlay-badge" class="text-xs font-mono uppercase tracking-widest text-fuchsia-400 mb-2"></div>
+          <div id="overlay-title" class="text-2xl sm:text-3xl font-bold text-white mb-2"></div>
+          <p id="overlay-subtitle" class="text-sm text-slate-300 max-w-xs mb-5"></p>
+          <button id="overlay-btn" class="hidden btn-neon px-6 py-2.5 rounded-xl font-semibold text-sm uppercase tracking-wider cursor-pointer">
+            Continue
+          </button>
+          <div class="mt-3 flex justify-center gap-2">
+            <a class="trial-more" href="index.html">Hub</a>
+            <a class="trial-more" href="corsi-info.html">Task info</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Control Bar (Clear Input + Instructions) -->
+      <div class="w-full max-w-[520px] mt-3 flex items-center justify-between gap-3">
+        <div class="text-xs font-mono text-slate-400">
+          TAPS: <span id="tap-count-label" class="text-slate-200 font-semibold">0 / 3</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-clear-seq"
+            disabled
+            class="px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono uppercase tracking-wider text-slate-300 hover:border-fuchsia-500/60 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+          >
+            Clear Input
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: END / SUMMARY SCREEN ==================== -->
+    <section id="view-results" class="hidden w-full max-w-2xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-300 text-xs font-mono">
+          ASSESSMENT COMPLETE
+        </div>
+        <span id="saved-storage-indicator" class="text-xs font-mono text-emerald-400">
+          ✓ Saved to localStorage["projectTrial_corsi_v1"]
+        </span>
+      </div>
+
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-6">
+        Visuospatial Span Summary
+      </h2>
+
+      <!-- 4 Core Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="text-[11px] font-mono uppercase text-slate-400 mb-1">Max Corsi Span</div>
+          <div id="metric-max-span" class="text-2xl sm:text-3xl font-bold text-fuchsia-400 font-mono">0</div>
+          <div class="text-[11px] text-slate-500 mt-0.5">Highest level passed</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="text-[11px] font-mono uppercase text-slate-400 mb-1">Correct Sequences</div>
+          <div id="metric-total-correct" class="text-2xl sm:text-3xl font-bold text-slate-100 font-mono">0</div>
+          <div id="metric-total-trials-sub" class="text-[11px] text-slate-500 mt-0.5">Main assessment</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="text-[11px] font-mono uppercase text-slate-400 mb-1">Total Block Score</div>
+          <div id="metric-block-score" class="text-2xl sm:text-3xl font-bold text-fuchsia-400 font-mono">0</div>
+          <div id="metric-product-sub" class="text-[11px] text-slate-500 mt-0.5">Sum of correct spans</div>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+          <div class="text-[11px] font-mono uppercase text-slate-400 mb-1">Mean Inter-Tap RT</div>
+          <div id="metric-mean-rt" class="text-2xl sm:text-3xl font-bold text-slate-100 font-mono">0 ms</div>
+          <div class="text-[11px] text-slate-500 mt-0.5">Latency per block</div>
+        </div>
+      </div>
+
+      <!-- Trial-by-Trial Log Table -->
+      <div class="mb-6">
+        <div class="text-xs font-mono uppercase text-slate-400 mb-2">Trial-by-Trial Telemetry</div>
+        <div class="max-h-56 overflow-y-auto border border-slate-800 rounded-xl bg-slate-950/60">
+          <table class="w-full text-left border-collapse text-xs font-mono">
+            <thead class="bg-slate-900/90 text-slate-400 sticky top-0 border-b border-slate-800">
+              <tr>
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">Block</th>
+                <th class="py-2.5 px-3">Span</th>
+                <th class="py-2.5 px-3">Target</th>
+                <th class="py-2.5 px-3">Response</th>
+                <th class="py-2.5 px-3">Acc</th>
+                <th class="py-2.5 px-3 text-right">Mean Tap RT</th>
+              </tr>
+            </thead>
+            <tbody id="results-table-body" class="divide-y divide-slate-800/70 text-slate-300"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <button id="btn-download-csv" class="btn-neon w-full sm:w-auto flex-1 py-3 px-5 rounded-xl font-semibold text-sm uppercase tracking-wider cursor-pointer">
+          Download CSV Log
+        </button>
+        <button id="btn-restart" class="w-full sm:w-auto py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm uppercase tracking-wider transition cursor-pointer">
+          Run New Session
+        </button>
+      </div>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="corsi-info.html">Task info</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Minimal Experimental Footer -->
+  <footer class="w-full py-3 px-4 text-center text-[11px] font-mono text-slate-500 border-t border-slate-900">
+    Project Trial Standardized Cognitive Battery • Non-Grid 9-Block Corsi Coordinates • High-Precision Pointer Timing
+  </footer>
+
+  <!-- ==================== TASK APPLICATION SCRIPT ==================== -->
+  <script>
+    /**
+     * CONFIG: Experimental parameters for the Digital Corsi Block-Tapping Task
+     */
+    const CONFIG = {
+      storageKey: 'projectTrial_corsi_v1',
+
+      // Timing parameters (ms)
+      preTrialDelayMs: 650,
+      flashDurationMs: 500,
+      interBlockGapMs: 250,
+      postSequenceGoDelayMs: 200,
+      interTrialIntervalMs: 900,
+
+      // Span structure
+      practiceSpan: 3,
+      practiceTrials: 2,
+      minSpan: 3,
+      maxSpan: 9,
+      trialsPerSpan: 2,
+
+      // Progression mode: 'staircase' (discontinues when 0/2 correct at a span) or 'fixed' (runs all spans 3..9)
+      progressionMode: 'staircase',
+      audioEnabled: true,
+
+      // Classic 9-block non-grid pseudorandom normalized coordinates (adapted from Kessels et al., 2000 / Corsi 1972)
+      // Values represent percentage centers (x%, y%) inside the square arena with safe margins
+      blockCoordinates: [
+        { id: 1, x: 52, y: 16 },
+        { id: 2, x: 20, y: 22 },
+        { id: 3, x: 78, y: 26 },
+        { id: 4, x: 34, y: 42 },
+        { id: 5, x: 66, y: 47 },
+        { id: 6, x: 16, y: 63 },
+        { id: 7, x: 48, y: 68 },
+        { id: 8, x: 82, y: 74 },
+        { id: 9, x: 29, y: 84 }
+      ]
+    };
+
+    /**
+     * Application State
+     */
+    const STATE = {
+      phase: 'IDLE', // 'PRACTICE' | 'MAIN' | 'DONE'
+      inputAllowed: false,
+      currentSpan: 3,
+      trialInSpan: 1, // 1..CONFIG.trialsPerSpan
+      correctInCurrentSpan: 0,
+      globalTrialIndex: 0,
+      targetSequence: [],
+      userSequence: [],
+      tapTimestamps: [],
+      goCueTimestamp: 0,
+      trialLogs: [],
+      audioCtx: null
+    };
+
+    /**
+     * DOM Elements
+     */
+    const DOM = {
+      viewWelcome: document.getElementById('view-welcome'),
+      viewArena: document.getElementById('view-arena'),
+      viewResults: document.getElementById('view-results'),
+      hudTelemetry: document.getElementById('hud-telemetry'),
+      hudPhase: document.getElementById('hud-phase'),
+      hudSpan: document.getElementById('hud-span'),
+      hudTrial: document.getElementById('hud-trial'),
+      selectMode: document.getElementById('select-mode'),
+      toggleSound: document.getElementById('toggle-sound'),
+      btnStartPractice: document.getElementById('btn-start-practice'),
+      arena: document.getElementById('corsi-arena'),
+      arenaOverlay: document.getElementById('arena-overlay'),
+      overlayBadge: document.getElementById('overlay-badge'),
+      overlayTitle: document.getElementById('overlay-title'),
+      overlaySubtitle: document.getElementById('overlay-subtitle'),
+      overlayBtn: document.getElementById('overlay-btn'),
+      statusDot: document.getElementById('status-dot'),
+      statusText: document.getElementById('status-text'),
+      tapProgress: document.getElementById('tap-progress'),
+      tapCountLabel: document.getElementById('tap-count-label'),
+      btnClearSeq: document.getElementById('btn-clear-seq'),
+      metricMaxSpan: document.getElementById('metric-max-span'),
+      metricTotalCorrect: document.getElementById('metric-total-correct'),
+      metricTotalTrialsSub: document.getElementById('metric-total-trials-sub'),
+      metricBlockScore: document.getElementById('metric-block-score'),
+      metricProductSub: document.getElementById('metric-product-sub'),
+      metricMeanRt: document.getElementById('metric-mean-rt'),
+      resultsTableBody: document.getElementById('results-table-body'),
+      btnDownloadCsv: document.getElementById('btn-download-csv'),
+      btnRestart: document.getElementById('btn-restart')
+    };
+
+    /**
+     * Web Audio API Synthesizer for Low-Latency Experimental Cues
+     */
+    function initAudio() {
+      if (!STATE.audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          STATE.audioCtx = new AudioContextClass();
+        }
+      }
+      if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
+        STATE.audioCtx.resume();
+      }
+    }
+
+    function playTone(freq = 440, durationMs = 90, type = 'sine', gainVal = 0.08) {
+      if (!CONFIG.audioEnabled || !STATE.audioCtx) return;
+      try {
+        const now = STATE.audioCtx.currentTime;
+        const osc = STATE.audioCtx.createOscillator();
+        const gain = STATE.audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(gainVal, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + durationMs / 1000);
+        osc.connect(gain);
+        gain.connect(STATE.audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + durationMs / 1000);
+      } catch (e) {
+        // Ignore audio errors if blocked by browser policy
+      }
+    }
+
+    function playGoCueAudio() {
+      playTone(660, 110, 'triangle', 0.11);
+      setTimeout(() => playTone(880, 150, 'triangle', 0.12), 85);
+    }
+
+    /**
+     * Build the 9 Pseudorandom Corsi Blocks inside the Arena
+     */
+    const blockElements = new Map();
+
+    function renderArenaBlocks() {
+      // Remove any existing blocks
+      blockElements.forEach(el => el.remove());
+      blockElements.clear();
+
+      CONFIG.blockCoordinates.forEach(coord => {
+        const block = document.createElement('div');
+        block.className = 'corsi-block disabled-block';
+        block.style.left = `${coord.x}%`;
+        block.style.top = `${coord.y}%`;
+        block.dataset.blockId = String(coord.id);
+        block.setAttribute('role', 'button');
+        block.setAttribute('aria-label', `Corsi Block ${coord.id}`);
+
+        const badge = document.createElement('span');
+        badge.className = 'tap-badge';
+        badge.textContent = '';
+        block.appendChild(badge);
+
+        // Direct low-latency pointerdown handler
+        block.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          handleBlockTap(coord.id);
+        });
+
+        DOM.arena.appendChild(block);
+        blockElements.set(coord.id, block);
+      });
+    }
+
+    /**
+     * Utility: Promise-based sleep
+     */
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Generate a random sequence of unique block IDs (1..9) of length `spanLength`
+     */
+    function generateSequence(spanLength) {
+      const pool = CONFIG.blockCoordinates.map(b => b.id);
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, spanLength);
+    }
+
+    /**
+     * Update HUD and Progress Dots
+     */
+    function updateHud() {
+      DOM.hudPhase.textContent = STATE.phase;
+      DOM.hudSpan.textContent = String(STATE.currentSpan);
+      const totalForPhase = STATE.phase === 'PRACTICE' ? CONFIG.practiceTrials : CONFIG.trialsPerSpan;
+      DOM.hudTrial.textContent = `${STATE.trialInSpan}/${totalForPhase}`;
+      DOM.tapCountLabel.textContent = `${STATE.userSequence.length} / ${STATE.currentSpan}`;
+
+      // Render progress indicator dots
+      DOM.tapProgress.innerHTML = '';
+      for (let i = 0; i < STATE.currentSpan; i++) {
+        const dot = document.createElement('span');
+        const filled = i < STATE.userSequence.length;
+        dot.className = `w-2.5 h-2.5 rounded-full transition-all ${
+          filled
+            ? 'bg-fuchsia-400 shadow-[0_0_8px_#d946ef] scale-110'
+            : 'bg-slate-800 border border-slate-700'
+        }`;
+        DOM.tapProgress.appendChild(dot);
+      }
+    }
+
+    /**
+     * Set Status Banner State
+     */
+    function setStatusBanner(mode, text) {
+      DOM.statusText.textContent = text;
+      DOM.arena.classList.remove('arena-go', 'arena-watch');
+
+      if (mode === 'WATCH') {
+        DOM.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+        DOM.statusText.className = 'font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-amber-300';
+        DOM.arena.classList.add('arena-watch');
+      } else if (mode === 'GO') {
+        DOM.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-fuchsia-400 shadow-[0_0_10px_#d946ef]';
+        DOM.statusText.className = 'font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-fuchsia-300';
+        DOM.arena.classList.add('arena-go');
+      } else if (mode === 'FEEDBACK_OK') {
+        DOM.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+        DOM.statusText.className = 'font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-emerald-300';
+      } else if (mode === 'FEEDBACK_ERR') {
+        DOM.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        DOM.statusText.className = 'font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-rose-400';
+      }
+    }
+
+    /**
+     * Clear visual trace badges on blocks
+     */
+    function clearBlockTraces() {
+      blockElements.forEach(el => {
+        el.classList.remove('lit', 'tapped', 'selected-trace');
+        const badge = el.querySelector('.tap-badge');
+        if (badge) badge.textContent = '';
+      });
+    }
+
+    function setBlocksInteractive(enabled) {
+      STATE.inputAllowed = enabled;
+      blockElements.forEach(el => {
+        if (enabled) {
+          el.classList.remove('disabled-block');
+        } else {
+          el.classList.add('disabled-block');
+        }
+      });
+      DOM.btnClearSeq.disabled = !enabled || STATE.userSequence.length === 0;
+    }
+
+    /**
+     * Show/Hide Arena Overlay Modal
+     */
+    function showArenaOverlay({ badge, title, subtitle, buttonText, onButton }) {
+      DOM.overlayBadge.textContent = badge || '';
+      DOM.overlayTitle.textContent = title || '';
+      DOM.overlaySubtitle.textContent = subtitle || '';
+
+      if (buttonText) {
+        DOM.overlayBtn.textContent = buttonText;
+        DOM.overlayBtn.classList.remove('hidden');
+        DOM.overlayBtn.onclick = () => {
+          DOM.arenaOverlay.classList.add('hidden');
+          if (onButton) onButton();
+        };
+      } else {
+        DOM.overlayBtn.classList.add('hidden');
+        DOM.overlayBtn.onclick = null;
+      }
+
+      DOM.arenaOverlay.classList.remove('hidden');
+    }
+
+    function hideArenaOverlay() {
+      DOM.arenaOverlay.classList.add('hidden');
+    }
+
+    /**
+     * Run a Single Trial
+     */
+    async function runTrial() {
+      setBlocksInteractive(false);
+      clearBlockTraces();
+      STATE.userSequence = [];
+      STATE.tapTimestamps = [];
+      STATE.targetSequence = generateSequence(STATE.currentSpan);
+      updateHud();
+
+      setStatusBanner('WATCH', 'READY — WATCH SEQUENCE');
+      await sleep(CONFIG.preTrialDelayMs);
+
+      // Flash each block in targetSequence
+      for (let i = 0; i < STATE.targetSequence.length; i++) {
+        const blockId = STATE.targetSequence[i];
+        const blockEl = blockElements.get(blockId);
+
+        if (blockEl) {
+          blockEl.classList.add('lit');
+          playTone(392 + i * 28, 120, 'sine', 0.06);
+          await sleep(CONFIG.flashDurationMs);
+          blockEl.classList.remove('lit');
+        }
+
+        if (i < STATE.targetSequence.length - 1) {
+          await sleep(CONFIG.interBlockGapMs);
+        }
+      }
+
+      await sleep(CONFIG.postSequenceGoDelayMs);
+
+      // Trigger Audio-Visual GO Cue
+      playGoCueAudio();
+      setStatusBanner('GO', 'GO! TAP BLOCKS IN ORDER');
+      STATE.goCueTimestamp = performance.now();
+      setBlocksInteractive(true);
+    }
+
+    /**
+     * Handle User Tapping a Block During Recall
+     */
+    function handleBlockTap(blockId) {
+      if (!STATE.inputAllowed) return;
+
+      const tapTime = performance.now();
+      const blockEl = blockElements.get(blockId);
+
+      // Record tap
+      STATE.userSequence.push(blockId);
+      STATE.tapTimestamps.push(tapTime);
+
+      // Audio + visual feedback
+      playTone(520 + STATE.userSequence.length * 35, 75, 'sine', 0.08);
+
+      if (blockEl) {
+        blockEl.classList.add('tapped', 'selected-trace');
+        const badge = blockEl.querySelector('.tap-badge');
+        if (badge) {
+          badge.textContent = String(STATE.userSequence.length);
+        }
+        setTimeout(() => blockEl.classList.remove('tapped'), 140);
+      }
+
+      updateHud();
+      DOM.btnClearSeq.disabled = STATE.userSequence.length === 0;
+
+      // Auto-submit once sequence reaches target span length
+      if (STATE.userSequence.length >= STATE.currentSpan) {
+        setBlocksInteractive(false);
+        setTimeout(() => evaluateTrial(), 220);
+      }
+    }
+
+    /**
+     * Clear current user sequence before final tap
+     */
+    function handleClearInput() {
+      if (!STATE.inputAllowed || STATE.userSequence.length === 0) return;
+      STATE.userSequence = [];
+      STATE.tapTimestamps = [];
+      clearBlockTraces();
+      playTone(260, 90, 'sawtooth', 0.05);
+      updateHud();
+      DOM.btnClearSeq.disabled = true;
+    }
+
+    /**
+     * Evaluate Trial Accuracy, Record Telemetry, and Advance Protocol
+     */
+    async function evaluateTrial() {
+      const isCorrect =
+        STATE.userSequence.length === STATE.targetSequence.length &&
+        STATE.userSequence.every((val, idx) => val === STATE.targetSequence[idx]);
+
+      const lastTapTime = STATE.tapTimestamps.length > 0
+        ? STATE.tapTimestamps[STATE.tapTimestamps.length - 1]
+        : performance.now();
+
+      const totalRtMs = Math.round(lastTapTime - STATE.goCueTimestamp);
+
+      // Compute mean inter-tap latency (first tap from GO cue, subsequent taps between consecutive taps)
+      let intervals = [];
+      for (let i = 0; i < STATE.tapTimestamps.length; i++) {
+        const prev = i === 0 ? STATE.goCueTimestamp : STATE.tapTimestamps[i - 1];
+        intervals.push(STATE.tapTimestamps[i] - prev);
+      }
+      const meanTapRtMs = intervals.length > 0
+        ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+        : 0;
+
+      STATE.globalTrialIndex += 1;
+
+      const trialRecord = {
+        trial: STATE.globalTrialIndex,
+        block: STATE.phase,
+        span_length: STATE.currentSpan,
+        target_seq: STATE.targetSequence.join('-'),
+        user_seq: STATE.userSequence.join('-'),
+        correct: isCorrect ? 1 : 0,
+        total_rt_ms: totalRtMs,
+        mean_tap_rt_ms: meanTapRtMs,
+        timestamp: new Date().toISOString()
+      };
+
+      STATE.trialLogs.push(trialRecord);
+
+      if (isCorrect) {
+        STATE.correctInCurrentSpan += 1;
+        setStatusBanner('FEEDBACK_OK', 'CORRECT SEQUENCE');
+        playTone(784, 110, 'triangle', 0.1);
+        setTimeout(() => playTone(1046, 160, 'triangle', 0.1), 100);
+      } else {
+        setStatusBanner('FEEDBACK_ERR', 'INCORRECT SEQUENCE');
+        playTone(220, 220, 'sawtooth', 0.08);
+      }
+
+      await sleep(CONFIG.interTrialIntervalMs);
+      clearBlockTraces();
+
+      // Advance logic for PRACTICE vs MAIN phase
+      if (STATE.phase === 'PRACTICE') {
+        if (STATE.trialInSpan < CONFIG.practiceTrials) {
+          STATE.trialInSpan += 1;
+          runTrial();
+        } else {
+          // Transition from Practice to Main Assessment
+          showArenaOverlay({
+            badge: 'WARMUP COMPLETE',
+            title: 'Ready for Main Assessment',
+            subtitle: `The main task starts at Span Length ${CONFIG.minSpan} (2 trials per span length). Tap blocks accurately in the presented order.`,
+            buttonText: 'Begin Main Assessment',
+            onButton: () => startMainPhase()
+          });
+        }
+        return;
+      }
+
+      // MAIN PHASE PROGRESSION
+      if (STATE.trialInSpan < CONFIG.trialsPerSpan) {
+        STATE.trialInSpan += 1;
+        runTrial();
+      } else {
+        // Completed both trials at this span length
+        const passedSpan = STATE.correctInCurrentSpan >= 1;
+        const canAdvance =
+          CONFIG.progressionMode === 'fixed'
+            ? STATE.currentSpan < CONFIG.maxSpan
+            : passedSpan && STATE.currentSpan < CONFIG.maxSpan;
+
+        if (canAdvance) {
+          STATE.currentSpan += 1;
+          STATE.trialInSpan = 1;
+          STATE.correctInCurrentSpan = 0;
+          runTrial();
+        } else {
+          finishAssessment();
+        }
+      }
+    }
+
+    /**
+     * Phase Starters
+     */
+    function startPracticePhase() {
+      initAudio();
+      CONFIG.progressionMode = DOM.selectMode.value;
+      CONFIG.audioEnabled = DOM.toggleSound.value === 'on';
+
+      STATE.phase = 'PRACTICE';
+      STATE.currentSpan = CONFIG.practiceSpan;
+      STATE.trialInSpan = 1;
+      STATE.correctInCurrentSpan = 0;
+      STATE.globalTrialIndex = 0;
+      STATE.trialLogs = [];
+
+      DOM.viewWelcome.classList.add('hidden');
+      DOM.viewResults.classList.add('hidden');
+      DOM.viewArena.classList.remove('hidden');
+      DOM.viewArena.classList.add('flex');
+      DOM.hudTelemetry.classList.remove('hidden');
+      DOM.hudTelemetry.classList.add('flex');
+
+      renderArenaBlocks();
+      hideArenaOverlay();
+      runTrial();
+    }
+
+    function startMainPhase() {
+      STATE.phase = 'MAIN';
+      STATE.currentSpan = CONFIG.minSpan;
+      STATE.trialInSpan = 1;
+      STATE.correctInCurrentSpan = 0;
+      updateHud();
+      runTrial();
+    }
+
+    /**
+     * Finish Assessment, Compute Summary Metrics, Save to localStorage, Render End Screen
+     */
+    function finishAssessment() {
+      STATE.phase = 'DONE';
+      setBlocksInteractive(false);
+
+      const mainTrials = STATE.trialLogs.filter(t => t.block === 'MAIN');
+      const correctMainTrials = mainTrials.filter(t => t.correct === 1);
+
+      // Maximum Corsi Span: highest span_length in MAIN with at least 1 correct trial (0 if none)
+      const maxCorsiSpan = correctMainTrials.length > 0
+        ? Math.max(...correctMainTrials.map(t => t.span_length))
+        : 0;
+
+      // Total Correct Sequences in MAIN
+      const totalCorrectSeq = correctMainTrials.length;
+
+      // Total Block Score: sum of span_length for all correct sequences in MAIN
+      // Also compute Kessels Product Score (Max Span * Total Correct Sequences) for sub-label
+      const totalBlockScore = correctMainTrials.reduce((sum, t) => sum + t.span_length, 0);
+      const kesselsProduct = maxCorsiSpan * totalCorrectSeq;
+
+      // Mean Inter-Tap Latency (ms) across MAIN trials
+      const meanInterTapLatency = mainTrials.length > 0
+        ? Math.round(mainTrials.reduce((acc, t) => acc + t.mean_tap_rt_ms, 0) / mainTrials.length)
+        : 0;
+
+      // Persist session payload to localStorage["projectTrial_corsi_v1"]
+      const sessionSummary = {
+        task: 'corsi_block_tapping',
+        version: '1.0',
+        completedAt: new Date().toISOString(),
+        config: {
+          progressionMode: CONFIG.progressionMode,
+          flashDurationMs: CONFIG.flashDurationMs,
+          interBlockGapMs: CONFIG.interBlockGapMs
+        },
+        summary: {
+          maxCorsiSpan,
+          totalCorrectSequences: totalCorrectSeq,
+          totalBlockScore,
+          kesselsProductScore: kesselsProduct,
+          meanInterTapLatencyMs: meanInterTapLatency
+        },
+        trials: STATE.trialLogs
+      };
+
+      try {
+        const existingRaw = localStorage.getItem(CONFIG.storageKey);
+        let history = [];
+        if (existingRaw) {
+          const parsed = JSON.parse(existingRaw);
+          history = Array.isArray(parsed) ? parsed : [parsed];
+        }
+        history.push(sessionSummary);
+        localStorage.setItem(CONFIG.storageKey, JSON.stringify(history));
+        DOM.savedStorageIndicator.textContent = '✓ Saved to localStorage["projectTrial_corsi_v1"]';
+      } catch (err) {
+        DOM.savedStorageIndicator.textContent = '⚠ localStorage unavailable in current context';
+      }
+
+      // Populate Summary Cards
+      DOM.metricMaxSpan.textContent = String(maxCorsiSpan);
+      DOM.metricTotalCorrect.textContent = `${totalCorrectSeq} / ${mainTrials.length}`;
+      DOM.metricBlockScore.textContent = String(totalBlockScore);
+      DOM.metricProductSub.textContent = `Product score: ${kesselsProduct}`;
+      DOM.metricMeanRt.textContent = `${meanInterTapLatency} ms`;
+
+      // Populate Trial Table
+      DOM.resultsTableBody.innerHTML = '';
+      STATE.trialLogs.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60';
+        const badgeClass = row.correct === 1
+          ? 'text-emerald-400 font-semibold'
+          : 'text-rose-400';
+
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-slate-400">${row.trial}</td>
+          <td class="py-2 px-3">${row.block}</td>
+          <td class="py-2 px-3 text-fuchsia-300 font-semibold">${row.span_length}</td>
+          <td class="py-2 px-3">${row.target_seq}</td>
+          <td class="py-2 px-3">${row.user_seq || '—'}</td>
+          <td class="py-2 px-3 ${badgeClass}">${row.correct === 1 ? 'PASS' : 'FAIL'}</td>
+          <td class="py-2 px-3 text-right">${row.mean_tap_rt_ms} ms</td>
+        `;
+        DOM.resultsTableBody.appendChild(tr);
+      });
+
+      // Switch View
+      DOM.hudTelemetry.classList.add('hidden');
+      DOM.viewArena.classList.add('hidden');
+      DOM.viewArena.classList.remove('flex');
+      DOM.viewResults.classList.remove('hidden');
+    }
+
+    /**
+     * Export CSV with exact required columns:
+     * trial, block, span_length, target_seq, user_seq, correct, total_rt_ms, mean_tap_rt_ms, timestamp
+     */
+    function downloadCsv() {
+      const headers = [
+        'trial',
+        'block',
+        'span_length',
+        'target_seq',
+        'user_seq',
+        'correct',
+        'total_rt_ms',
+        'mean_tap_rt_ms',
+        'timestamp'
+      ];
+
+      const rows = STATE.trialLogs.map(r => [
+        r.trial,
+        r.block,
+        r.span_length,
+        `"${r.target_seq}"`,
+        `"${r.user_seq}"`,
+        r.correct,
+        r.total_rt_ms,
+        r.mean_tap_rt_ms,
+        `"${r.timestamp}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `projectTrial_corsi_span_${stamp}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Wire UI Event Listeners
+     */
+    DOM.btnStartPractice.addEventListener('click', startPracticePhase);
+    DOM.btnClearSeq.addEventListener('click', handleClearInput);
+    DOM.btnDownloadCsv.addEventListener('click', downloadCsv);
+    DOM.btnRestart.addEventListener('click', () => {
+      DOM.viewResults.classList.add('hidden');
+      DOM.viewWelcome.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

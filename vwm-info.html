@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Working Memory — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #38bdf8">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · Visual Working Memory</p>
+            <h1>Visual Working Memory</h1>
+            <p class="lede">Colored squares flash, disappear, then one location is tested. Say whether the color there is the same or different. Six practice trials come before the 36-trial main block, or you can skip practice.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>The sample is 4, 6, or 8 squares. Half of the trials keep the probed color. Half change it. The results screen reports accuracy and mean response time, then hit rate, false-alarm rate, Cowan's K, and Pashler's K for each set size.</p>
+            <p>On that screen a different trial is the signal. A hit is answering different on a different trial. A false alarm is answering different on a same trial. Cowan's K is <code>N × (hit rate − false-alarm rate)</code>, floored at 0. Pashler's K is <code>N × (hit rate − false-alarm rate) / (1 − false-alarm rate)</code>, kept between 0 and N. The headline K is the mean of the three Cowan values. These are teaching readouts, not a clinical capacity score.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Practice</dt>
+                    <dd>6 trials. One same and one different trial at each set size, then a shuffle. Skip to Main drops any practice log and starts the 36.</dd>
+                </div>
+                <div>
+                    <dt>Main block</dt>
+                    <dd>36 trials. Six same and six different trials at each of set sizes 4, 6, and 8, then a shuffle.</dd>
+                </div>
+                <div>
+                    <dt>Squares</dt>
+                    <dd>Side length 38 on a 420-unit canvas, kept 52 units from the edge, at least 68 apart, and at least 46 from the center cross. Colors are drawn from eight fixed swatches: <code>#F94144</code>, <code>#38BDF8</code>, <code>#10B981</code>, <code>#F59E0B</code>, <code>#EC4899</code>, <code>#F8FAFC</code>, <code>#A855F7</code>, and <code>#A3E635</code>. A change uses a color that was not in the sample.</dd>
+                </div>
+                <div>
+                    <dt>Fixation</dt>
+                    <dd>500 ms.</dd>
+                </div>
+                <div>
+                    <dt>Sample</dt>
+                    <dd>250 ms. Remember the colors and locations.</dd>
+                </div>
+                <div>
+                    <dt>Delay</dt>
+                    <dd>900 ms. The cross remains. The squares are gone.</dd>
+                </div>
+                <div>
+                    <dt>Probe</dt>
+                    <dd>Stays until you answer. There is no deadline. Single mode shows only the tested square, circled. Full-array mode shows every square again and circles the tested one. The welcome menu sets the mode. The header control can switch it. The default is single.</dd>
+                </div>
+                <div>
+                    <dt>Between trials</dt>
+                    <dd>500 ms after the choice.</dd>
+                </div>
+                <div>
+                    <dt>Response time</dt>
+                    <dd>Milliseconds from probe onset. The mean on the results screen includes incorrect choices.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>Keep looking at the center cross. When the probe appears, decide whether that location changed color.</li>
+                <li>Same pad, A, or Left Arrow means same. Different pad, L, or Right Arrow means different.</li>
+                <li>A held key does not answer again. Pads are off until the probe is on screen.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_vwm_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
+            <p>Download CSV writes the current run, practice and main. Columns are trial, block, set_size, trial_type, response (<code>SAME</code> or <code>DIFFERENT</code>), correct, rt_ms, and timestamp. The file name is <code>vWM_change_detection_</code> plus a timestamp. The saved payload also keeps the summary and the probe mode at the end of the run. Those are not CSV columns. The page does not log orientation turns.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="vwm_game.html">Play Visual Working Memory</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

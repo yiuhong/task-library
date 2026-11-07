@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reversal Learning — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #eab308">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · Reversal Learning</p>
+            <h1>Reversal Learning</h1>
+            <p class="lede">Two cards pay points at different rates. Pick the one that pays more often. During the main block the better card switches without a warning. Six practice trials come before the 48-trial main block.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>One option wins +10 points on about 80% of choices. The other wins +10 on about 20%. Every other outcome is +0. Practice does not reverse. The main block reverses the better option more than once. The results screen shows total points, how often the better option was chosen, how many reversals occurred, and a trial-by-trial strip of those choices.</p>
+            <p>Points are a teaching score. This is not a clinical or normed test.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Practice</dt>
+                    <dd>6 trials. The better side, or the better symbol, is chosen at random at the start. No reversal during practice. The practice screen shows the point total.</dd>
+                </div>
+                <div>
+                    <dt>Main block</dt>
+                    <dd>48 trials. Reversals are skipped on the first trial and when fewer than 4 trials remain.</dd>
+                </div>
+                <div>
+                    <dt>Payoffs</dt>
+                    <dd>High probability 0.80, low probability 0.20, win +10, otherwise +0. Feedback stays 750 ms, then a 280 ms blank.</dd>
+                </div>
+                <div>
+                    <dt>Fixed interval</dt>
+                    <dd>The default schedule. The next reversal is drawn from 15 through 18 trials after the last one, including both ends. The first gap is 16.</dd>
+                </div>
+                <div>
+                    <dt>Performance criterion</dt>
+                    <dd>Optional on the welcome screen. Reverses after at least 12 trials in the current phase when 8 of the last 10 choices were the better option, or when the phase reaches 18 trials.</dd>
+                </div>
+                <div>
+                    <dt>Positions</dt>
+                    <dd>Spatial deck is the default: the better option is a side, left or right. Randomized symbols put marks A and B on a new side each trial, and the better option is the symbol rather than the side.</dd>
+                </div>
+                <div>
+                    <dt>Response time</dt>
+                    <dd>Milliseconds from the moment both cards are ready until the choice.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>Choose a card with the left or right pad, or with A or Left Arrow and L or Right Arrow.</li>
+                <li>A held key does not answer again. One choice is accepted while the cards are waiting.</li>
+                <li>Set the reversal schedule and the position mapping before Start Practice Block. New Session returns to that welcome screen.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_bandit_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
+            <p>Download CSV writes the current run, practice and main. Columns are trial, block, reversal_phase, high_prob_side, choice_side, chose_optimal, reward, rt_ms, and timestamp. The file name is <code>bandit_reversal_</code> plus a timestamp. The page does not log orientation turns.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="bandit_game.html">Play Reversal Learning</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

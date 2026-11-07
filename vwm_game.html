@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Project Trial | Visual Working Memory (Change Detection)</title>
+  <!-- External Theme with Fallback -->
+  <link rel="stylesheet" href="assets/trial-theme.css">
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            trial: {
+              bg: 'var(--bg-primary, #090d16)',
+              surface: 'var(--bg-surface, #111827)',
+              panel: 'var(--bg-panel, #1e293b)',
+              text: 'var(--text-primary, #f1f5f9)',
+              muted: 'var(--text-muted, #94a3b8)',
+              accent: 'var(--accent-primary, #38bdf8)',
+              accentDim: 'var(--accent-dim, rgba(56, 189, 248, 0.15))',
+              border: 'var(--border-color, #334155)'
+            }
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --trial-accent: #38bdf8;
+      --bg-primary: #090d16;
+      --bg-surface: #111827;
+      --bg-panel: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-primary: #38bdf8;
+      --accent-dim: rgba(56, 189, 248, 0.15);
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    .arena-shadow {
+      box-shadow: 0 0 40px -10px rgba(56, 189, 248, 0.12), inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .response-pad {
+      transition: transform 0.08s ease, background-color 0.12s ease, border-color 0.12s ease;
+    }
+    .response-pad:active, .response-pad.active-key {
+      transform: scale(0.97);
+      background-color: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+    }
+
+    /* Custom Scrollbar for Results view */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans antialiased selection:bg-sky-500 selection:text-slate-950">
+
+  <!-- Top Header / HUD -->
+  <header class="w-full border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md px-4 py-2.5 flex items-center justify-between z-20">
+    <div class="flex items-center space-x-3">
+      <div class="h-2.5 w-2.5 rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8]"></div>
+      <span class="font-mono text-xs uppercase tracking-widest text-slate-300 font-semibold">Project Trial // vWM-CD</span>
+    </div>
+
+    <div class="flex items-center space-x-4 font-mono text-xs">
+      <div id="hud-block" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">
+        BLOCK: <span class="text-sky-400 font-bold" id="hud-block-val">READY</span>
+      </div>
+      <div id="hud-trial" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">
+        TRIAL: <span class="text-slate-200 font-bold" id="hud-trial-val">0 / 0</span>
+      </div>
+      <button id="btn-probe-mode" title="Toggle Probe Mode (Single Item vs Full Array + Cue)" class="hidden sm:inline-flex items-center px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 transition cursor-pointer">
+        PROBE: <span id="probe-mode-label" class="text-sky-400 ml-1 font-semibold">SINGLE</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 relative w-full max-w-4xl mx-auto">
+
+    <!-- SCREEN 1: Welcome / Instructions -->
+    <section id="screen-intro" class="w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-xl p-6 sm:p-8 shadow-2xl backdrop-blur">
+      <div class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-mono mb-4">
+        <span>PARADIGM: LUCK & VOGEL (1997) / COWAN'S K</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight mb-3">
+        Visual Working Memory Change Detection
+      </h1>
+      <p class="text-sm text-slate-400 leading-relaxed mb-6">
+        This experiment measures your visual working memory capacity across varying cognitive loads (set sizes of <span class="text-slate-200 font-semibold">4, 6, or 8</span> items).
+      </p>
+
+      <!-- Paradigm Timeline Visual -->
+      <div class="grid grid-cols-4 gap-2 mb-6 text-center font-mono text-xs">
+        <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-2.5">
+          <div class="text-sky-400 font-bold mb-1">1. FIXATE</div>
+          <div class="text-slate-400 text-[11px]">500 ms</div>
+          <div class="mt-2 text-lg text-slate-300">+</div>
+        </div>
+        <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-2.5">
+          <div class="text-sky-400 font-bold mb-1">2. MEMORY</div>
+          <div class="text-slate-400 text-[11px]">250 ms</div>
+          <div class="mt-2 flex justify-center space-x-1">
+            <span class="w-3 h-3 bg-orange-500 inline-block rounded-xs"></span>
+            <span class="w-3 h-3 bg-sky-400 inline-block rounded-xs"></span>
+            <span class="w-3 h-3 bg-emerald-500 inline-block rounded-xs"></span>
+          </div>
+        </div>
+        <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-2.5">
+          <div class="text-sky-400 font-bold mb-1">3. DELAY</div>
+          <div class="text-slate-400 text-[11px]">900 ms</div>
+          <div class="mt-2 text-lg text-slate-500">+</div>
+        </div>
+        <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-2.5">
+          <div class="text-sky-400 font-bold mb-1">4. PROBE</div>
+          <div class="text-slate-400 text-[11px]">Until Resp</div>
+          <div class="mt-2 flex justify-center">
+            <span class="w-3.5 h-3.5 bg-pink-500 inline-block rounded-xs ring-2 ring-white"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Rules -->
+      <div class="bg-slate-950/60 border border-slate-800/90 rounded-lg p-4 mb-6 space-y-2 text-xs sm:text-sm text-slate-300">
+        <div class="flex items-start space-x-2.5">
+          <span class="text-sky-400 font-mono font-bold">01.</span>
+          <span>Keep your eyes fixed on the central cross (<strong class="text-white">+</strong>) throughout the trial.</span>
+        </div>
+        <div class="flex items-start space-x-2.5">
+          <span class="text-sky-400 font-mono font-bold">02.</span>
+          <span>Remember the <strong>exact colors and locations</strong> of all flashed squares.</span>
+        </div>
+        <div class="flex items-start space-x-2.5">
+          <span class="text-sky-400 font-mono font-bold">03.</span>
+          <span>When the circled test square appears, decide if its color is the <strong class="text-sky-400">SAME</strong> (50%) or <strong class="text-amber-400">DIFFERENT</strong> (50%) compared to the square that was in that exact location during the sample array.</span>
+        </div>
+      </div>
+
+      <!-- Probe Display Option -->
+      <div class="flex items-center justify-between bg-slate-950/80 border border-slate-800 rounded-lg px-4 py-3 mb-6">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-300">Test Probe Presentation Mode</div>
+          <div class="text-xs text-slate-400">Single probed square or full array with target circled</div>
+        </div>
+        <select id="select-probe-type" class="bg-slate-900 border border-slate-700 text-sky-400 text-xs font-mono rounded px-2.5 py-1.5 focus:outline-none focus:border-sky-400">
+          <option value="single" selected>Single Probed Square</option>
+          <option value="full">Full Array (One Circled)</option>
+        </select>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btn-start-practice" class="flex-1 py-3 px-5 rounded-lg bg-[#38bdf8] hover:bg-sky-300 text-slate-950 font-bold text-sm tracking-wide transition shadow-[0_0_20px_rgba(56,189,248,0.3)] cursor-pointer">
+          START PRACTICE (6 TRIALS)
+        </button>
+        <button id="btn-skip-to-main" class="py-3 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs tracking-wider transition border border-slate-700 cursor-pointer">
+          SKIP TO MAIN (36)
+        </button>
+      </div>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="vwm-info.html">Task info</a>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: Inter-Block Transition Modal -->
+    <section id="screen-transition" class="hidden w-full max-w-md bg-slate-900/95 border border-slate-800 rounded-xl p-6 sm:p-8 text-center shadow-2xl">
+      <div class="w-12 h-12 rounded-full bg-sky-500/10 border border-sky-500/40 flex items-center justify-center mx-auto mb-4 text-sky-400 font-mono font-bold text-lg">
+        ✓
+      </div>
+      <h2 class="text-xl font-bold text-slate-100 mb-2">Practice Complete</h2>
+      <p id="practice-summary-text" class="text-sm text-slate-400 mb-6 font-mono"></p>
+      <p class="text-xs text-slate-400 leading-relaxed mb-6">
+        The main experimental block consists of <strong class="text-slate-200">36 balanced trials</strong> across set sizes 4, 6, and 8. Respond as accurately and quickly as possible.
+      </p>
+      <button id="btn-start-main" class="w-full py-3 px-5 rounded-lg bg-[#38bdf8] hover:bg-sky-300 text-slate-950 font-bold text-sm tracking-wide transition shadow-[0_0_20px_rgba(56,189,248,0.3)] cursor-pointer">
+        BEGIN MAIN BLOCK (36 TRIALS)
+      </button>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="vwm-info.html">Task info</a>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: Experimental Arena -->
+    <section id="screen-arena" class="hidden flex-col items-center justify-center w-full">
+      <!-- Status Bar Above Arena -->
+      <div class="w-full max-w-[420px] flex items-center justify-between text-xs font-mono text-slate-400 mb-2 px-1">
+        <span id="phase-indicator" class="uppercase tracking-widest text-sky-400">FIXATION</span>
+        <span id="feedback-badge" class="opacity-0 transition-opacity duration-150 font-bold"></span>
+      </div>
+
+      <!-- Central Square Arena -->
+      <div class="relative w-[min(86vw,420px)] h-[min(86vw,420px)] bg-[#0b101d] border-2 border-slate-800 rounded-xl arena-shadow overflow-hidden flex items-center justify-center">
+        <canvas id="vwm-canvas" width="420" height="420" class="w-full h-full block"></canvas>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: Results & Psychometrics Dashboard -->
+    <section id="screen-results" class="hidden w-full max-w-3xl bg-slate-900/90 border border-slate-800 rounded-xl p-5 sm:p-8 shadow-2xl my-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4 mb-6">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-widest text-sky-400">SESSION COMPLETE // DATA LOGGED</span>
+          <h2 class="text-2xl font-bold text-slate-100">Visual Working Memory Profile</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-download-csv" class="px-4 py-2 rounded-lg bg-[#38bdf8] hover:bg-sky-300 text-slate-950 font-bold text-xs font-mono tracking-wider transition shadow-[0_0_15px_rgba(56,189,248,0.3)] cursor-pointer">
+            DOWNLOAD CSV
+          </button>
+          <button id="btn-restart" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-mono transition cursor-pointer">
+            RESTART
+          </button>
+        </div>
+      </div>
+
+      <!-- Primary KPI Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+        <div class="bg-slate-950/80 border border-slate-800/90 rounded-lg p-3.5">
+          <div class="text-[11px] font-mono text-slate-400 uppercase">Overall Acc</div>
+          <div id="stat-acc" class="text-xl sm:text-2xl font-bold text-slate-100 font-mono mt-1">--%</div>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800/90 rounded-lg p-3.5">
+          <div class="text-[11px] font-mono text-slate-400 uppercase">Mean RT</div>
+          <div id="stat-rt" class="text-xl sm:text-2xl font-bold text-slate-100 font-mono mt-1">-- ms</div>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800/90 rounded-lg p-3.5">
+          <div class="text-[11px] font-mono text-slate-400 uppercase">Hit Rate (H)</div>
+          <div id="stat-hit" class="text-xl sm:text-2xl font-bold text-emerald-400 font-mono mt-1">--</div>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800/90 rounded-lg p-3.5">
+          <div class="text-[11px] font-mono text-slate-400 uppercase">False Alarm (FA)</div>
+          <div id="stat-fa" class="text-xl sm:text-2xl font-bold text-rose-400 font-mono mt-1">--</div>
+        </div>
+        <div class="col-span-2 sm:col-span-1 bg-sky-950/30 border border-sky-500/40 rounded-lg p-3.5">
+          <div class="text-[11px] font-mono text-sky-400 uppercase">Mean Cowan's K</div>
+          <div id="stat-k-mean" class="text-xl sm:text-2xl font-bold text-sky-400 font-mono mt-1">--</div>
+        </div>
+      </div>
+
+      <!-- Set Size Breakdown Table -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-mono uppercase tracking-wider text-slate-300">Capacity Breakdown by Set Size (Main Block)</h3>
+          <span class="text-[11px] font-mono text-slate-400">Cowan's K = N × (Hit Rate − False Alarm Rate)</span>
+        </div>
+        <div class="overflow-x-auto border border-slate-800 rounded-lg">
+          <table class="w-full text-left font-mono text-xs">
+            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2.5 px-3">Set Size (N)</th>
+                <th class="py-2.5 px-3">Accuracy</th>
+                <th class="py-2.5 px-3">Mean RT</th>
+                <th class="py-2.5 px-3">Hit Rate</th>
+                <th class="py-2.5 px-3">FA Rate</th>
+                <th class="py-2.5 px-3 text-sky-400">Cowan's K</th>
+                <th class="py-2.5 px-3 text-slate-300">Pashler's K</th>
+              </tr>
+            </thead>
+            <tbody id="table-setsize-body" class="divide-y divide-slate-800/70 bg-slate-950/40 text-slate-200">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Storage Notice -->
+      <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 bg-slate-950/70 border border-slate-800/80 rounded px-3.5 py-2">
+        <span>LOCALSTORAGE KEY: <code class="text-sky-400">projectTrial_vwm_v1</code></span>
+        <span id="storage-status" class="text-emerald-400">SAVED</span>
+      </div>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="vwm-info.html">Task info</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mobile-First Bottom Response Pads -->
+  <footer id="response-footer" class="w-full max-w-xl mx-auto px-3 pb-4 pt-1 z-20">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+      <!-- Left Pad: SAME -->
+      <button id="pad-same" type="button" disabled
+        class="response-pad group relative flex flex-col items-center justify-center py-4 sm:py-5 px-4 rounded-xl bg-slate-900/90 border-2 border-slate-700/80 text-slate-100 disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-lg">
+        <span class="text-base sm:text-lg font-extrabold tracking-wider text-sky-400 group-hover:text-sky-300">SAME</span>
+        <span class="text-[11px] font-mono text-slate-400 mt-1">Key [A] or [←]</span>
+      </button>
+
+      <!-- Right Pad: DIFFERENT -->
+      <button id="pad-diff" type="button" disabled
+        class="response-pad group relative flex flex-col items-center justify-center py-4 sm:py-5 px-4 rounded-xl bg-slate-900/90 border-2 border-slate-700/80 text-slate-100 disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-lg">
+        <span class="text-base sm:text-lg font-extrabold tracking-wider text-amber-400 group-hover:text-amber-300">DIFFERENT</span>
+        <span class="text-[11px] font-mono text-slate-400 mt-1">Key [L] or [→]</span>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /********************************************************************
+       * 1. CONFIGURATION & COLORBLIND-SAFE PALETTE (Okabe-Ito + High-Contrast)
+       ********************************************************************/
+      const CONFIG = {
+        storageKey: 'projectTrial_vwm_v1',
+        canvasSize: 420,
+        arenaMargin: 52,       // Keep squares safely away from walls
+        minCenterDist: 46,     // Avoid overlapping central fixation cross
+        minItemDist: 68,       // Center-to-center minimum spacing between squares
+        squareSize: 38,        // Side length in canvas pixels
+        fixationMs: 500,
+        sampleMs: 250,
+        delayMs: 900,
+        itiMs: 500,
+        setSizes: [4, 6, 8],
+        // 8 Distinct High-Contrast Colorblind-Safe Colors
+        palette: [
+          { name: 'Red-Orange', hex: '#F94144' },
+          { name: 'Sky Blue',   hex: '#38BDF8' },
+          { name: 'Emerald',    hex: '#10B981' },
+          { name: 'Amber Gold', hex: '#F59E0B' },
+          { name: 'Magenta',    hex: '#EC4899' },
+          { name: 'Pure White', hex: '#F8FAFC' },
+          { name: 'Violet',     hex: '#A855F7' },
+          { name: 'Lime',       hex: '#A3E635' }
+        ]
+      };
+
+      /********************************************************************
+       * 2. STATE MANAGEMENT
+       ********************************************************************/
+      const STATE = {
+        block: 'IDLE',           // 'PRACTICE' | 'MAIN' | 'DONE'
+        probeMode: 'single',     // 'single' | 'full'
+        trialQueue: [],
+        currentTrialIndex: 0,
+        currentTrial: null,
+        awaitingResponse: false,
+        probeOnsetTime: 0,
+        allLogs: [],             // Every recorded trial across blocks
+        activeTimers: []
+      };
+
+      /********************************************************************
+       * 3. DOM REFERENCES
+       ********************************************************************/
+      const el = {
+        hudBlockVal: document.getElementById('hud-block-val'),
+        hudTrialVal: document.getElementById('hud-trial-val'),
+        btnProbeMode: document.getElementById('btn-probe-mode'),
+        probeModeLabel: document.getElementById('probe-mode-label'),
+        selectProbeType: document.getElementById('select-probe-type'),
+
+        screenIntro: document.getElementById('screen-intro'),
+        screenTransition: document.getElementById('screen-transition'),
+        screenArena: document.getElementById('screen-arena'),
+        screenResults: document.getElementById('screen-results'),
+
+        practiceSummaryText: document.getElementById('practice-summary-text'),
+        phaseIndicator: document.getElementById('phase-indicator'),
+        feedbackBadge: document.getElementById('feedback-badge'),
+        canvas: document.getElementById('vwm-canvas'),
+        ctx: document.getElementById('vwm-canvas').getContext('2d'),
+
+        padSame: document.getElementById('pad-same'),
+        padDiff: document.getElementById('pad-diff'),
+        responseFooter: document.getElementById('response-footer'),
+
+        btnStartPractice: document.getElementById('btn-start-practice'),
+        btnSkipToMain: document.getElementById('btn-skip-to-main'),
+        btnStartMain: document.getElementById('btn-start-main'),
+        btnDownloadCsv: document.getElementById('btn-download-csv'),
+        btnRestart: document.getElementById('btn-restart'),
+
+        statAcc: document.getElementById('stat-acc'),
+        statRt: document.getElementById('stat-rt'),
+        statHit: document.getElementById('stat-hit'),
+        statFa: document.getElementById('stat-fa'),
+        statKMean: document.getElementById('stat-k-mean'),
+        tableSetSizeBody: document.getElementById('table-setsize-body'),
+        storageStatus: document.getElementById('storage-status')
+      };
+
+      /********************************************************************
+       * 4. UTILITY & EXPERIMENTAL DESIGN GENERATORS
+       ********************************************************************/
+      function shuffle(array) {
+        const arr = array.slice();
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function clearTimers() {
+        while (STATE.activeTimers.length > 0) {
+          clearTimeout(STATE.activeTimers.pop());
+        }
+      }
+
+      function schedule(fn, delayMs) {
+        const id = setTimeout(fn, delayMs);
+        STATE.activeTimers.push(id);
+        return id;
+      }
+
+      /**
+       * Generates balanced trial list:
+       * - Practice: 6 trials (Set sizes 4, 6, 8 x SAME, DIFFERENT)
+       * - Main: 36 trials (6 repetitions of each of the 6 cells: 3 set sizes x 2 trial types)
+       */
+      function buildBlockTrials(blockName, repsPerCell) {
+        const list = [];
+        const types = ['SAME', 'DIFFERENT'];
+
+        for (let r = 0; r < repsPerCell; r++) {
+          for (const setSize of CONFIG.setSizes) {
+            for (const trialType of types) {
+              list.push({
+                block: blockName,
+                setSize,
+                trialType
+              });
+            }
+          }
+        }
+        return shuffle(list);
+      }
+
+      /**
+       * Generates non-overlapping coordinates inside the 420x420 arena
+       * with minimum distance from the central fixation cross and between items.
+       */
+      function generateStimulusItems(setSize, trialType) {
+        const center = CONFIG.canvasSize / 2;
+        const minCoord = CONFIG.arenaMargin;
+        const maxCoord = CONFIG.canvasSize - CONFIG.arenaMargin;
+
+        const positions = [];
+        let maxAttempts = 2000;
+        let currentMinDist = CONFIG.minItemDist;
+
+        while (positions.length < setSize && maxAttempts > 0) {
+          maxAttempts--;
+          // Slightly relax spacing only if packing 8 squares hits rare bottleneck
+          if (maxAttempts === 800) currentMinDist = 60;
+
+          const x = minCoord + Math.random() * (maxCoord - minCoord);
+          const y = minCoord + Math.random() * (maxCoord - minCoord);
+
+          // Distance from central fixation cross
+          const distCenter = Math.hypot(x - center, y - center);
+          if (distCenter < CONFIG.minCenterDist) continue;
+
+          // Distance from existing items
+          let valid = true;
+          for (let i = 0; i < positions.length; i++) {
+            if (Math.hypot(x - positions[i].x, y - positions[i].y) < currentMinDist) {
+              valid = false;
+              break;
+            }
+          }
+
+          if (valid) {
+            positions.push({ x, y });
+          }
+        }
+
+        // Sample distinct colors without replacement from the 8-color palette
+        const shuffledPalette = shuffle(CONFIG.palette);
+        const items = positions.map((pos, idx) => ({
+          x: pos.x,
+          y: pos.y,
+          color: shuffledPalette[idx].hex,
+          colorName: shuffledPalette[idx].name
+        }));
+
+        // Choose which item is probed (index 0 .. setSize-1)
+        const probeIndex = Math.floor(Math.random() * items.length);
+        let probeColor = items[probeIndex].color;
+
+        if (trialType === 'DIFFERENT') {
+          // Pick a new color from the palette that is NOT the original color of the probed square
+          // Prefer a color not currently on screen if possible, or any distinct palette color
+          const otherColors = CONFIG.palette.filter(c => c.hex !== items[probeIndex].color);
+          const chosen = otherColors[Math.floor(Math.random() * otherColors.length)];
+          probeColor = chosen.hex;
+        }
+
+        return {
+          items,
+          probeIndex,
+          probeColor
+        };
+      }
+
+      /********************************************************************
+       * 5. CANVAS RENDERING ENGINE
+       ********************************************************************/
+      function clearCanvas() {
+        const ctx = el.ctx;
+        ctx.fillStyle = '#0b101d';
+        ctx.fillRect(0, 0, CONFIG.canvasSize, CONFIG.canvasSize);
+
+        // Subtle reference grid lines
+        ctx.strokeStyle = 'rgba(51, 65, 85, 0.22)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(CONFIG.canvasSize / 2, 0);
+        ctx.lineTo(CONFIG.canvasSize / 2, CONFIG.canvasSize);
+        ctx.moveTo(0, CONFIG.canvasSize / 2);
+        ctx.lineTo(CONFIG.canvasSize, CONFIG.canvasSize / 2);
+        ctx.stroke();
+      }
+
+      function drawFixation(color = '#f1f5f9') {
+        const ctx = el.ctx;
+        const c = CONFIG.canvasSize / 2;
+        const arm = 9;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(c - arm, c);
+        ctx.lineTo(c + arm, c);
+        ctx.moveTo(c, c - arm);
+        ctx.lineTo(c, c + arm);
+        ctx.stroke();
+      }
+
+      function drawSquare(x, y, hexColor, isCircled = false) {
+        const ctx = el.ctx;
+        const s = CONFIG.squareSize;
+        const half = s / 2;
+
+        // Subtle dark border for high contrast
+        ctx.fillStyle = hexColor;
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+        ctx.roundRect(x - half, y - half, s, s, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // If test probe cue ring is active
+        if (isCircled) {
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(x, y, half + 10, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(x, y, half + 6, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      function renderSampleArray(trialData) {
+        clearCanvas();
+        drawFixation('#f1f5f9');
+        for (const item of trialData.items) {
+          drawSquare(item.x, item.y, item.color, false);
+        }
+      }
+
+      function renderProbeArray(trialData) {
+        clearCanvas();
+        drawFixation('#94a3b8');
+
+        if (STATE.probeMode === 'single') {
+          const target = trialData.items[trialData.probeIndex];
+          drawSquare(target.x, target.y, trialData.probeColor, true);
+        } else {
+          // Full array mode with probed square circled
+          trialData.items.forEach((item, idx) => {
+            const isTarget = idx === trialData.probeIndex;
+            const colorToDraw = isTarget ? trialData.probeColor : item.color;
+            drawSquare(item.x, item.y, colorToDraw, isTarget);
+          });
+        }
+      }
+
+      /********************************************************************
+       * 6. TRIAL STATE MACHINE
+       ********************************************************************/
+      function setScreen(screenName) {
+        el.screenIntro.classList.add('hidden');
+        el.screenTransition.classList.add('hidden');
+        el.screenArena.classList.add('hidden');
+        el.screenArena.classList.remove('flex');
+        el.screenResults.classList.add('hidden');
+
+        if (screenName === 'INTRO') {
+          el.screenIntro.classList.remove('hidden');
+          el.responseFooter.classList.remove('hidden');
+        } else if (screenName === 'TRANSITION') {
+          el.screenTransition.classList.remove('hidden');
+          el.responseFooter.classList.add('hidden');
+        } else if (screenName === 'ARENA') {
+          el.screenArena.classList.remove('hidden');
+          el.screenArena.classList.add('flex');
+          el.responseFooter.classList.remove('hidden');
+        } else if (screenName === 'RESULTS') {
+          el.screenResults.classList.remove('hidden');
+          el.responseFooter.classList.add('hidden');
+        }
+      }
+
+      function setPadsEnabled(enabled) {
+        el.padSame.disabled = !enabled;
+        el.padDiff.disabled = !enabled;
+      }
+
+      function startBlock(blockType) {
+        clearTimers();
+        STATE.block = blockType;
+        STATE.currentTrialIndex = 0;
+
+        if (blockType === 'PRACTICE') {
+          STATE.allLogs = [];
+          STATE.trialQueue = buildBlockTrials('practice', 1); // 6 trials
+        } else {
+          STATE.trialQueue = buildBlockTrials('main', 6);     // 36 trials
+        }
+
+        el.hudBlockVal.textContent = blockType;
+        setScreen('ARENA');
+        runNextTrial();
+      }
+
+      function runNextTrial() {
+        clearTimers();
+        STATE.awaitingResponse = false;
+        setPadsEnabled(false);
+
+        if (STATE.currentTrialIndex >= STATE.trialQueue.length) {
+          if (STATE.block === 'PRACTICE') {
+            showPracticeTransition();
+          } else {
+            finishExperiment();
+          }
+          return;
+        }
+
+        const spec = STATE.trialQueue[STATE.currentTrialIndex];
+        const stimulus = generateStimulusItems(spec.setSize, spec.trialType);
+
+        STATE.currentTrial = {
+          trialNumber: STATE.currentTrialIndex + 1,
+          block: spec.block,
+          setSize: spec.setSize,
+          trialType: spec.trialType,
+          ...stimulus
+        };
+
+        el.hudTrialVal.textContent = `${STATE.currentTrialIndex + 1} / ${STATE.trialQueue.length}`;
+        el.feedbackBadge.style.opacity = '0';
+
+        // PHASE 1: Fixation Cross (500 ms)
+        el.phaseIndicator.textContent = 'FIXATE (500 MS)';
+        clearCanvas();
+        drawFixation('#38bdf8');
+
+        schedule(() => {
+          // PHASE 2: Sample Array (250 ms)
+          el.phaseIndicator.textContent = `SAMPLE ARRAY [N=${spec.setSize}]`;
+          renderSampleArray(STATE.currentTrial);
+
+          schedule(() => {
+            // PHASE 3: Blank Retention Interval with Fixation (900 ms)
+            el.phaseIndicator.textContent = 'RETENTION DELAY (900 MS)';
+            clearCanvas();
+            drawFixation('#f1f5f9');
+
+            schedule(() => {
+              // PHASE 4: Test Probe (Until Response)
+              el.phaseIndicator.textContent = 'TEST PROBE — SAME OR DIFFERENT?';
+              renderProbeArray(STATE.currentTrial);
+              STATE.probeOnsetTime = performance.now();
+              STATE.awaitingResponse = true;
+              setPadsEnabled(true);
+            }, CONFIG.delayMs);
+
+          }, CONFIG.sampleMs);
+
+        }, CONFIG.fixationMs);
+      }
+
+      function handleResponse(responseChoice) {
+        if (!STATE.awaitingResponse || !STATE.currentTrial) return;
+
+        const rtMs = Math.round(performance.now() - STATE.probeOnsetTime);
+        STATE.awaitingResponse = false;
+        setPadsEnabled(false);
+
+        // Visual button feedback
+        const padEl = responseChoice === 'SAME' ? el.padSame : el.padDiff;
+        padEl.classList.add('active-key');
+        setTimeout(() => padEl.classList.remove('active-key'), 140);
+
+        const isCorrect = (responseChoice === STATE.currentTrial.trialType) ? 1 : 0;
+
+        // Log trial record
+        const record = {
+          trial: STATE.allLogs.length + 1,
+          block: STATE.currentTrial.block,
+          set_size: STATE.currentTrial.setSize,
+          trial_type: STATE.currentTrial.trialType,
+          response: responseChoice,
+          correct: isCorrect,
+          rt_ms: rtMs,
+          timestamp: new Date().toISOString()
+        };
+        STATE.allLogs.push(record);
+
+        // Persist immediately to localStorage
+        saveToLocalStorage();
+
+        // Brief trial feedback
+        el.feedbackBadge.textContent = isCorrect ? `✓ CORRECT (${rtMs} ms)` : `✕ INCORRECT (${rtMs} ms)`;
+        el.feedbackBadge.className = `transition-opacity duration-150 font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`;
+        el.feedbackBadge.style.opacity = '1';
+
+        clearCanvas();
+        drawFixation(isCorrect ? '#10b981' : '#f43f5e');
+
+        STATE.currentTrialIndex++;
+        schedule(runNextTrial, CONFIG.itiMs);
+      }
+
+      function showPracticeTransition() {
+        const practiceTrials = STATE.allLogs.filter(t => t.block === 'practice');
+        const correctCount = practiceTrials.filter(t => t.correct === 1).length;
+        const acc = practiceTrials.length ? Math.round((correctCount / practiceTrials.length) * 100) : 0;
+        el.practiceSummaryText.textContent = `Practice Accuracy: ${correctCount} / ${practiceTrials.length} (${acc}%)`;
+        setScreen('TRANSITION');
+      }
+
+      /********************************************************************
+       * 7. PSYCHOMETRICS: COWAN'S K, PASHLER'S K, HIT/FA RATES & CSV
+       ********************************************************************/
+      function computeMetricsForSubset(trials, setSize = null) {
+        const filtered = setSize ? trials.filter(t => t.set_size === setSize) : trials;
+        const total = filtered.length;
+        if (total === 0) {
+          return { acc: 0, meanRt: 0, hitRate: 0, faRate: 0, cowanK: 0, pashlerK: 0 };
+        }
+
+        const correctTrials = filtered.filter(t => t.correct === 1);
+        const acc = (correctTrials.length / total) * 100;
+        const meanRt = Math.round(filtered.reduce((sum, t) => sum + t.rt_ms, 0) / total);
+
+        // Signal Detection convention in Change Detection:
+        // Signal = DIFFERENT trial; Hit = Respond DIFFERENT on DIFFERENT trial
+        // Noise  = SAME trial;      False Alarm = Respond DIFFERENT on SAME trial
+        const diffTrials = filtered.filter(t => t.trial_type === 'DIFFERENT');
+        const sameTrials = filtered.filter(t => t.trial_type === 'SAME');
+
+        const hits = diffTrials.filter(t => t.response === 'DIFFERENT').length;
+        const fas = sameTrials.filter(t => t.response === 'DIFFERENT').length;
+
+        const hitRate = diffTrials.length > 0 ? hits / diffTrials.length : 0;
+        const faRate = sameTrials.length > 0 ? fas / sameTrials.length : 0;
+
+        let cowanK = 0;
+        let pashlerK = 0;
+
+        if (setSize) {
+          // Cowan (2001): K = N * (H - FA)
+          cowanK = Math.max(0, setSize * (hitRate - faRate));
+          // Pashler (1988): K = N * ((H - FA) / (1 - FA))
+          const denom = (1 - faRate) > 0.001 ? (1 - faRate) : 0.001;
+          pashlerK = Math.max(0, Math.min(setSize, setSize * ((hitRate - faRate) / denom)));
+        }
+
+        return { acc, meanRt, hitRate, faRate, cowanK, pashlerK };
+      }
+
+      function finishExperiment() {
+        STATE.block = 'DONE';
+        el.hudBlockVal.textContent = 'COMPLETE';
+
+        // Prefer Main block trials for capacity summary; fall back to all trials if needed
+        const mainTrials = STATE.allLogs.filter(t => t.block === 'main');
+        const evalTrials = mainTrials.length > 0 ? mainTrials : STATE.allLogs;
+
+        const overall = computeMetricsForSubset(evalTrials, null);
+        const bySetSize = CONFIG.setSizes.map(n => ({
+          n,
+          ...computeMetricsForSubset(evalTrials, n)
+        }));
+
+        const meanCowanK = bySetSize.reduce((acc, s) => acc + s.cowanK, 0) / bySetSize.length;
+
+        // Populate top KPI cards
+        el.statAcc.textContent = `${overall.acc.toFixed(1)}%`;
+        el.statRt.textContent = `${overall.meanRt} ms`;
+        el.statHit.textContent = overall.hitRate.toFixed(2);
+        el.statFa.textContent = overall.faRate.toFixed(2);
+        el.statKMean.textContent = meanCowanK.toFixed(2);
+
+        // Populate Set Size Breakdown Table
+        el.tableSetSizeBody.innerHTML = bySetSize.map(row => `
+          <tr class="hover:bg-slate-900/60">
+            <td class="py-2.5 px-3 font-bold text-slate-100">${row.n} Items</td>
+            <td class="py-2.5 px-3">${row.acc.toFixed(1)}%</td>
+            <td class="py-2.5 px-3">${row.meanRt} ms</td>
+            <td class="py-2.5 px-3 text-emerald-400">${row.hitRate.toFixed(2)}</td>
+            <td class="py-2.5 px-3 text-rose-400">${row.faRate.toFixed(2)}</td>
+            <td class="py-2.5 px-3 font-bold text-sky-400">${row.cowanK.toFixed(2)}</td>
+            <td class="py-2.5 px-3 text-slate-300">${row.pashlerK.toFixed(2)}</td>
+          </tr>
+        `).join('');
+
+        saveToLocalStorage( { overall, bySetSize, meanCowanK } );
+        setScreen('RESULTS');
+      }
+
+      function saveToLocalStorage(summary = null) {
+        try {
+          const payload = {
+            experiment: 'vWM_change_detection',
+            version: 'projectTrial_vwm_v1',
+            updatedAt: new Date().toISOString(),
+            probeMode: STATE.probeMode,
+            summary,
+            trials: STATE.allLogs
+          };
+          localStorage.setItem(CONFIG.storageKey, JSON.stringify(payload));
+          if (el.storageStatus) {
+            el.storageStatus.textContent = `SAVED (${STATE.allLogs.length} TRIALS)`;
+          }
+        } catch (err) {
+          if (el.storageStatus) {
+            el.storageStatus.textContent = 'STORAGE ERROR';
+          }
+        }
+      }
+
+      function downloadCSV() {
+        const headers = ['trial', 'block', 'set_size', 'trial_type', 'response', 'correct', 'rt_ms', 'timestamp'];
+        const rows = STATE.allLogs.map(r =>
+          headers.map(h => r[h]).join(',')
+        );
+        const csvContent = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `vWM_change_detection_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      /********************************************************************
+       * 8. EVENT LISTENERS (Touch, Click, Keyboard)
+       ********************************************************************/
+      function syncProbeModeUI(mode) {
+        STATE.probeMode = mode;
+        el.selectProbeType.value = mode;
+        el.probeModeLabel.textContent = mode === 'single' ? 'SINGLE' : 'FULL ARRAY';
+      }
+
+      el.selectProbeType.addEventListener('change', (e) => {
+        syncProbeModeUI(e.target.value);
+      });
+
+      el.btnProbeMode.addEventListener('click', () => {
+        const nextMode = STATE.probeMode === 'single' ? 'full' : 'single';
+        syncProbeModeUI(nextMode);
+      });
+
+      el.btnStartPractice.addEventListener('click', () => startBlock('PRACTICE'));
+      el.btnSkipToMain.addEventListener('click', () => {
+        STATE.allLogs = [];
+        startBlock('MAIN');
+      });
+      el.btnStartMain.addEventListener('click', () => startBlock('MAIN'));
+      el.btnDownloadCsv.addEventListener('click', downloadCSV);
+      el.btnRestart.addEventListener('click', () => {
+        clearTimers();
+        STATE.block = 'IDLE';
+        el.hudBlockVal.textContent = 'READY';
+        el.hudTrialVal.textContent = '0 / 0';
+        setPadsEnabled(false);
+        setScreen('INTRO');
+      });
+
+      // Touch & Pointer Listeners on Bottom Pads
+      el.padSame.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        handleResponse('SAME');
+      });
+      el.padDiff.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        handleResponse('DIFFERENT');
+      });
+
+      // Keyboard Listeners (A / ArrowLeft = SAME; L / ArrowRight = DIFFERENT)
+      window.addEventListener('keydown', (e) => {
+        if (!STATE.awaitingResponse) return;
+        const key = e.key.toLowerCase();
+        if (key === 'a' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handleResponse('SAME');
+        } else if (key === 'l' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleResponse('DIFFERENT');
+        }
+      });
+
+      // Initial Canvas Draw
+      clearCanvas();
+      drawFixation('#38bdf8');
+    })();
+  </script>
+</body>
+</html>
