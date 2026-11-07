@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numerosity Comparison — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #34d399">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · Numerosity Comparison</p>
+            <h1>Numerosity Comparison</h1>
+            <p class="lede">Two boxes flash sets of dots. Choose the side that had more dots. Six practice trials come before the 36-trial main block.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>Each trial shows a fixation cross, then two arrays of same-sized dots, then a brief mask. The larger count is on the left or the right. The gap between the counts is easy, medium, or hard. The main-block summary reports accuracy, mean response time, and median response time, plus accuracy and mean response time for each gap.</p>
+            <p>That split is headed “Weber Fraction / Difficulty Breakdown.” The rows are percent correct and mean response time. The demo does not compute a Weber fraction. Each trial says correct, incorrect, or too slow. This is a teaching demo, not a clinical or normed test.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Practice</dt>
+                    <dd>6 trials. Before the shuffle, each difficulty has one left-more trial and one right-more trial. Order is a Fisher–Yates shuffle.</dd>
+                </div>
+                <div>
+                    <dt>Main block</dt>
+                    <dd>36 trials. Twelve in each difficulty, six with the larger side on the left and six on the right, then a Fisher–Yates shuffle.</dd>
+                </div>
+                <div>
+                    <dt>Base count (N)</dt>
+                    <dd>The smaller array is 10, 12, 15, 18, or 20 dots, chosen at random on each trial. The larger array is N + ΔN.</dd>
+                </div>
+                <div>
+                    <dt>Easy (ΔN)</dt>
+                    <dd>+6 or +8, chosen at random.</dd>
+                </div>
+                <div>
+                    <dt>Medium (ΔN)</dt>
+                    <dd>+3 or +4, chosen at random.</dd>
+                </div>
+                <div>
+                    <dt>Hard (ΔN)</dt>
+                    <dd>+1 or +2, chosen at random.</dd>
+                </div>
+                <div>
+                    <dt>Dots</dt>
+                    <dd>Both boxes are the same size. Every dot has radius 6.5 on a 260-unit canvas and is drawn in <code>#f8fafc</code>. Dots are placed at random inside an inset of 20, at least 16.5 apart when space allows. Total ink and density change with the count. The demo does not equate total area.</dd>
+                </div>
+                <div>
+                    <dt>Fixation</dt>
+                    <dd>500 ms. A central plus sign. Response pads are off.</dd>
+                </div>
+                <div>
+                    <dt>Stimulus</dt>
+                    <dd>280 ms. Both arrays appear together. A response is accepted from this moment. Response time starts here.</dd>
+                </div>
+                <div>
+                    <dt>Mask</dt>
+                    <dd>80 ms. A grid of small rings replaces the dots. A response is still accepted.</dd>
+                </div>
+                <div>
+                    <dt>Choice window</dt>
+                    <dd>4000 ms after the mask, with empty boxes and a question mark. A timeout is incorrect, shows TOO SLOW, and is left out of the mean and median response times.</dd>
+                </div>
+                <div>
+                    <dt>Feedback</dt>
+                    <dd>450 ms. Correct, incorrect, or too slow, with the response time when there was a choice. Then a 350 ms blank before the next trial.</dd>
+                </div>
+                <div>
+                    <dt>Sound</dt>
+                    <dd>On at the start. SFX turns the tones off. Correct is a short high tone, incorrect a lower tone, and a timeout a buzz.</dd>
+                </div>
+                <div>
+                    <dt>Accuracy</dt>
+                    <dd>Correct choices divided by trials in that block, including timeouts. The end screen uses the main block only. The practice screen shows practice accuracy and mean response time before the main block starts.</dd>
+                </div>
+                <div>
+                    <dt>Mean and median</dt>
+                    <dd>Taken from choices that were not timeouts, including incorrect choices. If every trial in the set timed out, both are 0 ms. The median is the middle value, or the rounded average of the two middle values when the count is even.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>Look at the center cross. When the dots appear, choose the side that had more dots.</li>
+                <li>Left pad, A, or Left Arrow means the left side had more. Right pad, L, or Right Arrow means the right side had more. A pad press and a key call the same choice.</li>
+                <li>Keys are not case-sensitive. A held key does not answer again. One choice is accepted, from the moment the dots appear until you answer or the window ends.</li>
+                <li>Initialize Practice Block starts the 6 practice trials. Start Main Experiment starts the 36. Run Again starts practice over and clears the on-screen log for the new run. The previous saved payload stays until a new main block finishes.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_numerosity_v1</code>. A later finished run replaces that payload. Refreshing, leaving, or closing the tab keeps the last finished run. An unfinished run is not resumed. Nothing is uploaded. There is no Clear saved control and no store of older sessions.</p>
+            <p>Download Trial CSV writes the current run, practice and main, as a file on the device. Columns are trial, block, left_n, right_n, correct_side, response (<code>left</code>, <code>right</code>, or <code>timeout</code>), correct (<code>1</code> or <code>0</code>), rt_ms, and timestamp. The file name is <code>projectTrial_numerosity_</code> plus a timestamp. The saved payload also keeps block_trial, difficulty, delta_n, the timing config, and the main-block summary. Those fields are not CSV columns.</p>
+            <p>The page does not lock orientation and does not log portrait or landscape turns.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="numerosity_game.html">Play Numerosity Comparison</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

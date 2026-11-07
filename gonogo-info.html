@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go / No-Go — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #84cc16">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · Go / No-Go</p>
+            <h1>Go / No-Go</h1>
+            <p class="lede">A green arrow is a go. Tap the matching side before the deadline. A red X is a no-go. Do not tap. Eight practice trials come before the 40-trial main block.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>Most trials are go trials. A smaller share are no-go trials. The results screen reports accuracy, mean go response time, commission rate, and omission rate. A commission is a tap on a no-go trial. An omission is a go trial that reaches the deadline with no tap.</p>
+            <p>A correct go shows HIT. The wrong side shows WRONG SIDE. A tap on a no-go shows FALSE ALARM. A missed go shows TOO SLOW. A withheld no-go shows WITHHELD. This is a teaching demo, not a clinical or normed test.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Practice</dt>
+                    <dd>8 trials. <code>round(8 × 0.75)</code> = 6 go and 2 no-go. Go sides alternate left and right before the shuffle, so 3 left and 3 right. No-go is 1 left and 1 right in the stored side field. The picture on a no-go trial is the red X, not an arrow.</dd>
+                </div>
+                <div>
+                    <dt>Main block</dt>
+                    <dd>40 trials. 30 go and 10 no-go. Go is 15 left and 15 right. No-go stores 5 left and 5 right. Order is a Fisher–Yates shuffle.</dd>
+                </div>
+                <div>
+                    <dt>Fixation</dt>
+                    <dd>400 ms. A plus sign.</dd>
+                </div>
+                <div>
+                    <dt>Go window</dt>
+                    <dd>700 ms. A lime arrow and a shrinking bar. The correct pad matches the arrow. A miss is an omission.</dd>
+                </div>
+                <div>
+                    <dt>No-go window</dt>
+                    <dd>800 ms. A coral X. The correct action is to do nothing until the window ends. A tap is a commission.</dd>
+                </div>
+                <div>
+                    <dt>Feedback</dt>
+                    <dd>400 ms, then a blank from 250 ms through 450 ms.</dd>
+                </div>
+                <div>
+                    <dt>Response time</dt>
+                    <dd>Milliseconds from stimulus onset on a tap. A withhold stores an empty time. Go mean response time uses correct go trials only.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>On a green arrow, tap the pad on that side, or press A or Left Arrow for left and L or Right Arrow for right.</li>
+                <li>On a red X, keep still until the trial ends.</li>
+                <li>A held key does not answer again. One tap is accepted while the stimulus is waiting.</li>
+                <li>Run New Session starts practice over.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_gonogo_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
+            <p>Download CSV Log writes the current run, practice and main. Columns are trial, block, trial_type (<code>GO</code> or <code>NOGO</code>), target_side, response, correct, rt_ms, and timestamp. The file name is <code>projectTrial_gonogo_</code> plus a timestamp. The page does not log orientation turns.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="gonogo_game.html">Play Go / No-Go</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

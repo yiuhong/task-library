@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corsi Span — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #e879f9">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · Corsi Span</p>
+            <h1>Corsi Span</h1>
+            <p class="lede">Nine blocks sit on a board. A sequence flashes. After the go cue, tap the same blocks in the same order. Two warmup trials at span 3 come before the main spans.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>The main run starts at span 3 and can climb to span 9. In the default staircase, a span with at least one correct sequence of two continues. A span with none correct stops the run. Fixed mode plays both trials at every span from 3 through 9.</p>
+            <p>The summary reports the longest main span with at least one correct sequence, how many main sequences were correct, the sum of those correct span lengths, and a product of max span times the number of correct main sequences. It also reports mean tap time. This is a teaching demo, not a clinical or normed test.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Warmup</dt>
+                    <dd>2 trials at span 3. The sequence is a random sample of the nine blocks, with no repeats inside a trial.</dd>
+                </div>
+                <div>
+                    <dt>Main spans</dt>
+                    <dd>2 trials at each span, from 3 up. Staircase is the default and stops after 0 of 2 correct. Fixed mode continues through span 9.</dd>
+                </div>
+                <div>
+                    <dt>Board</dt>
+                    <dd>Nine blocks at fixed positions on a square board. Each block is 14.5% of the board.</dd>
+                </div>
+                <div>
+                    <dt>Watch</dt>
+                    <dd>650 ms before the first flash. Each block lights for 500 ms, with 250 ms between blocks. A short tone can play with each flash.</dd>
+                </div>
+                <div>
+                    <dt>Recall</dt>
+                    <dd>200 ms after the last flash, a go cue opens tapping. The trial submits itself when the tap count matches the span. Clear Input wipes the current taps before that. Blocks do not accept taps while the sequence is playing.</dd>
+                </div>
+                <div>
+                    <dt>Between trials</dt>
+                    <dd>900 ms after feedback, then the next sequence.</dd>
+                </div>
+                <div>
+                    <dt>Sound</dt>
+                    <dd>On at the start. The welcome menu can mute the tones. Visual flashes stay.</dd>
+                </div>
+                <div>
+                    <dt>Tap time</dt>
+                    <dd>Each tap is timed from the go cue. The trial stores total time and the mean time between taps.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>Watch the whole sequence. Wait for the go cue, then tap the blocks in order.</li>
+                <li>Taps use the blocks themselves. There is no letter key for a block.</li>
+                <li>Clear Input resets the taps on the current trial. It does not skip the trial.</li>
+                <li>Choose staircase or fixed, and sound on or off, before Start Practice Warmup.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>When the main run finishes, this browser appends one session to a list under the <code>localStorage</code> key <code>projectTrial_corsi_v1</code>. Older finished runs stay in that list. Nothing is uploaded. There is no Clear saved control.</p>
+            <p>Download CSV Log writes the current run only. Columns are trial, block, span_length, target_seq, user_seq, correct, total_rt_ms, mean_tap_rt_ms, and timestamp. The file name is <code>projectTrial_corsi_span_</code> plus a timestamp. The page does not log orientation turns.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="corsi_game.html">Play Corsi Span</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

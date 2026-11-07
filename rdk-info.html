@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDK Motion Coherence — parameters · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+</head>
+<body class="trial-app" style="--trial-accent: #f59e0b">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Task info · RDK Motion Coherence</p>
+            <h1>RDK Motion Coherence</h1>
+            <p class="lede">A circular cloud of dots drifts left or right. Judge the net direction. Six practice trials come before the 36-trial main block.</p>
+        </header>
+
+        <section>
+            <h2>What it shows</h2>
+            <p>Each trial shows a fixation cross, then 150 white dots inside a circular aperture. Some dots move together left or right. The rest move at random. Coherence is easy (40%), medium (20%), or hard (8%). The main-block summary reports accuracy, mean response time, and median response time, plus the same accuracy and mean time at each coherence.</p>
+            <p>Each trial says correct, incorrect, or timeout. This is a teaching demo, not a clinical or normed test.</p>
+        </section>
+
+        <section>
+            <h2>Parameters</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Practice</dt>
+                    <dd>6 trials. One trial for each coherence and each direction, then a shuffle.</dd>
+                </div>
+                <div>
+                    <dt>Main block</dt>
+                    <dd>36 trials. Six trials for each coherence and each direction, then a shuffle.</dd>
+                </div>
+                <div>
+                    <dt>Dots</dt>
+                    <dd>150 dots, radius 2.2, on a 320-unit canvas. The aperture radius is 148. Coherent dots are <code>round(150 × coherence)</code>: 60, 30, or 12. Each dot lives 24 frames, then is replaced, so one dot cannot be followed for the whole display. Speed is 165 pixels per second. If the browser asks for reduced motion, speed is 85.</dd>
+                </div>
+                <div>
+                    <dt>Fixation</dt>
+                    <dd>500 ms. A central cross. The choice is not open yet.</dd>
+                </div>
+                <div>
+                    <dt>Motion</dt>
+                    <dd>Dots move for up to 800 ms. A response is accepted from motion onset. Response time starts there.</dd>
+                </div>
+                <div>
+                    <dt>Choice window</dt>
+                    <dd>1200 ms from motion onset. After 800 ms the moving dots stop and the cross remains until the window ends. A timeout is incorrect, stores an empty response time, and is left out of the mean and median. Incorrect choices that were answered are included in those times.</dd>
+                </div>
+                <div>
+                    <dt>Feedback</dt>
+                    <dd>400 ms, then a 350 ms blank. Sound is on at the start. SFX turns the tones off.</dd>
+                </div>
+                <div>
+                    <dt>Repeat practice</dt>
+                    <dd>Drops the in-memory log and runs the 6 practice trials again. Begin Main Block starts the 36. Run New Session starts practice over.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>How to play</h2>
+            <ul>
+                <li>Look at the center of the circle. Choose the net direction of the dots.</li>
+                <li>Left pad, A, or Left Arrow means left. Right pad, L, or Right Arrow means right. A pad press and a key call the same choice.</li>
+                <li>A held key does not answer again. One choice is accepted while the trial is waiting for a response.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data</h2>
+            <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_rdk_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
+            <p>Download Trial CSV writes the current run as a file on the device. Columns are trial, block, coherence_pct, direction, response, correct, rt_ms, and timestamp. The file name is <code>rdk_motion_data_</code> plus a timestamp. The page does not log orientation turns.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="rdk_game.html">Play RDK Motion Coherence</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+</body>
+</html>

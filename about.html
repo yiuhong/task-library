@@ -31,6 +31,34 @@
                     <dt>Brightness</dt>
                     <dd>Pick the brighter square, then rate confidence. The in-game title is Luma Clash. <a href="brightness_game.html">Play</a> · <a href="brightness-info.html">Parameters</a></dd>
                 </div>
+                <div>
+                    <dt>Numerosity Comparison</dt>
+                    <dd>Choose which of two brief dot arrays had more dots. <a href="numerosity_game.html">Play</a> · <a href="numerosity-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>RDK Motion Coherence</dt>
+                    <dd>Judge the net direction of a moving dot cloud. <a href="rdk_game.html">Play</a> · <a href="rdk-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>Eriksen Flanker</dt>
+                    <dd>Report the center arrow and ignore the flankers. <a href="flanker_game.html">Play</a> · <a href="flanker-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>Visual Working Memory</dt>
+                    <dd>Remember colored squares, then judge a probed location. <a href="vwm_game.html">Play</a> · <a href="vwm-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>Go / No-Go</dt>
+                    <dd>Respond to the green arrow. Withhold on the red X. <a href="gonogo_game.html">Play</a> · <a href="gonogo-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>Corsi Span</dt>
+                    <dd>Watch a sequence of blocks, then tap it back in order. <a href="corsi_game.html">Play</a> · <a href="corsi-info.html">Parameters</a></dd>
+                </div>
+                <div>
+                    <dt>Reversal Learning</dt>
+                    <dd>Pick the card that pays more often, and track a silent switch. <a href="bandit_game.html">Play</a> · <a href="bandit-info.html">Parameters</a></dd>
+                </div>
             </dl>
         </section>
 
@@ -41,8 +69,8 @@
 
         <section>
             <h2>Data</h2>
-            <p>Nothing is uploaded. Stroop Dash, Oddball Dash, and Brightness Detection each keep their runs in <code>localStorage</code> on this browser and can download a CSV of those trials, including orientation start and turn rows. Clear saved removes that browser copy. Refresh does not.</p>
-            <p>Portrait and landscape both run. Hub demos do not lock orientation. Each saved trial includes the orientation at that moment, and turns during the run are timestamped on the session log. See each task’s parameters page for where that log lives.</p>
+            <p>Nothing is uploaded. Stroop Dash, Oddball Dash, and Brightness Detection each keep their runs in <code>localStorage</code> on this browser and can download a CSV of those trials, including orientation start and turn rows. Clear saved removes that browser copy. Refresh does not. Numerosity Comparison, RDK Motion Coherence, Eriksen Flanker, Visual Working Memory, Go / No-Go, and Reversal Learning each keep the latest finished run under their own key (<code>projectTrial_numerosity_v1</code>, <code>projectTrial_rdk_v1</code>, <code>projectTrial_flanker_v1</code>, <code>projectTrial_vwm_v1</code>, <code>projectTrial_gonogo_v1</code>, <code>projectTrial_bandit_v1</code>) and can download a CSV of that run. A later finished run replaces it. Corsi Span appends each finished run to a list under <code>projectTrial_corsi_v1</code>. Those tasks have no Clear saved control and do not log orientation turns.</p>
+            <p>Portrait and landscape both run. Hub demos do not lock orientation. On Stroop, Oddball, and Brightness, each saved trial includes the orientation at that moment, and turns during the run are timestamped on the session log. See each task’s parameters page for where that log lives.</p>
             <p>Scores are for teaching. They are not a clinical assessment.</p>
         </section>
 

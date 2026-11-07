@@ -20,6 +20,13 @@ Approved black-and-white lockup, outlined in `assets/`:
 - **Stroop Dash** — [`stroop_game.html`](stroop_game.html). Selective attention and Stroop interference. Parameters: [`stroop-info.html`](stroop-info.html).
 - **Oddball** — [`oddball_game.html`](oddball_game.html). Rare-target detection among frequent standards. Parameters: [`oddball-info.html`](oddball-info.html).
 - **Brightness Detection** — [`brightness_game.html`](brightness_game.html). Luminance discrimination with confidence ratings. Parameters: [`brightness-info.html`](brightness-info.html).
+- **Numerosity Comparison** — [`numerosity_game.html`](numerosity_game.html). Which of two brief dot arrays had more dots. Parameters: [`numerosity-info.html`](numerosity-info.html).
+- **RDK Motion Coherence** — [`rdk_game.html`](rdk_game.html). Net direction of a moving dot cloud. Parameters: [`rdk-info.html`](rdk-info.html).
+- **Eriksen Flanker** — [`flanker_game.html`](flanker_game.html). Center-arrow direction with congruent, incongruent, and neutral flankers. Parameters: [`flanker-info.html`](flanker-info.html).
+- **Visual Working Memory** — [`vwm_game.html`](vwm_game.html). Color change detection at set sizes 4, 6, and 8. Parameters: [`vwm-info.html`](vwm-info.html).
+- **Go / No-Go** — [`gonogo_game.html`](gonogo_game.html). Speeded response to a green arrow, withhold on a red X. Parameters: [`gonogo-info.html`](gonogo-info.html).
+- **Corsi Span** — [`corsi_game.html`](corsi_game.html). Tap a flashed block sequence back in order. Parameters: [`corsi-info.html`](corsi-info.html).
+- **Reversal Learning** — [`bandit_game.html`](bandit_game.html). Two-armed bandit with a silent switch of the better option. Parameters: [`bandit-info.html`](bandit-info.html).
 
 Hub overview: [`about.html`](about.html).
 
@@ -29,7 +36,9 @@ Demos that want the dark Trial look link [`assets/trial-theme.css`](assets/trial
 
 [`assets/trial-orientation.js`](assets/trial-orientation.js) is a separate opt-in. It records `screen.orientation` (type and angle when the browser provides them) at the start of a run, on each turn, and at the end. It does not lock orientation. The hub games use it. `vr.html` still has its own CSV and `localStorage` backup without this log.
 
-[`assets/trial-store.js`](assets/trial-store.js) is the hub games’ local log. Stroop, Oddball, and Brightness save each run in `localStorage` (`project-trial:stroop`, `project-trial:oddball`, `project-trial:brightness`) and can download a CSV of the trial rows plus orientation start, turn, and end rows. Clear saved removes that key. Nothing is uploaded.
+[`assets/trial-store.js`](assets/trial-store.js) is the local log for Stroop, Oddball, and Brightness. Those three save each run in `localStorage` (`project-trial:stroop`, `project-trial:oddball`, `project-trial:brightness`) and can download a CSV of the trial rows plus orientation start, turn, and end rows. Clear saved removes that key. Nothing is uploaded.
+
+Numerosity Comparison, RDK Motion Coherence, Eriksen Flanker, Visual Working Memory, Go / No-Go, and Reversal Learning each keep one payload (`projectTrial_numerosity_v1`, `projectTrial_rdk_v1`, `projectTrial_flanker_v1`, `projectTrial_vwm_v1`, `projectTrial_gonogo_v1`, `projectTrial_bandit_v1`) and download a CSV of the current run. A later finished run replaces that payload. Corsi Span appends finished runs under `projectTrial_corsi_v1`. These tasks do not use `trial-store.js` or `trial-orientation.js`.
 
 ## Not on the hub yet
 

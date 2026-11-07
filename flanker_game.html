@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Eriksen Flanker Task | Project Trial</title>
+  <!-- External Theme Stylesheet with Inline Fallbacks -->
+  <link rel="stylesheet" href="assets/trial-theme.css" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bgBase: 'var(--bg-base, #090a0f)',
+            bgPanel: 'var(--bg-panel, #12141d)',
+            bgElevated: 'var(--bg-elevated, #1a1d2a)',
+            accent: 'var(--accent-primary, #f43f5e)',
+            accentHover: 'var(--accent-hover, #fb7185)',
+            accentDim: 'var(--accent-dim, rgba(244, 63, 94, 0.15))',
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --trial-accent: #fb7185;
+      --bg-base: #090a0f;
+      --bg-panel: #12141d;
+      --bg-elevated: #1a1d2a;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent-primary: #f43f5e;
+      --accent-hover: #fb7185;
+      --accent-dim: rgba(244, 63, 94, 0.15);
+      --border-subtle: rgba(148, 163, 184, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .neon-glow {
+      box-shadow: 0 0 22px rgba(244, 63, 94, 0.35), inset 0 0 8px rgba(244, 63, 94, 0.15);
+    }
+
+    .neon-text {
+      text-shadow: 0 0 14px rgba(244, 63, 94, 0.55);
+    }
+
+    .stimulus-array {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.22em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .touch-pad {
+      transition: transform 0.06s ease, background-color 0.1s ease, border-color 0.1s ease;
+    }
+
+    .touch-pad:active,
+    .touch-pad.active-press {
+      transform: scale(0.97);
+      background-color: rgba(244, 63, 94, 0.22);
+      border-color: #f43f5e;
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between select-none">
+
+  <!-- TOP HUD & PROGRESS BAR -->
+  <header class="w-full bg-bgPanel/90 border-b border-slate-800/80 z-20">
+    <!-- Thin Progress Bar -->
+    <div class="w-full h-1 bg-slate-900 overflow-hidden">
+      <div id="progress-bar" class="h-full bg-accent transition-all duration-200 ease-out" style="width: 0%"></div>
+    </div>
+
+    <!-- Compact HUD -->
+    <div class="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs sm:text-sm font-mono text-slate-400">
+      <div class="flex items-center gap-2.5">
+        <span class="inline-block w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+        <span class="font-semibold text-slate-200 tracking-wider uppercase">FLANKER CONFLICT</span>
+        <span id="hud-block-badge" class="px-2 py-0.5 rounded bg-accentDim text-accent border border-accent/30 text-[11px] uppercase">
+          READY
+        </span>
+      </div>
+
+      <div class="flex items-center gap-4 sm:gap-6">
+        <div>
+          <span class="text-slate-500">TRIAL</span>
+          <span id="hud-trial" class="ml-1 text-slate-200 font-semibold">0 / 0</span>
+        </div>
+        <div>
+          <span class="text-slate-500">ACC</span>
+          <span id="hud-acc" class="ml-1 text-slate-200 font-semibold">--%</span>
+        </div>
+        <div class="hidden sm:block">
+          <span class="text-slate-500">MEAN RT</span>
+          <span id="hud-rt" class="ml-1 text-slate-200 font-semibold">-- ms</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN EXPERIMENTAL STAGE -->
+  <main class="relative flex-1 flex flex-col items-center justify-center px-4 overflow-y-auto">
+
+    <!-- 1. INTRO / INSTRUCTIONS SCREEN -->
+    <section id="screen-intro" class="max-w-lg w-full bg-bgPanel border border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-mono uppercase tracking-widest text-accent">Project Trial // Cognitive Battery</span>
+        <span class="text-xs font-mono text-slate-500">v1.0</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight mb-3">
+        Eriksen Flanker Task
+      </h1>
+      <p class="text-sm text-slate-400 leading-relaxed mb-6">
+        Respond as quickly and accurately as possible to the direction of the <strong class="text-slate-100 font-semibold">CENTRAL arrow</strong> while ignoring the surrounding flanking symbols.
+      </p>
+
+      <!-- Condition Examples -->
+      <div class="grid grid-cols-3 gap-2.5 mb-6 text-center font-mono">
+        <div class="bg-bgElevated/90 border border-slate-800 rounded-xl p-3">
+          <div class="text-[11px] text-slate-400 uppercase mb-1">Congruent</div>
+          <div class="text-lg sm:text-xl font-bold text-slate-200 tracking-widest">&lt;&lt;<span class="text-accent">&lt;</span>&lt;&lt;</div>
+          <div class="text-[11px] text-slate-400 mt-1">Press LEFT</div>
+        </div>
+        <div class="bg-bgElevated/90 border border-slate-800 rounded-xl p-3">
+          <div class="text-[11px] text-slate-400 uppercase mb-1">Incongruent</div>
+          <div class="text-lg sm:text-xl font-bold text-slate-200 tracking-widest">&lt;&lt;<span class="text-accent">&gt;</span>&lt;&lt;</div>
+          <div class="text-[11px] text-slate-400 mt-1">Press RIGHT</div>
+        </div>
+        <div class="bg-bgElevated/90 border border-slate-800 rounded-xl p-3">
+          <div class="text-[11px] text-slate-400 uppercase mb-1">Neutral</div>
+          <div class="text-lg sm:text-xl font-bold text-slate-200 tracking-widest">--<span class="text-accent">&lt;</span>--</div>
+          <div class="text-[11px] text-slate-400 mt-1">Press LEFT</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-3.5 mb-6 text-xs text-slate-400 space-y-1.5 font-mono">
+        <div class="flex justify-between">
+          <span>Controls:</span>
+          <span class="text-slate-200">Touch Pads / Arrow Keys / A &amp; L</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Structure:</span>
+          <span class="text-slate-200">6 Practice + 36 Main Trials</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Response Window:</span>
+          <span class="text-slate-200">1500 ms max per trial</span>
+        </div>
+      </div>
+
+      <button id="btn-start-practice" class="w-full py-3.5 px-6 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold tracking-wide transition neon-glow cursor-pointer">
+        Start Practice Block (6 Trials)
+      </button>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="flanker-info.html">Task info</a>
+      </div>
+    </section>
+
+    <!-- 2. BLOCK TRANSITION MODAL (Practice -> Main) -->
+    <section id="screen-transition" class="hidden max-w-md w-full bg-bgPanel border border-slate-800/90 rounded-2xl p-6 sm:p-8 text-center shadow-2xl">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accentDim text-accent border border-accent/40 mb-4 font-mono font-bold text-lg">
+        ✓
+      </div>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-100 mb-2">Practice Complete</h2>
+      <p id="practice-summary-text" class="text-sm text-slate-400 mb-6 font-mono"></p>
+      <p class="text-xs text-slate-400 leading-relaxed mb-6">
+        The main experimental block consists of <strong class="text-slate-200">36 balanced trials</strong>. Keep your gaze on the central fixation cross and respond as rapidly and accurately as possible.
+      </p>
+      <button id="btn-start-main" class="w-full py-3.5 px-6 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold tracking-wide transition neon-glow cursor-pointer">
+        Begin Main Block (36 Trials)
+      </button>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="flanker-info.html">Task info</a>
+      </div>
+    </section>
+
+    <!-- 3. ACTIVE TRIAL DISPLAY -->
+    <section id="screen-trial" class="hidden w-full h-full flex flex-col items-center justify-center">
+      <!-- Stimulus Viewport Box -->
+      <div class="relative w-full max-w-xl h-56 sm:h-64 flex flex-col items-center justify-center rounded-2xl bg-bgPanel/60 border border-slate-800/80 shadow-inner">
+        <!-- Subtle Center Target Guide Tick Marks -->
+        <div class="absolute top-6 w-0.5 h-3 bg-slate-700/70"></div>
+        <div class="absolute bottom-6 w-0.5 h-3 bg-slate-700/70"></div>
+
+        <!-- Fixation / Stimulus String / Feedback -->
+        <div id="stimulus-display" class="stimulus-array text-4xl sm:text-6xl font-bold text-slate-100 select-none text-center">
+          +
+        </div>
+
+        <!-- Accessible Feedback Sub-label -->
+        <div id="feedback-subtext" class="mt-3 text-xs sm:text-sm font-mono tracking-wider uppercase h-5 text-slate-400"></div>
+      </div>
+    </section>
+
+    <!-- 4. END / SUMMARY SCREEN -->
+    <section id="screen-end" class="hidden max-w-2xl w-full bg-bgPanel border border-slate-800/90 rounded-2xl p-5 sm:p-8 shadow-2xl my-auto">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-mono uppercase tracking-widest text-accent">Session Complete</span>
+        <span id="end-saved-indicator" class="text-xs font-mono text-emerald-400">● Saved to LocalStorage</span>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-100 mb-5">Attentional Conflict Report</h2>
+
+      <!-- Primary KPI Cards -->
+      <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="bg-bgElevated border border-slate-800 rounded-xl p-3.5 text-center">
+          <div class="text-[11px] font-mono uppercase text-slate-400">Overall Accuracy</div>
+          <div id="res-overall-acc" class="text-xl sm:text-2xl font-bold text-slate-100 font-mono mt-1">--%</div>
+        </div>
+        <div class="bg-bgElevated border border-slate-800 rounded-xl p-3.5 text-center">
+          <div class="text-[11px] font-mono uppercase text-slate-400">Mean Correct RT</div>
+          <div id="res-overall-rt" class="text-xl sm:text-2xl font-bold text-slate-100 font-mono mt-1">-- ms</div>
+        </div>
+        <div class="bg-accentDim border border-accent/40 rounded-xl p-3.5 text-center">
+          <div class="text-[11px] font-mono uppercase text-accent">Conflict Effect</div>
+          <div id="res-conflict-effect" class="text-xl sm:text-2xl font-bold text-accent neon-text font-mono mt-1">-- ms</div>
+          <div class="text-[10px] font-mono text-slate-400 mt-0.5">Incongruent − Congruent</div>
+        </div>
+      </div>
+
+      <!-- Condition Breakdown Table -->
+      <div class="overflow-hidden rounded-xl border border-slate-800 mb-6">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm font-mono">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 text-[11px] uppercase">
+              <th class="py-2.5 px-3 sm:px-4">Condition</th>
+              <th class="py-2.5 px-3 sm:px-4">Example</th>
+              <th class="py-2.5 px-3 sm:px-4 text-right">Accuracy</th>
+              <th class="py-2.5 px-3 sm:px-4 text-right">Mean RT</th>
+              <th class="py-2.5 px-3 sm:px-4 text-right">SD RT</th>
+            </tr>
+          </thead>
+          <tbody id="res-condition-tbody" class="divide-y divide-slate-800/70 bg-bgElevated/40 text-slate-200">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btn-download-csv" class="flex-1 py-3 px-5 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold text-sm tracking-wide transition neon-glow cursor-pointer">
+          Download Trial CSV
+        </button>
+        <button id="btn-restart" class="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm tracking-wide transition cursor-pointer">
+          Run Again
+        </button>
+      </div>
+      <div class="mt-3 flex justify-center gap-2">
+        <a class="trial-more" href="index.html">Hub</a>
+        <a class="trial-more" href="flanker-info.html">Task info</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MOBILE-FIRST LEFT / RIGHT TOUCH RESPONSE PADS -->
+  <footer id="response-footer" class="w-full max-w-4xl mx-auto px-4 pb-4 pt-2 z-20">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 h-28 sm:h-32">
+      <!-- LEFT PAD -->
+      <button
+        id="pad-left"
+        type="button"
+        aria-label="Respond Left"
+        class="touch-pad flex flex-col items-center justify-center rounded-2xl bg-bgPanel border-2 border-slate-800 text-slate-200 cursor-pointer focus:outline-none"
+      >
+        <span class="text-3xl sm:text-4xl font-mono font-bold text-accent mb-1">&larr;</span>
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-widest text-slate-300 font-semibold">LEFT</span>
+        <span class="text-[10px] font-mono text-slate-500 mt-0.5">[ArrowLeft / A]</span>
+      </button>
+
+      <!-- RIGHT PAD -->
+      <button
+        id="pad-right"
+        type="button"
+        aria-label="Respond Right"
+        class="touch-pad flex flex-col items-center justify-center rounded-2xl bg-bgPanel border-2 border-slate-800 text-slate-200 cursor-pointer focus:outline-none"
+      >
+        <span class="text-3xl sm:text-4xl font-mono font-bold text-accent mb-1">&rarr;</span>
+        <span class="text-xs sm:text-sm font-mono uppercase tracking-widest text-slate-300 font-semibold">RIGHT</span>
+        <span class="text-[10px] font-mono text-slate-500 mt-0.5">[ArrowRight / L]</span>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    /**
+     * PROJECT TRIAL: ERIKSEN FLANKER ATTENTIONAL CONFLICT TASK
+     * All experimental parameters stored in CONFIG
+     */
+    const CONFIG = {
+      storageKey: "projectTrial_flanker_v1",
+      practiceTrials: 6,          // Balanced: 3 conditions x 2 target directions = 6
+      mainTrials: 36,             // Balanced: 3 conditions x 2 target directions x 6 reps = 36
+      fixationMinMs: 400,         // Minimum fixation cross duration (ms)
+      fixationMaxMs: 600,         // Maximum fixation cross duration (ms)
+      stimulusTimeoutMs: 1500,    // Maximum response window (ms)
+      feedbackDurationMs: 400,    // Accessible feedback duration (ms)
+      itiDurationMs: 350,         // Inter-trial interval blank screen (ms)
+      conditions: ["congruent", "incongruent", "neutral"],
+      directions: ["left", "right"],
+      keyMap: {
+        ArrowLeft: "left",
+        KeyA: "left",
+        ArrowRight: "right",
+        KeyL: "right"
+      }
+    };
+
+    // Application State
+    const state = {
+      block: "idle", // "practice" | "main" | "done"
+      trialQueue: [],
+      trialIndex: 0,
+      globalTrialCounter: 0,
+      awaitingResponse: false,
+      stimOnsetPerf: 0,
+      activeTimeoutId: null,
+      results: [] // Stores all trials (practice + main)
+    };
+
+    // DOM Elements
+    const el = {
+      progressBar: document.getElementById("progress-bar"),
+      hudBlockBadge: document.getElementById("hud-block-badge"),
+      hudTrial: document.getElementById("hud-trial"),
+      hudAcc: document.getElementById("hud-acc"),
+      hudRt: document.getElementById("hud-rt"),
+
+      screenIntro: document.getElementById("screen-intro"),
+      screenTransition: document.getElementById("screen-transition"),
+      screenTrial: document.getElementById("screen-trial"),
+      screenEnd: document.getElementById("screen-end"),
+
+      practiceSummaryText: document.getElementById("practice-summary-text"),
+      stimulusDisplay: document.getElementById("stimulus-display"),
+      feedbackSubtext: document.getElementById("feedback-subtext"),
+
+      resOverallAcc: document.getElementById("res-overall-acc"),
+      resOverallRt: document.getElementById("res-overall-rt"),
+      resConflictEffect: document.getElementById("res-conflict-effect"),
+      resConditionTbody: document.getElementById("res-condition-tbody"),
+
+      btnStartPractice: document.getElementById("btn-start-practice"),
+      btnStartMain: document.getElementById("btn-start-main"),
+      btnDownloadCsv: document.getElementById("btn-download-csv"),
+      btnRestart: document.getElementById("btn-restart"),
+
+      padLeft: document.getElementById("pad-left"),
+      padRight: document.getElementById("pad-right")
+    };
+
+    /**
+     * Utility: Fisher-Yates shuffle
+     */
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    /**
+     * Build a balanced block of trials across the 3 conditions & 2 target directions
+     */
+    function generateBalancedTrials(totalTrials) {
+      const baseCombinations = [];
+      for (const condition of CONFIG.conditions) {
+        for (const targetDir of CONFIG.directions) {
+          let flankerDir = "neutral";
+          if (condition === "congruent") {
+            flankerDir = targetDir;
+          } else if (condition === "incongruent") {
+            flankerDir = targetDir === "left" ? "right" : "left";
+          }
+
+          const targetChar = targetDir === "left" ? "<" : ">";
+          const flankerChar =
+            flankerDir === "left" ? "<" : flankerDir === "right" ? ">" : "-";
+
+          const arrayString = `${flankerChar}${flankerChar}${targetChar}${flankerChar}${flankerChar}`;
+
+          baseCombinations.push({
+            condition,
+            target_dir: targetDir,
+            flanker_dir: flankerDir,
+            stimulus: arrayString
+          });
+        }
+      }
+
+      const reps = Math.max(1, Math.floor(totalTrials / baseCombinations.length));
+      let pool = [];
+      for (let r = 0; r < reps; r++) {
+        pool = pool.concat(baseCombinations.map(item => ({ ...item })));
+      }
+      return shuffleArray(pool);
+    }
+
+    /**
+     * Switch visible screen section
+     */
+    function showScreen(screenName) {
+      el.screenIntro.classList.add("hidden");
+      el.screenTransition.classList.add("hidden");
+      el.screenTrial.classList.add("hidden");
+      el.screenEnd.classList.add("hidden");
+
+      if (screenName === "intro") el.screenIntro.classList.remove("hidden");
+      if (screenName === "transition") el.screenTransition.classList.remove("hidden");
+      if (screenName === "trial") el.screenTrial.classList.remove("hidden");
+      if (screenName === "end") el.screenEnd.classList.remove("hidden");
+    }
+
+    /**
+     * Update Top HUD & Progress Bar
+     */
+    function updateHUD() {
+      const totalInBlock = state.trialQueue.length;
+      const currentNum = Math.min(state.trialIndex + 1, totalInBlock);
+
+      if (state.block === "practice" || state.block === "main") {
+        el.hudBlockBadge.textContent = state.block.toUpperCase();
+        el.hudTrial.textContent = `${currentNum} / ${totalInBlock}`;
+        const pct = totalInBlock > 0 ? (state.trialIndex / totalInBlock) * 100 : 0;
+        el.progressBar.style.width = `${pct}%`;
+      } else if (state.block === "done") {
+        el.hudBlockBadge.textContent = "COMPLETE";
+        el.progressBar.style.width = "100%";
+      }
+
+      const blockTrials = state.results.filter(r => r.block === state.block);
+      if (blockTrials.length > 0) {
+        const correctTrials = blockTrials.filter(r => r.correct === 1);
+        const acc = Math.round((correctTrials.length / blockTrials.length) * 100);
+        el.hudAcc.textContent = `${acc}%`;
+
+        if (correctTrials.length > 0) {
+          const meanRt = Math.round(
+            correctTrials.reduce((acc, r) => acc + r.rt_ms, 0) / correctTrials.length
+          );
+          el.hudRt.textContent = `${meanRt} ms`;
+        } else {
+          el.hudRt.textContent = "-- ms";
+        }
+      } else {
+        el.hudAcc.textContent = "--%";
+        el.hudRt.textContent = "-- ms";
+      }
+    }
+
+    /**
+     * Start a Block ("practice" or "main")
+     */
+    function startBlock(blockType) {
+      clearTimeout(state.activeTimeoutId);
+      state.block = blockType;
+      state.trialIndex = 0;
+
+      const count = blockType === "practice" ? CONFIG.practiceTrials : CONFIG.mainTrials;
+      state.trialQueue = generateBalancedTrials(count);
+
+      updateHUD();
+      showScreen("trial");
+      runNextTrial();
+    }
+
+    /**
+     * Execute single trial timeline:
+     * 1. Jittered fixation (400-600ms)
+     * 2. Stimulus array (until response or 1500ms timeout)
+     * 3. Accessible feedback (400ms)
+     * 4. Blank ITI (350ms)
+     */
+    function runNextTrial() {
+      if (state.trialIndex >= state.trialQueue.length) {
+        finishBlock();
+        return;
+      }
+
+      updateHUD();
+      state.awaitingResponse = false;
+
+      // 1. Fixation Cross
+      el.stimulusDisplay.className =
+        "stimulus-array text-4xl sm:text-6xl font-bold text-slate-400 select-none text-center";
+      el.stimulusDisplay.textContent = "+";
+      el.feedbackSubtext.textContent = "";
+
+      const fixationDuration =
+        Math.floor(
+          Math.random() * (CONFIG.fixationMaxMs - CONFIG.fixationMinMs + 1)
+        ) + CONFIG.fixationMinMs;
+
+      state.activeTimeoutId = setTimeout(() => {
+        presentStimulus();
+      }, fixationDuration);
+    }
+
+    /**
+     * Present the 5-character horizontal flanker array
+     */
+    function presentStimulus() {
+      const currentTrial = state.trialQueue[state.trialIndex];
+
+      el.stimulusDisplay.className =
+        "stimulus-array text-4xl sm:text-6xl font-bold text-slate-100 select-none text-center";
+      el.stimulusDisplay.textContent = currentTrial.stimulus;
+      el.feedbackSubtext.textContent = "";
+
+      state.awaitingResponse = true;
+      state.stimOnsetPerf = performance.now();
+
+      // Timeout handler (1500 ms)
+      state.activeTimeoutId = setTimeout(() => {
+        if (state.awaitingResponse) {
+          handleResponse("timeout", null);
+        }
+      }, CONFIG.stimulusTimeoutMs);
+    }
+
+    /**
+     * Record response or timeout
+     */
+    function handleResponse(responseDir, rtMs) {
+      if (!state.awaitingResponse) return;
+      state.awaitingResponse = false;
+      clearTimeout(state.activeTimeoutId);
+
+      const currentTrial = state.trialQueue[state.trialIndex];
+      const isTimeout = responseDir === "timeout";
+      const isCorrect = !isTimeout && responseDir === currentTrial.target_dir ? 1 : 0;
+
+      state.globalTrialCounter += 1;
+
+      const trialRecord = {
+        trial: state.globalTrialCounter,
+        block: state.block,
+        condition: currentTrial.condition,
+        target_dir: currentTrial.target_dir,
+        flanker_dir: currentTrial.flanker_dir,
+        response: responseDir,
+        correct: isCorrect,
+        rt_ms: isTimeout ? "" : Math.round(rtMs),
+        timestamp: new Date().toISOString()
+      };
+
+      state.results.push(trialRecord);
+
+      // Visual pad press feedback
+      if (responseDir === "left") flashPad(el.padLeft);
+      if (responseDir === "right") flashPad(el.padRight);
+
+      // 3. Accessible Feedback (400 ms)
+      if (isTimeout) {
+        el.stimulusDisplay.className =
+          "font-mono text-2xl sm:text-4xl font-bold text-amber-400 select-none text-center";
+        el.stimulusDisplay.textContent = "TOO SLOW";
+        el.feedbackSubtext.textContent = "Respond within 1500 ms";
+      } else if (isCorrect) {
+        el.stimulusDisplay.className =
+          "font-mono text-2xl sm:text-4xl font-bold text-emerald-400 select-none text-center";
+        el.stimulusDisplay.textContent = "✓ CORRECT";
+        el.feedbackSubtext.textContent = `${trialRecord.rt_ms} ms`;
+      } else {
+        el.stimulusDisplay.className =
+          "font-mono text-2xl sm:text-4xl font-bold text-accent neon-text select-none text-center";
+        el.stimulusDisplay.textContent = "✕ INCORRECT";
+        el.feedbackSubtext.textContent = `Target was ${currentTrial.target_dir.toUpperCase()}`;
+      }
+
+      updateHUD();
+
+      state.activeTimeoutId = setTimeout(() => {
+        // 4. Blank ITI (350 ms)
+        el.stimulusDisplay.textContent = "";
+        el.feedbackSubtext.textContent = "";
+
+        state.activeTimeoutId = setTimeout(() => {
+          state.trialIndex += 1;
+          runNextTrial();
+        }, CONFIG.itiDurationMs);
+      }, CONFIG.feedbackDurationMs);
+    }
+
+    /**
+     * Handle end of Practice or Main block
+     */
+    function finishBlock() {
+      if (state.block === "practice") {
+        const prac = state.results.filter(r => r.block === "practice");
+        const corr = prac.filter(r => r.correct === 1);
+        const acc = prac.length > 0 ? Math.round((corr.length / prac.length) * 100) : 0;
+        const meanRt =
+          corr.length > 0
+            ? Math.round(corr.reduce((s, r) => s + r.rt_ms, 0) / corr.length)
+            : 0;
+
+        el.practiceSummaryText.textContent = `Practice Accuracy: ${acc}% | Mean RT: ${
+          meanRt ? meanRt + " ms" : "N/A"
+        }`;
+        showScreen("transition");
+      } else {
+        state.block = "done";
+        updateHUD();
+        computeAndDisplaySummary();
+        showScreen("end");
+      }
+    }
+
+    /**
+     * Helper: Mean and SD calculations
+     */
+    function calcMean(nums) {
+      if (!nums.length) return null;
+      return nums.reduce((a, b) => a + b, 0) / nums.length;
+    }
+
+    function calcSD(nums) {
+      if (nums.length < 2) return null;
+      const m = calcMean(nums);
+      const variance =
+        nums.reduce((acc, n) => acc + Math.pow(n - m, 2), 0) / (nums.length - 1);
+      return Math.sqrt(variance);
+    }
+
+    /**
+     * Compute Main Block Metrics, Conflict Effect, Table & Save to localStorage
+     */
+    function computeAndDisplaySummary() {
+      const mainTrials = state.results.filter(r => r.block === "main");
+      const correctMain = mainTrials.filter(r => r.correct === 1 && typeof r.rt_ms === "number");
+
+      const overallAcc =
+        mainTrials.length > 0
+          ? Number(((correctMain.length / mainTrials.length) * 100).toFixed(1))
+          : 0;
+      const overallMeanRt = calcMean(correctMain.map(r => r.rt_ms));
+
+      // Condition stats
+      const condSummary = {};
+      const examples = {
+        congruent: "<<<<<",
+        incongruent: ">><>>",
+        neutral: "--<--"
+      };
+
+      for (const cond of CONFIG.conditions) {
+        const subset = mainTrials.filter(r => r.condition === cond);
+        const corrSubset = subset.filter(r => r.correct === 1 && typeof r.rt_ms === "number");
+        const rts = corrSubset.map(r => r.rt_ms);
+
+        condSummary[cond] = {
+          total: subset.length,
+          correct: corrSubset.length,
+          accuracy_pct:
+            subset.length > 0 ? Number(((corrSubset.length / subset.length) * 100).toFixed(1)) : 0,
+          mean_rt_ms: rts.length > 0 ? Number(calcMean(rts).toFixed(1)) : null,
+          sd_rt_ms: rts.length > 1 ? Number(calcSD(rts).toFixed(1)) : null
+        };
+      }
+
+      // Flanker Conflict Effect = Incongruent Mean RT - Congruent Mean RT
+      const congRt = condSummary.congruent.mean_rt_ms;
+      const incongRt = condSummary.incongruent.mean_rt_ms;
+      const conflictEffect =
+        congRt !== null && incongRt !== null ? Number((incongRt - congRt).toFixed(1)) : null;
+
+      // Render KPIs
+      el.resOverallAcc.textContent = `${overallAcc}%`;
+      el.resOverallRt.textContent =
+        overallMeanRt !== null ? `${Math.round(overallMeanRt)} ms` : "N/A";
+      el.resConflictEffect.textContent =
+        conflictEffect !== null
+          ? `${conflictEffect > 0 ? "+" : ""}${Math.round(conflictEffect)} ms`
+          : "N/A";
+
+      // Render Breakdown Table
+      el.resConditionTbody.innerHTML = "";
+      for (const cond of CONFIG.conditions) {
+        const s = condSummary[cond];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="py-3 px-3 sm:px-4 font-semibold capitalize text-slate-100">${cond}</td>
+          <td class="py-3 px-3 sm:px-4 text-slate-400 tracking-widest">${examples[cond]
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")}</td>
+          <td class="py-3 px-3 sm:px-4 text-right">${s.accuracy_pct}%</td>
+          <td class="py-3 px-3 sm:px-4 text-right text-accent font-semibold">${
+            s.mean_rt_ms !== null ? Math.round(s.mean_rt_ms) + " ms" : "N/A"
+          }</td>
+          <td class="py-3 px-3 sm:px-4 text-right text-slate-400">${
+            s.sd_rt_ms !== null ? Math.round(s.sd_rt_ms) + " ms" : "--"
+          }</td>
+        `;
+        el.resConditionTbody.appendChild(tr);
+      }
+
+      // Save summary payload to localStorage["projectTrial_flanker_v1"]
+      const summaryPayload = {
+        task: "flanker_conflict",
+        version: "v1",
+        completed_at: new Date().toISOString(),
+        overall_accuracy_pct: overallAcc,
+        overall_mean_rt_ms: overallMeanRt !== null ? Number(overallMeanRt.toFixed(1)) : null,
+        flanker_conflict_effect_ms: conflictEffect,
+        conditions: condSummary,
+        trials: state.results
+      };
+
+      try {
+        localStorage.setItem(CONFIG.storageKey, JSON.stringify(summaryPayload));
+      } catch (err) {
+        console.warn("Unable to write to localStorage:", err);
+      }
+    }
+
+    /**
+     * Download CSV with exact requested columns:
+     * trial, block, condition, target_dir, flanker_dir, response, correct, rt_ms, timestamp
+     */
+    function downloadCSV() {
+      const headers = [
+        "trial",
+        "block",
+        "condition",
+        "target_dir",
+        "flanker_dir",
+        "response",
+        "correct",
+        "rt_ms",
+        "timestamp"
+      ];
+
+      const rows = state.results.map(r =>
+        headers.map(h => `${r[h] !== undefined && r[h] !== null ? r[h] : ""}`).join(",")
+      );
+
+      const csvContent = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      a.href = url;
+      a.download = `flanker_conflict_${stamp}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Visual flash on response pad
+     */
+    function flashPad(padEl) {
+      padEl.classList.add("active-press");
+      setTimeout(() => padEl.classList.remove("active-press"), 120);
+    }
+
+    /**
+     * Event Listeners: Pointerdown on Touch Pads + Keyboard (ArrowLeft/Right & A/L)
+     */
+    function bindInputEvents() {
+      el.padLeft.addEventListener("pointerdown", e => {
+        e.preventDefault();
+        if (state.awaitingResponse) {
+          const rt = performance.now() - state.stimOnsetPerf;
+          handleResponse("left", rt);
+        } else {
+          flashPad(el.padLeft);
+        }
+      });
+
+      el.padRight.addEventListener("pointerdown", e => {
+        e.preventDefault();
+        if (state.awaitingResponse) {
+          const rt = performance.now() - state.stimOnsetPerf;
+          handleResponse("right", rt);
+        } else {
+          flashPad(el.padRight);
+        }
+      });
+
+      window.addEventListener("keydown", e => {
+        if (e.repeat) return;
+        const mappedDir = CONFIG.keyMap[e.code] || CONFIG.keyMap[e.key];
+        if (!mappedDir) return;
+
+        if (state.awaitingResponse) {
+          e.preventDefault();
+          const rt = performance.now() - state.stimOnsetPerf;
+          handleResponse(mappedDir, rt);
+        }
+      });
+
+      el.btnStartPractice.addEventListener("click", () => {
+        state.results = [];
+        state.globalTrialCounter = 0;
+        startBlock("practice");
+      });
+
+      el.btnStartMain.addEventListener("click", () => {
+        startBlock("main");
+      });
+
+      el.btnDownloadCsv.addEventListener("click", () => {
+        downloadCSV();
+      });
+
+      el.btnRestart.addEventListener("click", () => {
+        state.results = [];
+        state.globalTrialCounter = 0;
+        state.block = "idle";
+        updateHUD();
+        showScreen("intro");
+      });
+    }
+
+    // Initialize Task
+    bindInputEvents();
+  </script>
+</body>
+</html>
