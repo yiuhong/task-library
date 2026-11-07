@@ -31,6 +31,10 @@
                     <dt>Brightness</dt>
                     <dd>Pick the brighter square, then rate confidence. The in-game title is Luma Clash. <a href="brightness_game.html">Play</a> · <a href="brightness-info.html">Parameters</a></dd>
                 </div>
+                <div>
+                    <dt>Numerosity Comparison</dt>
+                    <dd>Choose which of two brief dot arrays had more dots. <a href="numerosity_game.html">Play</a> · <a href="numerosity-info.html">Parameters</a></dd>
+                </div>
             </dl>
         </section>
 
@@ -41,8 +45,8 @@
 
         <section>
             <h2>Data</h2>
-            <p>Nothing is uploaded. Stroop Dash, Oddball Dash, and Brightness Detection each keep their runs in <code>localStorage</code> on this browser and can download a CSV of those trials, including orientation start and turn rows. Clear saved removes that browser copy. Refresh does not.</p>
-            <p>Portrait and landscape both run. Hub demos do not lock orientation. Each saved trial includes the orientation at that moment, and turns during the run are timestamped on the session log. See each task’s parameters page for where that log lives.</p>
+            <p>Nothing is uploaded. Stroop Dash, Oddball Dash, and Brightness Detection each keep their runs in <code>localStorage</code> on this browser and can download a CSV of those trials, including orientation start and turn rows. Clear saved removes that browser copy. Refresh does not. Numerosity Comparison keeps the latest finished run under <code>projectTrial_numerosity_v1</code> and can download a CSV of that run. A later finished run replaces it. It has no Clear saved control and does not log orientation turns.</p>
+            <p>Portrait and landscape both run. Hub demos do not lock orientation. On Stroop, Oddball, and Brightness, each saved trial includes the orientation at that moment, and turns during the run are timestamped on the session log. See each task’s parameters page for where that log lives.</p>
             <p>Scores are for teaching. They are not a clinical assessment.</p>
         </section>
 
