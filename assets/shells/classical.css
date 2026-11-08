@@ -1,27 +1,35 @@
 /*
   Classical shell. Quiet lab chrome for a task that also has a gamified shell.
 
+  The run canvas is PsychoPy's default mid-gray, #7f7f7f (RGB 127,127,127).
+  Panels and the HUD sit on that same gray, a step lighter or darker, not on
+  cream. Stimulus ink is set by the task core and is not restyled here.
+
   Scoped to html[data-trial-mode="classical"]. Gamified pages link this file
   and stay neon, because every rule requires that attribute. Token overrides
   sit on body so they beat the task page's body variables. Arcade slots are
   forced off: a Tailwind display utility must not bring Score or Combo back.
 */
 
+html[data-trial-mode="classical"] {
+    background-color: #7f7f7f;
+}
+
 html[data-trial-mode="classical"] body {
-    --trial-bg: #f3f0e8;
-    --trial-surface: #fffcf7;
-    --trial-text: #1c1917;
-    --trial-muted: #57534e;
-    --trial-faint: #78716c;
-    --trial-line: rgba(28, 25, 23, 0.14);
-    --trial-pad-border: rgba(28, 25, 23, 0.28);
-    --trial-pad-bg: #fffcf7;
-    --trial-pad-bg-active: #e7e5e4;
+    --trial-bg: #7f7f7f;
+    --trial-surface: #8a8a8a;
+    --trial-text: #111111;
+    --trial-muted: #1a1a1a;
+    --trial-faint: #222222;
+    --trial-line: rgba(0, 0, 0, 0.28);
+    --trial-pad-border: rgba(0, 0, 0, 0.45);
+    --trial-pad-bg: #a3a3a3;
+    --trial-pad-bg-active: #8f8f8f;
     --trial-pad-active-shadow: none;
     --trial-font: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
     --trial-display: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
-    --trial-accent: #44403c;
-    background-color: var(--trial-bg);
+    --trial-accent: #1a1a1a;
+    background-color: #7f7f7f;
     color: var(--trial-text);
 }
 
@@ -37,10 +45,14 @@ html[data-trial-mode="classical"] .combo-text {
     animation: none;
 }
 
+html[data-trial-mode="classical"] #screen-task {
+    background-color: #7f7f7f;
+}
+
 html[data-trial-mode="classical"] #screen-welcome,
 html[data-trial-mode="classical"] #screen-results {
-    background-color: var(--trial-surface);
-    border-color: #d6d3d1;
+    background-color: #8a8a8a;
+    border-color: #4a4a4a;
     box-shadow: none;
     color: var(--trial-text);
 }
@@ -57,8 +69,8 @@ html[data-trial-mode="classical"] .shell-kicker {
 }
 
 html[data-trial-mode="classical"] .shell-panel {
-    background-color: #faf7f2;
-    border-color: #e7e5e4;
+    background-color: #737373;
+    border-color: #4a4a4a;
 }
 
 html[data-trial-mode="classical"] .shell-panel p,
@@ -89,8 +101,8 @@ html[data-trial-mode="classical"] #hud {
 }
 
 html[data-trial-mode="classical"] #hud-stats {
-    background-color: rgba(255, 252, 247, 0.94);
-    border-color: rgba(28, 25, 23, 0.12);
+    background-color: #737373;
+    border-color: rgba(0, 0, 0, 0.28);
     box-shadow: none;
     color: var(--trial-text);
 }
@@ -106,8 +118,8 @@ html[data-trial-mode="classical"] #trial-counter {
 
 html[data-trial-mode="classical"] #screen-results .bg-slate-800,
 html[data-trial-mode="classical"] .shell-note {
-    background-color: #faf7f2;
-    border-color: #e7e5e4;
+    background-color: #737373;
+    border-color: #4a4a4a;
     color: var(--trial-text);
 }
 
@@ -124,7 +136,12 @@ html[data-trial-mode="classical"] #result-incongruent .text-orange-400 {
 }
 
 html[data-trial-mode="classical"] #result-incongruent {
-    border-color: #e7e5e4;
+    border-color: #4a4a4a;
+}
+
+html[data-trial-mode="classical"] .text-slate-500,
+html[data-trial-mode="classical"] #orientation-note {
+    color: var(--trial-text);
 }
 
 html[data-trial-mode="classical"] #screen-results .grid {

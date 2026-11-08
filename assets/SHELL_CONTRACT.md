@@ -33,7 +33,7 @@ Theme CSS:
 
 - `assets/trial-theme.css` is the shared dark Trial theme. Gamified Stroop uses it.
 - `assets/shells/gamified.css` holds optional feedback components (combo bounce, shake, fire) and the neon stimulus glow.
-- `assets/shells/classical.css` is the quiet lab theme. Every rule is scoped to `html[data-trial-mode="classical"]`.
+- `assets/shells/classical.css` is the quiet lab theme. The run canvas is PsychoPy mid-gray `#7f7f7f`. Every rule is scoped to `html[data-trial-mode="classical"]`.
 - `assets/trial-audio.js` is the tone player. The shell passes an audio session only when the core's policy for that mode sets `audio: true`. Classical Stroop passes `null` and does not call `playTone`.
 
 ## What a task core exposes
