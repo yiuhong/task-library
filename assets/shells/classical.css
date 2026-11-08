@@ -1,0 +1,172 @@
+/*
+  Classical shell. Quiet lab chrome for a task that also has a gamified shell.
+
+  The run canvas is PsychoPy's default mid-gray, #7f7f7f (RGB 127,127,127).
+  Panels and the HUD sit on that same gray, a step lighter or darker, not on
+  cream. Stimulus ink is set by the task core and is not restyled here.
+
+  Scoped to html[data-trial-mode="classical"]. Gamified pages link this file
+  and stay neon, because every rule requires that attribute. Token overrides
+  sit on body so they beat the task page's body variables. Arcade slots are
+  forced off: a Tailwind display utility must not bring Score or Combo back.
+*/
+
+html[data-trial-mode="classical"] {
+    background-color: #7f7f7f;
+}
+
+html[data-trial-mode="classical"] body {
+    --trial-bg: #7f7f7f;
+    --trial-surface: #8a8a8a;
+    --trial-text: #111111;
+    --trial-muted: #1a1a1a;
+    --trial-faint: #222222;
+    --trial-line: rgba(0, 0, 0, 0.28);
+    --trial-pad-border: rgba(0, 0, 0, 0.45);
+    --trial-pad-bg: #a3a3a3;
+    --trial-pad-bg-active: #8f8f8f;
+    --trial-pad-active-shadow: none;
+    --trial-font: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+    --trial-display: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+    --trial-accent: #1a1a1a;
+    background-color: #7f7f7f;
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] [data-shell-arcade],
+html[data-trial-mode="classical"] [data-shell-live] {
+    display: none !important;
+}
+
+html[data-trial-mode="classical"] .stimulus-text,
+html[data-trial-mode="classical"] .shake,
+html[data-trial-mode="classical"] .fire-effect,
+html[data-trial-mode="classical"] .combo-text {
+    text-shadow: none;
+    animation: none;
+}
+
+html[data-trial-mode="classical"] #screen-task {
+    background-color: #7f7f7f;
+}
+
+html[data-trial-mode="classical"] #screen-welcome,
+html[data-trial-mode="classical"] #screen-results {
+    background-color: #8a8a8a;
+    border-color: #4a4a4a;
+    box-shadow: none;
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #screen-welcome h1,
+html[data-trial-mode="classical"] #screen-results h2,
+html[data-trial-mode="classical"] .game-title {
+    color: var(--trial-text);
+    letter-spacing: 0.01em;
+}
+
+html[data-trial-mode="classical"] .shell-kicker {
+    color: var(--trial-faint);
+}
+
+html[data-trial-mode="classical"] .shell-panel {
+    background-color: #737373;
+    border-color: #4a4a4a;
+}
+
+html[data-trial-mode="classical"] .shell-panel p,
+html[data-trial-mode="classical"] .shell-ink {
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] .shell-ink {
+    text-decoration: underline;
+    font-weight: 700;
+}
+
+html[data-trial-mode="classical"] #btn-start,
+html[data-trial-mode="classical"] #btn-restart {
+    background-color: #292524;
+    color: #fafaf9;
+    box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #btn-start:hover,
+html[data-trial-mode="classical"] #btn-restart:hover {
+    background-color: #1c1917;
+    transform: none;
+}
+
+html[data-trial-mode="classical"] #hud {
+    justify-content: center;
+}
+
+html[data-trial-mode="classical"] .trial-stat-split {
+    border-left: none;
+    padding-left: 0;
+}
+
+html[data-trial-mode="classical"] #feedback-area {
+    color: #000000;
+    font-weight: 700;
+    text-shadow: none;
+}
+
+html[data-trial-mode="classical"] #hud-stats {
+    background-color: #737373;
+    border-color: rgba(0, 0, 0, 0.28);
+    box-shadow: none;
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #hud-stats .text-green-400,
+html[data-trial-mode="classical"] #hud-stats .text-blue-400,
+html[data-trial-mode="classical"] #hud-stats .text-indigo-400,
+html[data-trial-mode="classical"] #stat-acc,
+html[data-trial-mode="classical"] #stat-rt,
+html[data-trial-mode="classical"] #trial-counter {
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #screen-results .bg-slate-800,
+html[data-trial-mode="classical"] .shell-note {
+    background-color: #737373;
+    border-color: #4a4a4a;
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #screen-results h3,
+html[data-trial-mode="classical"] #interpretation-text,
+html[data-trial-mode="classical"] #result-congruent,
+html[data-trial-mode="classical"] #result-incongruent,
+html[data-trial-mode="classical"] #result-accuracy,
+html[data-trial-mode="classical"] #result-mean,
+html[data-trial-mode="classical"] #result-congruent .text-green-400,
+html[data-trial-mode="classical"] #result-incongruent .text-orange-400 {
+    color: var(--trial-text);
+    font-style: normal;
+}
+
+html[data-trial-mode="classical"] #result-incongruent {
+    border-color: #4a4a4a;
+}
+
+html[data-trial-mode="classical"] .text-slate-500,
+html[data-trial-mode="classical"] #orientation-note {
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #screen-results .grid {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    html[data-trial-mode="classical"] #screen-results .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+html[data-trial-mode="classical"] .trial-orient-nudge {
+    background: var(--trial-surface);
+    color: var(--trial-text);
+}

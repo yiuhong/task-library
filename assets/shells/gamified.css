@@ -1,0 +1,38 @@
+/*
+  Gamified shell feedback components.
+
+  Optional chrome the task core may apply. Stroop's arcade policy uses
+  these classes. The classical policy does not add them. Layout and the
+  neon tokens stay in trial-theme.css and the task page.
+*/
+
+html[data-trial-mode="gamified"] [data-shell-summary] {
+    display: none !important;
+}
+
+html[data-trial-mode="gamified"] .stimulus-text {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.combo-text {
+    animation: trial-combo-bounce 0.3s ease-out;
+}
+
+@keyframes trial-combo-bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+.shake {
+    animation: trial-shake 0.2s ease-in-out;
+}
+
+@keyframes trial-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.fire-effect {
+    text-shadow: 0 0 10px #fff, 0 0 20px #ff0, 0 0 30px #f0f, 0 0 40px #0ff;
+}

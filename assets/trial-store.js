@@ -7,6 +7,11 @@
 
   The page keeps the newest 100 sessions. Starting another run drops the
   oldest. An unfinished run stays in the log; the next play does not resume it.
+
+  Optional mode: create({ mode: "gamified" }) or begin(events, { mode: "classical" }).
+  When a session has mode, decorate() copies it onto every CSV row from that
+  session, including orientation rows. Sessions with no mode leave the cell
+  blank. Callers that omit mode are unchanged.
 */
 (function (global) {
     var MAX_SESSIONS = 100;
@@ -88,6 +93,7 @@
         out.startedAt = session.startedAt;
         out.endedAt = session.endedAt == null ? "" : session.endedAt;
         out.complete = session.complete ? "true" : "false";
+        if (session.mode) out.mode = session.mode;
         return out;
     }
 
@@ -294,7 +300,7 @@
         render();
 
         return {
-            begin: function (events) {
+            begin: function (events, extra) {
                 justCleared = false;
                 while (store.sessions.length >= MAX_SESSIONS) store.sessions.shift();
                 current = {
@@ -305,6 +311,8 @@
                     trials: [],
                     orientationEvents: copyEvents(events)
                 };
+                if (opts.mode) current.mode = String(opts.mode);
+                if (extra && extra.mode) current.mode = String(extra.mode);
                 store.sessions.push(current);
                 persist();
                 return current.sessionId;
