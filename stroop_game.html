@@ -23,6 +23,7 @@
 
         <div class="shell-panel text-left bg-slate-800/50 p-6 rounded-2xl border border-indigo-500/30 mb-8">
             <p class="text-white mb-4">Match the <span class="shell-ink text-yellow-400 font-bold underline">INK COLOR</span>. Tap a pad or press its key. Ignore the word.</p>
+            <p data-shell-summary hidden class="text-sm mb-0">Eight practice trials with feedback, then 20 with none.</p>
 
             <div id="legend-grid" class="grid grid-cols-4 gap-4">
                 <div class="flex flex-col items-center">
@@ -73,16 +74,16 @@
             </div>
 
             <div id="hud-stats" class="trial-stats flex bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
-                <div class="text-center">
+                <div class="text-center" data-shell-live>
                     <span class="block text-[10px] text-slate-500 font-bold uppercase">Accuracy</span>
                     <span id="stat-acc" class="trial-stat font-bold text-green-400" data-trial-stat="accuracy">0%</span>
                 </div>
-                <div class="text-center">
+                <div class="text-center" data-shell-live>
                     <span class="block text-[10px] text-slate-500 font-bold uppercase" data-shell-copy data-classical="Mean RT">Avg Speed</span>
                     <span id="stat-rt" class="trial-stat font-bold text-blue-400" data-trial-stat="rt">0ms</span>
                 </div>
                 <div class="text-center trial-stat-split">
-                    <span class="block text-[10px] text-indigo-400 font-bold uppercase" data-shell-copy data-classical="Trial">Stage</span>
+                    <span id="trial-label" class="block text-[10px] text-indigo-400 font-bold uppercase" data-shell-copy data-classical="Trial">Stage</span>
                     <span id="trial-counter" class="trial-stat font-bold" data-trial-stat="trial">1 / 20</span>
                 </div>
             </div>

@@ -93,15 +93,17 @@ The head `apply` stamps `data-trial-mode` before CSS, so the classical theme is 
 
 The arcade policy also requires `stat-score`, `stat-combo`, and `final-score`. Classical keeps those nodes in the page and hides them with `[data-shell-arcade]`. The core does not write a score unless the policy says so.
 
-Stroop parameters (both shells): 20 trials, 10 congruent and 10 incongruent, no practice block, colors RED `#ff4b4b` / GREEN `#44ff44` / BLUE `#4444ff` / YELLOW `#ffff44`, keys R G B Y, fixation 400 ms (`READY?`), response window 2000 ms, feedback hold 400 ms, blank 300 ms. Details match `stroop-info.html`.
+Stroop main block (both shells): 20 trials, 10 congruent and 10 incongruent, colors RED `#ff4b4b` / GREEN `#44ff44` / BLUE `#4444ff` / YELLOW `#ffff44`, keys R G B Y, fixation 400 ms (`READY?`), response window 2000 ms, feedback hold 400 ms, blank 300 ms. The gamified shell has no practice block. Classical adds 8 practice trials with the same builder, colors, keys, and timings. Those trials are not part of the main-block summary. Details match `stroop-info.html`.
 
 Stroop feedback:
 
 | | Gamified `arcade` | Classical `summary` |
 | --- | --- | --- |
-| Score, combo, hue shift | yes | no |
-| Shake, fire, `PERFECT!` / `OOF!` | yes | no |
+| Live score, combo, accuracy, RT | yes | no |
+| Practice | none | 8 trials, brief Correct / Incorrect / No response |
+| Main-block words after a trial | `PERFECT!` / `OOF!` / `TOO SLOW!` | none |
+| Shake, fire, hue shift | yes | no |
 | Reward, tick, start, and end tones | yes | no |
-| End screen | score, condition means, arcade sentence | accuracy, mean RT, condition means, plain sentence |
+| End screen | score, condition means, arcade sentence | main-block accuracy, mean RT, condition means |
 
 The response path is the same: one answer per trial while the colored word is up, pads and keys share that path, a click within 750 ms of the same press is ignored.

@@ -5,13 +5,16 @@
   live here. The page shell only paints chrome and passes { mode, audio }.
   See assets/SHELL_CONTRACT.md.
 
-  Both shells mount this file. mode picks the feedback policy. It does not
-  change the trial count, colors, keys, or timings.
+  Both shells mount this file. mode picks the feedback policy. The main
+  block is 20 trials in both shells. Classical also runs 8 practice trials
+  first. Practice uses the same colors, keys, and timings, and it is not
+  part of the end-of-run summary.
 
   Arcade scoring and tones are the gamified policy: speed bonus
   max(0, 1000 − rounded RT) plus combo × 100, with combo incremented
-  before that bonus. Classical is the summary policy: no score, combo,
-  shake, fire, or reward sound. The 400 ms hold and 300 ms blank still run.
+  before that bonus. Classical shows a short Correct / Incorrect / No
+  response only during practice. The main block has no per-trial words,
+  and no live accuracy or RT. The 400 ms hold and 300 ms blank still run.
 */
 (function (global) {
     var CONFIG = {
@@ -33,7 +36,8 @@
             combo: true,
             shake: true,
             fire: true,
-            trialFeedback: true
+            trialFeedback: true,
+            practiceTrials: 0
         },
         classical: {
             id: "summary",
@@ -42,7 +46,8 @@
             combo: false,
             shake: false,
             fire: false,
-            trialFeedback: false
+            trialFeedback: false,
+            practiceTrials: 8
         }
     };
 
@@ -87,16 +92,18 @@
         }
 
         var orientation = global.TrialOrientation.createSession({ nudge: true });
+        var headers = [
+            "trialNum", "type", "responseKey", "rt", "isCorrect",
+            "orientationType", "orientationAngle", "orientationAt",
+            "orientationTMs", "orientationReason", "record",
+            "sessionId", "startedAt", "endedAt", "complete", "mode"
+        ];
+        if (policy.practiceTrials) headers.push("block");
         var store = global.TrialStore.create({
             taskId: "stroop",
             fileStem: "stroop_dash_data",
             mode: mode,
-            headers: [
-                "trialNum", "type", "responseKey", "rt", "isCorrect",
-                "orientationType", "orientationAngle", "orientationAt",
-                "orientationTMs", "orientationReason", "record",
-                "sessionId", "startedAt", "endedAt", "complete", "mode"
-            ]
+            headers: headers
         });
 
         function playTone(freq, type, duration, volume, slideTo) {
@@ -156,9 +163,9 @@
             return list;
         }
 
-        function generateTrials() {
+        function buildBlock(count) {
             var trials = [];
-            var half = CONFIG.trials / 2;
+            var half = count / 2;
             var i;
             for (i = 0; i < half; i++) {
                 var congruent = CONFIG.colors[i % 4];
@@ -182,9 +189,14 @@
             return shuffleInPlace(trials);
         }
 
-        function runningStats() {
-            var total = state.results.length;
-            var correct = state.results.filter(function (row) { return row.isCorrect; });
+        function rowsForSummary() {
+            return state.results.filter(function (row) { return row.block !== "practice"; });
+        }
+
+        function runningStats(rows) {
+            var list = rows || state.results;
+            var total = list.length;
+            var correct = list.filter(function (row) { return row.isCorrect; });
             var acc = total > 0 ? Math.round((correct.length / total) * 100) : 0;
             var avgRt = correct.length
                 ? Math.round(correct.reduce(function (sum, row) { return sum + row.rt; }, 0) / correct.length)
@@ -205,14 +217,19 @@
                 var hue = 220 + (state.combo * 10);
                 document.body.style.backgroundColor = "hsl(" + hue + ", 45%, 8%)";
             }
-            var stats = runningStats();
-            document.getElementById("stat-acc").textContent = stats.acc + "%";
-            document.getElementById("stat-rt").textContent = stats.avgRt + "ms";
+            if (policy.id === "arcade") {
+                var stats = runningStats();
+                document.getElementById("stat-acc").textContent = stats.acc + "%";
+                document.getElementById("stat-rt").textContent = stats.avgRt + "ms";
+            } else {
+                document.getElementById("stat-acc").textContent = "";
+                document.getElementById("stat-rt").textContent = "";
+            }
         }
 
         function showFeedback(text, colorClass) {
             var el = document.getElementById("feedback-area");
-            if (!policy.trialFeedback) {
+            if (!state.trialFeedback) {
                 el.textContent = "";
                 el.className = "game-title text-2xl opacity-0";
                 return;
@@ -221,16 +238,37 @@
             el.className = "game-title text-2xl opacity-100 transition-all " + colorClass;
         }
 
+        function startBlock(block) {
+            state.block = block.name;
+            state.trials = block.trials;
+            state.trialFeedback = block.feedback;
+            state.currentTrialIndex = 0;
+        }
+
+        function paintCounter() {
+            var label = document.getElementById("trial-label");
+            if (label && mode === "classical") {
+                label.textContent = state.block === "practice" ? "Practice" : "Trial";
+            }
+            document.getElementById("trial-counter").textContent = (state.currentTrialIndex + 1) + " / " + state.trials.length;
+        }
+
         function nextTrial() {
             if (state.currentTrialIndex >= state.trials.length) {
-                finishGame();
-                return;
+                state.blockCursor += 1;
+                if (!state.queue || state.blockCursor >= state.queue.length) {
+                    finishGame();
+                    return;
+                }
+                startBlock(state.queue[state.blockCursor]);
             }
 
             var trial = state.trials[state.currentTrialIndex];
             var display = document.getElementById("display-area");
-            document.getElementById("trial-counter").textContent = (state.currentTrialIndex + 1) + " / " + state.trials.length;
-            document.getElementById("feedback-area").classList.add("opacity-0");
+            var feedbackEl = document.getElementById("feedback-area");
+            paintCounter();
+            feedbackEl.textContent = "";
+            feedbackEl.className = "game-title text-2xl opacity-0";
             display.textContent = "READY?";
             display.style.color = fixationColor();
             display.classList.remove("fire-effect");
@@ -268,11 +306,13 @@
                     var speedBonus = Math.max(0, 1000 - Math.round(rt));
                     state.score += speedBonus + (state.combo * 100);
                 }
-                showFeedback("PERFECT!", "text-cyan-400");
+                if (policy.id === "arcade") showFeedback("PERFECT!", "text-cyan-400");
+                else showFeedback("Correct", "is-quiet");
             } else {
                 if (policy.audio) tones.incorrect();
                 if (policy.score || policy.combo) state.combo = 0;
-                showFeedback(key === null ? "TOO SLOW!" : "OOF!", "text-red-500");
+                if (policy.id === "arcade") showFeedback(key === null ? "TOO SLOW!" : "OOF!", "text-red-500");
+                else showFeedback(key === null ? "No response" : "Incorrect", "is-quiet");
                 if (policy.shake) {
                     var container = document.getElementById("stimulus-container");
                     container.classList.add("shake");
@@ -287,7 +327,8 @@
                 responseKey: key || "timeout",
                 rt: rt,
                 isCorrect: isCorrect,
-                mode: mode
+                mode: mode,
+                block: state.block
             }, orientation.fields("response")));
             store.commitTrial(state.results[state.results.length - 1], orientation.events);
             updateUI();
@@ -313,13 +354,14 @@
                 document.getElementById("final-score").textContent = state.score.toLocaleString();
             }
 
-            var stats = runningStats();
+            var summaryRows = rowsForSummary();
+            var stats = runningStats(summaryRows);
             document.getElementById("final-acc").textContent = String(stats.acc);
             document.getElementById("final-mean").textContent = String(stats.avgRt);
 
             var buckets = {};
             ["congruent", "incongruent"].forEach(function (type) {
-                var rows = state.results.filter(function (row) {
+                var rows = summaryRows.filter(function (row) {
                     return row.type === type && row.isCorrect;
                 });
                 var avg = rows.length
@@ -400,9 +442,22 @@
             state.score = 0;
             state.combo = 0;
             state.maxCombo = 0;
-            state.currentTrialIndex = 0;
             state.results = [];
-            state.trials = generateTrials();
+            state.queue = [];
+            if (policy.practiceTrials) {
+                state.queue.push({
+                    name: "practice",
+                    trials: buildBlock(policy.practiceTrials),
+                    feedback: true
+                });
+            }
+            state.queue.push({
+                name: "main",
+                trials: buildBlock(CONFIG.trials),
+                feedback: policy.id === "arcade"
+            });
+            state.blockCursor = 0;
+            startBlock(state.queue[0]);
             orientation.start();
             store.begin(orientation.events, { mode: mode });
             screens.welcome.classList.add("hidden");
@@ -421,7 +476,17 @@
             mode: mode,
             policyId: policy.id,
             getTrials: function () { return state.trials; },
-            getResults: function () { return state.results; }
+            getResults: function () { return state.results; },
+            getBlock: function () { return state.block; },
+            getPlan: function () {
+                return (state.queue || []).map(function (block) {
+                    return {
+                        name: block.name,
+                        feedback: block.feedback,
+                        trials: block.trials
+                    };
+                });
+            }
         };
         global.TrialTasks.stroop.current = api;
         return api;

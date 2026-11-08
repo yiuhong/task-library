@@ -10,7 +10,7 @@ Project Trial is Yiu Hong Ko’s browser collection of attention, perception, an
 
 Stroop is the pilot for a shell plus task-core split. The shell is chrome: frame, theme, HUD. The core is the science: parameters, trial loop, stimuli, keys, and feedback policy. Gamified and classical Stroop load `assets/tasks/stroop.js`, so the trial list is not copied into a second page.
 
-Open classical Stroop at [`stroop_game.html?mode=classical`](stroop_game.html?mode=classical). `mode=classical` is the only switch. A missing or unknown `mode` stays gamified, and [`stroop_game.html`](stroop_game.html) is still Stroop Dash. The contract is [`assets/SHELL_CONTRACT.md`](assets/SHELL_CONTRACT.md). Other tasks are not on it yet.
+Open classical Stroop at [`stroop_game.html?mode=classical`](stroop_game.html?mode=classical). `mode=classical` is the only switch. A missing or unknown `mode` stays gamified, and [`stroop_game.html`](stroop_game.html) is still Stroop Dash. Classical runs 8 practice trials with brief feedback, then the same 20-trial main block, with no live score, accuracy, or RT. The contract is [`assets/SHELL_CONTRACT.md`](assets/SHELL_CONTRACT.md). Other tasks are not on it yet.
 
 ## Wordmark
 
