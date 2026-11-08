@@ -331,6 +331,7 @@
         </div>
     </div>
 
+    <script src="assets/trial-audio.js"></script>
     <script>
         const canvas = document.getElementById('experimentCanvas');
         const ctx = canvas.getContext('2d');
@@ -378,31 +379,35 @@
         // Generate 'Subject Response (B)' - Slightly smaller spike
         generateEnvelope(responseStart, responseWidth, 90, 4);
 
-        // --- AUDIO SYNTHESIS (WEB AUDIO API) ---
-        let audioCtx = null;
+        // --- AUDIO ---
+        // Short spikes use the shared module. The 261 Hz tuning fork stays
+        // here: it is a long-lived oscillator, not a beep. defaultEnabled
+        // is false so a first visit with no project-trial:sfx key stays
+        // quiet. A stored on/off choice from any task wins.
+        const audio = TrialAudio.create({ defaultEnabled: false });
         let tuningForkOsc = null;
         let tuningForkGain = null;
-        let isAudioEnabled = false;
 
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                tuningForkOsc = audioCtx.createOscillator();
-                tuningForkOsc.type = 'sine';
-                tuningForkOsc.frequency.value = 261; // 261 Hz clock
-                
-                tuningForkGain = audioCtx.createGain();
-                tuningForkGain.gain.value = 0;
-                
-                tuningForkOsc.connect(tuningForkGain);
-                tuningForkGain.connect(audioCtx.destination);
-                tuningForkOsc.start();
-            }
+            const audioCtx = audio.ensureContext();
+            if (!audioCtx || tuningForkOsc) return;
+            tuningForkOsc = audioCtx.createOscillator();
+            tuningForkOsc.type = 'sine';
+            tuningForkOsc.frequency.value = 261; // 261 Hz clock
+
+            tuningForkGain = audioCtx.createGain();
+            tuningForkGain.gain.value = 0;
+
+            tuningForkOsc.connect(tuningForkGain);
+            tuningForkGain.connect(audioCtx.destination);
+            tuningForkOsc.start();
         }
 
         function updateAudioState() {
+            if (!tuningForkGain) return;
+            const audioCtx = audio.ensureContext();
             if (!audioCtx) return;
-            if (isAudioEnabled && isRotating) {
+            if (audio.isEnabled() && isRotating) {
                 tuningForkGain.gain.setTargetAtTime(0.1, audioCtx.currentTime, 0.05);
             } else {
                 tuningForkGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
@@ -410,24 +415,14 @@
         }
 
         function playAcousticSpike(isStimulus) {
-            if (!isAudioEnabled || !audioCtx) return;
-            
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            // Simulating a voice shout "Ki!" 
-            osc.type = isStimulus ? 'sawtooth' : 'square'; 
-            osc.frequency.setValueAtTime(isStimulus ? 150 : 200, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-            
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
+            // Voice shout "Ki!": sawtooth or square, falling to 40 Hz.
+            audio.playTone({
+                freq: isStimulus ? 150 : 200,
+                duration: 0.15,
+                type: isStimulus ? 'sawtooth' : 'square',
+                gain: 0.15,
+                slideTo: 40
+            });
         }
 
         // Resize handler
@@ -731,6 +726,7 @@
             if(!isRotating) {
                 statusDisplay.innerHTML = `Cylinder: Stationary<br>Offset: ${Math.floor(timeOffset)}px`;
             }
+            if (isRotating && audio.isEnabled()) initAudio();
             updateAudioState();
         });
 
@@ -778,16 +774,16 @@
             }
         });
 
-        btnToggleAudio.addEventListener('click', () => {
-            initAudio();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+        audio.bindToggle(btnToggleAudio, {
+            sync(btn, on) {
+                btn.textContent = on ? "Disable Audio" : "Enable Audio";
+                btn.style.color = on ? "var(--neon-green)" : "var(--brass-light)";
+                btn.style.borderColor = on ? "var(--neon-green)" : "var(--brass-med)";
+            },
+            onChange() {
+                if (audio.isEnabled()) initAudio();
+                updateAudioState();
             }
-            isAudioEnabled = !isAudioEnabled;
-            btnToggleAudio.textContent = isAudioEnabled ? "Disable Audio" : "Enable Audio";
-            btnToggleAudio.style.color = isAudioEnabled ? "var(--neon-green)" : "var(--brass-light)";
-            btnToggleAudio.style.borderColor = isAudioEnabled ? "var(--neon-green)" : "var(--brass-med)";
-            updateAudioState();
         });
 
         // Initialize

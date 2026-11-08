@@ -341,6 +341,7 @@
   </a-scene>
 
   <!-- ======================== BEHAVIORAL TASK & WEBXR LOGIC ======================== -->
+  <script src="assets/trial-audio.js"></script>
   <script>
     (function () {
       'use strict';
@@ -354,7 +355,9 @@
       const ITI_MAX_MS = 1400;
 
       // -------------------- STATE VARIABLES --------------------
-      let audioCtx = null;
+      // Tones and the shared project-trial:sfx mute live in assets/trial-audio.js.
+      // This page has no mute button. It stays audible when the key is missing.
+      const audio = TrialAudio.create();
       let baseY = 1.6;
       let eyeOrigin = { x: 0, y: 1.6, z: 0 };
       let trialSchedule = [];
@@ -404,67 +407,24 @@
 
       // -------------------- PROCEDURAL WEB AUDIO SYNTHESIS --------------------
       function initAndResumeAudio() {
-        if (!audioCtx) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (AudioContextClass) {
-            audioCtx = new AudioContextClass();
-          }
-        }
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume().catch(() => {});
-        }
+        audio.ensureContext();
       }
 
       function playSound(type) {
-        if (!audioCtx) return;
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume().catch(() => {});
-        }
-        const now = audioCtx.currentTime;
-
         if (type === 'hit') {
-          // Rising two-tone sine chime (523Hz -> 784Hz)
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(783.99, now + 0.075);
-
-          gain.gain.setValueAtTime(0.22, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now);
-          osc.stop(now + 0.23);
+          // Rising two-tone sine chime (523Hz, then 784Hz at 75ms)
+          audio.playTone({
+            freq: 523.25,
+            duration: 0.23,
+            type: 'sine',
+            gain: 0.22,
+            stepTo: 783.99,
+            stepAt: 0.075
+          });
         } else if (type === 'cr') {
-          // Soft tick (440Hz, 40ms)
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(440, now);
-
-          gain.gain.setValueAtTime(0.12, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now);
-          osc.stop(now + 0.045);
+          audio.playTone(440, 0.045, 'sine', 0.12);
         } else if (type === 'error') {
-          // Low sawtooth buzz (150Hz, 250ms)
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(150, now);
-
-          gain.gain.setValueAtTime(0.24, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now);
-          osc.stop(now + 0.26);
+          audio.playTone(150, 0.25, 'sawtooth', 0.24);
         }
       }
 

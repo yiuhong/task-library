@@ -434,6 +434,7 @@
   </footer>
 
   <!-- ==================== TASK APPLICATION SCRIPT ==================== -->
+  <script src="assets/trial-audio.js"></script>
   <script>
     /**
      * CONFIG: Experimental parameters for the Digital Corsi Block-Tapping Task
@@ -457,7 +458,6 @@
 
       // Progression mode: 'staircase' (discontinues when 0/2 correct at a span) or 'fixed' (runs all spans 3..9)
       progressionMode: 'staircase',
-      audioEnabled: true,
 
       // Classic 9-block non-grid pseudorandom normalized coordinates (adapted from Kessels et al., 2000 / Corsi 1972)
       // Values represent percentage centers (x%, y%) inside the square arena with safe margins
@@ -488,8 +488,7 @@
       userSequence: [],
       tapTimestamps: [],
       goCueTimestamp: 0,
-      trialLogs: [],
-      audioCtx: null
+      trialLogs: []
     };
 
     /**
@@ -529,37 +528,15 @@
     };
 
     /**
-     * Web Audio API Synthesizer for Low-Latency Experimental Cues
+     * Cue tones. Duration stays in milliseconds here.
+     * assets/trial-audio.js owns the context, the oscillator, and the
+     * shared project-trial:sfx mute key. The AUDIO CUES select still
+     * chooses on/off before the run starts.
      */
-    function initAudio() {
-      if (!STATE.audioCtx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-          STATE.audioCtx = new AudioContextClass();
-        }
-      }
-      if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
-        STATE.audioCtx.resume();
-      }
-    }
+    const audio = TrialAudio.create();
 
     function playTone(freq = 440, durationMs = 90, type = 'sine', gainVal = 0.08) {
-      if (!CONFIG.audioEnabled || !STATE.audioCtx) return;
-      try {
-        const now = STATE.audioCtx.currentTime;
-        const osc = STATE.audioCtx.createOscillator();
-        const gain = STATE.audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(gainVal, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + durationMs / 1000);
-        osc.connect(gain);
-        gain.connect(STATE.audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + durationMs / 1000);
-      } catch (e) {
-        // Ignore audio errors if blocked by browser policy
-      }
+      audio.playTone(freq, durationMs / 1000, type, gainVal);
     }
 
     function playGoCueAudio() {
@@ -905,9 +882,13 @@
      * Phase Starters
      */
     function startPracticePhase() {
-      initAudio();
+      // The setup select is the source of truth for this run. Write the
+      // shared key only when it disagrees, so an untouched default does
+      // not store "on" by itself.
+      const wantSound = DOM.toggleSound.value !== 'off';
+      if (wantSound !== audio.isEnabled()) audio.setEnabled(wantSound);
+      audio.ensureContext();
       CONFIG.progressionMode = DOM.selectMode.value;
-      CONFIG.audioEnabled = DOM.toggleSound.value === 'on';
 
       STATE.phase = 'PRACTICE';
       STATE.currentSpan = CONFIG.practiceSpan;
@@ -1080,6 +1061,8 @@
     /**
      * Wire UI Event Listeners
      */
+    audio.bindToggle(DOM.toggleSound, { kind: 'select' });
+
     DOM.btnStartPractice.addEventListener('click', startPracticePhase);
     DOM.btnClearSeq.addEventListener('click', handleClearInput);
     DOM.btnDownloadCsv.addEventListener('click', downloadCsv);
