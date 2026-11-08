@@ -86,7 +86,8 @@
   <main class="flex-1 w-full max-w-2xl mx-auto px-3 py-2 flex flex-col items-center justify-center relative">
 
     <!-- SCREEN 1: START / INSTRUCTIONS OVERLAY -->
-    <section id="screen-start" class="neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+    <section id="screen-start" class="shell-screen neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+        <div data-shell-toggle></div>
       <div class="flex items-center justify-between mb-2">
         <span class="micro-label text-amber-400">Project Trial // Psychophysics Module</span>
         <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">RDK v1.0</span>
@@ -130,15 +131,13 @@
         type="button"
         data-shell-copy
         data-classical="Start practice"
-        class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-bold tracking-wide text-sm uppercase transition shadow-lg shadow-amber-500/20"
+        class="shell-primary w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-bold tracking-wide text-sm uppercase transition shadow-lg shadow-amber-500/20"
       >
         Start Practice Block (6 Trials)
       </button>
       <div class="mt-3 flex justify-center gap-2">
         <a class="trial-more" href="index.html">Hub</a>
         <a class="trial-more" href="rdk-info.html">Task info</a>
-        <a class="trial-more" data-shell-arcade href="rdk_game.html?mode=classical">Classical</a>
-        <a class="trial-more" data-shell-summary hidden href="rdk_game.html">Gamified</a>
       </div>
     </section>
 
@@ -176,7 +175,7 @@
           type="button"
           data-shell-copy
           data-classical="Start main block"
-          class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
+          class="shell-primary flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
         >
           Begin Main Block (36 Trials)
         </button>
@@ -188,7 +187,8 @@
     </section>
 
     <!-- SCREEN 3: END SUMMARY OVERLAY -->
-    <section id="screen-summary" class="hidden neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+    <section id="screen-summary" class="shell-screen hidden neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+        <div data-shell-toggle></div>
       <div class="flex items-center justify-between mb-1">
         <span class="micro-label text-amber-400">Session Complete</span>
         <span id="storage-badge" class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
@@ -248,7 +248,7 @@
           type="button"
           data-shell-copy
           data-classical="Run again"
-          class="flex-1 py-3 rounded-xl border border-slate-700 hover:border-amber-500/50 text-slate-200 font-semibold text-xs uppercase tracking-wider transition"
+          class="shell-primary flex-1 py-3 rounded-xl border border-slate-700 hover:border-amber-500/50 text-slate-200 font-semibold text-xs uppercase tracking-wider transition"
         >
           ↻ Run New Session
         </button>

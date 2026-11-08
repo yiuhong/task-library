@@ -8,9 +8,9 @@ Project Trial is Yiu Hong Ko’s browser collection of attention, perception, an
 
 ## Shells and task cores
 
-Each hub task is a shell plus a task core. The shell is chrome: frame, theme, HUD. The core is the science: parameters, trial loop, stimuli, keys, and feedback policy. Gamified and classical load the same `assets/tasks/<id>.js`, so the trial list is not copied into a second page.
+Each hub task is a shell plus a task core. The shell is chrome: frame, theme, HUD, and the Gamified | Classical control on the welcome and results screens. The core is the science: parameters, trial loop, stimuli, keys, and feedback policy. Gamified and classical load the same `assets/tasks/<id>.js`, so the trial list is not copied into a second page.
 
-`mode=classical` is the only switch. A missing or unknown `mode` stays gamified. Classical runs on the mid-gray canvas, with no live score, accuracy, or mean RT. Practice feedback and a few task-specific exceptions are in [`assets/SHELL_CONTRACT.md`](assets/SHELL_CONTRACT.md). `noematachograph.html` and `vr.html` are not on the contract.
+The control stores the last choice in `localStorage` under `project-trial:mode`. With no stored choice, a task stays gamified unless the URL says `?mode=classical`. `?mode=gamified` and `?mode=classical` still open that shell and update the stored choice. The hub cards do not link a separate Classical entry. Classical runs on the mid-gray canvas, with no live score, accuracy, or mean RT. Practice feedback and a few task-specific exceptions are in [`assets/SHELL_CONTRACT.md`](assets/SHELL_CONTRACT.md). `noematachograph.html` and `vr.html` are not on the contract.
 
 ## Wordmark
 
@@ -23,16 +23,16 @@ Approved black-and-white lockup, outlined in `assets/`:
 
 ## Live on the hub
 
-- **Stroop Dash** — [`stroop_game.html`](stroop_game.html). Selective attention and Stroop interference. Classical: [`stroop_game.html?mode=classical`](stroop_game.html?mode=classical). Parameters: [`stroop-info.html`](stroop-info.html).
-- **Oddball** — [`oddball_game.html`](oddball_game.html). Rare-target detection among frequent standards. Classical: [`oddball_game.html?mode=classical`](oddball_game.html?mode=classical). Parameters: [`oddball-info.html`](oddball-info.html).
-- **Brightness Detection** — [`brightness_game.html`](brightness_game.html). Luminance discrimination with confidence ratings. Classical: [`brightness_game.html?mode=classical`](brightness_game.html?mode=classical). Parameters: [`brightness-info.html`](brightness-info.html).
-- **Numerosity Comparison** — [`numerosity_game.html`](numerosity_game.html). Which of two brief dot arrays had more dots. Classical: [`numerosity_game.html?mode=classical`](numerosity_game.html?mode=classical). Parameters: [`numerosity-info.html`](numerosity-info.html).
-- **RDK Motion Coherence** — [`rdk_game.html`](rdk_game.html). Net direction of a moving dot cloud. Classical: [`rdk_game.html?mode=classical`](rdk_game.html?mode=classical). Parameters: [`rdk-info.html`](rdk-info.html).
-- **Eriksen Flanker** — [`flanker_game.html`](flanker_game.html). Center-arrow direction with congruent, incongruent, and neutral flankers. Classical: [`flanker_game.html?mode=classical`](flanker_game.html?mode=classical). Parameters: [`flanker-info.html`](flanker-info.html).
-- **Visual Working Memory** — [`vwm_game.html`](vwm_game.html). Color change detection at set sizes 4, 6, and 8. Classical: [`vwm_game.html?mode=classical`](vwm_game.html?mode=classical). Parameters: [`vwm-info.html`](vwm-info.html).
-- **Go / No-Go** — [`gonogo_game.html`](gonogo_game.html). Speeded response to a green arrow, withhold on a red X. Classical: [`gonogo_game.html?mode=classical`](gonogo_game.html?mode=classical). Parameters: [`gonogo-info.html`](gonogo-info.html).
-- **Corsi Span** — [`corsi_game.html`](corsi_game.html). Tap a flashed block sequence back in order. Classical: [`corsi_game.html?mode=classical`](corsi_game.html?mode=classical). Parameters: [`corsi-info.html`](corsi-info.html).
-- **Reversal Learning** — [`bandit_game.html`](bandit_game.html). Two-armed bandit with a silent switch of the better option. Classical: [`bandit_game.html?mode=classical`](bandit_game.html?mode=classical). Parameters: [`bandit-info.html`](bandit-info.html).
+- **Stroop Dash** — [`stroop_game.html`](stroop_game.html). Selective attention and Stroop interference. The in-task control switches shells (`?mode=classical` still opens the lab shell directly). Parameters: [`stroop-info.html`](stroop-info.html).
+- **Oddball** — [`oddball_game.html`](oddball_game.html). Rare-target detection among frequent standards. Parameters: [`oddball-info.html`](oddball-info.html).
+- **Brightness Detection** — [`brightness_game.html`](brightness_game.html). Luminance discrimination with confidence ratings. Parameters: [`brightness-info.html`](brightness-info.html).
+- **Numerosity Comparison** — [`numerosity_game.html`](numerosity_game.html). Which of two brief dot arrays had more dots. Parameters: [`numerosity-info.html`](numerosity-info.html).
+- **RDK Motion Coherence** — [`rdk_game.html`](rdk_game.html). Net direction of a moving dot cloud. Parameters: [`rdk-info.html`](rdk-info.html).
+- **Eriksen Flanker** — [`flanker_game.html`](flanker_game.html). Center-arrow direction with congruent, incongruent, and neutral flankers. Parameters: [`flanker-info.html`](flanker-info.html).
+- **Visual Working Memory** — [`vwm_game.html`](vwm_game.html). Color change detection at set sizes 4, 6, and 8. Parameters: [`vwm-info.html`](vwm-info.html).
+- **Go / No-Go** — [`gonogo_game.html`](gonogo_game.html). Speeded response to a green arrow, withhold on a red X. Parameters: [`gonogo-info.html`](gonogo-info.html).
+- **Corsi Span** — [`corsi_game.html`](corsi_game.html). Tap a flashed block sequence back in order. Parameters: [`corsi-info.html`](corsi-info.html).
+- **Reversal Learning** — [`bandit_game.html`](bandit_game.html). Two-armed bandit with a silent switch of the better option. Parameters: [`bandit-info.html`](bandit-info.html).
 
 Hub overview: [`about.html`](about.html).
 

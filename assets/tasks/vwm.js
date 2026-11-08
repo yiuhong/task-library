@@ -267,8 +267,9 @@
          ********************************************************************/
         function clearCanvas() {
           const ctx = el.ctx;
-          ctx.fillStyle = '#0b101d';
+          ctx.fillStyle = mode === "classical" ? "#7f7f7f" : "#0b101d";
           ctx.fillRect(0, 0, CONFIG.canvasSize, CONFIG.canvasSize);
+          if (mode === "classical") return;
 
           // Subtle reference grid lines
           ctx.strokeStyle = 'rgba(51, 65, 85, 0.22)';
@@ -282,6 +283,7 @@
         }
 
         function drawFixation(color = '#f1f5f9') {
+          if (mode === "classical") color = "#111111";
           const ctx = el.ctx;
           const c = CONFIG.canvasSize / 2;
           const arm = 9;
@@ -313,7 +315,7 @@
 
           // If test probe cue ring is active
           if (isCircled) {
-            ctx.strokeStyle = '#38bdf8';
+            ctx.strokeStyle = mode === "classical" ? "#111111" : "#38bdf8";
             ctx.lineWidth = 2.5;
             ctx.beginPath();
             ctx.arc(x, y, half + 10, 0, Math.PI * 2);

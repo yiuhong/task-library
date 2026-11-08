@@ -80,7 +80,8 @@
   <main class="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl w-full mx-auto">
 
     <!-- ==================== VIEW 1: WELCOME / INSTRUCTIONS ==================== -->
-    <section id="view-welcome" class="w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+    <section id="view-welcome" class="shell-screen w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+        <div data-shell-toggle></div>
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-300 text-xs font-mono mb-4">
         TASK MODULE: VISUOSPATIAL SPAN
       </div>
@@ -131,15 +132,13 @@
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-start-practice" class="btn-neon flex-1 py-3.5 px-6 rounded-xl font-semibold text-sm sm:text-base tracking-wide uppercase cursor-pointer">
+        <button id="btn-start-practice" class="shell-primary btn-neon flex-1 py-3.5 px-6 rounded-xl font-semibold text-sm sm:text-base tracking-wide uppercase cursor-pointer">
           Start Practice Warmup (2 Trials)
         </button>
       </div>
       <div class="mt-3 flex justify-center gap-2">
         <a class="trial-more" href="index.html">Hub</a>
         <a class="trial-more" href="corsi-info.html">Task info</a>
-        <a class="trial-more" data-shell-arcade href="corsi_game.html?mode=classical">Classical</a>
-        <a class="trial-more" data-shell-summary hidden href="corsi_game.html">Gamified</a>
       </div>
     </section>
 
@@ -197,7 +196,8 @@
     </section>
 
     <!-- ==================== VIEW 3: END / SUMMARY SCREEN ==================== -->
-    <section id="view-results" class="hidden w-full max-w-2xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+    <section id="view-results" class="shell-screen hidden w-full max-w-2xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+        <div data-shell-toggle></div>
       <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-300 text-xs font-mono">
           ASSESSMENT COMPLETE
@@ -264,7 +264,7 @@
         <button id="btn-download-csv" class="btn-neon w-full sm:w-auto flex-1 py-3 px-5 rounded-xl font-semibold text-sm uppercase tracking-wider cursor-pointer">
           Download CSV Log
         </button>
-        <button id="btn-restart" class="w-full sm:w-auto py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm uppercase tracking-wider transition cursor-pointer">
+        <button id="btn-restart" class="shell-primary w-full sm:w-auto py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm uppercase tracking-wider transition cursor-pointer">
           Run New Session
         </button>
       </div>

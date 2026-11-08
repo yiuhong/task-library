@@ -58,7 +58,8 @@
   <main class="relative flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4 overflow-hidden">
 
     <!-- 1. Welcome / Instructions Screen -->
-    <section id="screen-intro" class="w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+    <section id="screen-intro" class="shell-screen w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+        <div data-shell-toggle></div>
       <div class="space-y-2">
         <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono uppercase tracking-wider bg-lime-500/10 text-goLime border border-lime-500/30">
           Response Inhibition Paradigm
@@ -72,7 +73,7 @@
       <!-- Visual Rule Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="p-4 rounded-xl bg-slate-900/80 border border-lime-500/30 flex items-center space-x-4">
-          <div class="w-14 h-14 rounded-xl border-2 border-goLime bg-lime-500/10 flex items-center justify-center shrink-0">
+          <div class="w-14 h-14 rounded-xl border-2 border-goLime bg-lime-500/10 flex items-center justify-center shrink-0" data-shell-stimulus>
             <svg class="w-8 h-8 text-goLime" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h15" />
             </svg>
@@ -84,7 +85,7 @@
         </div>
 
         <div class="p-4 rounded-xl bg-slate-900/80 border border-rose-500/30 flex items-center space-x-4">
-          <div class="w-14 h-14 rounded-xl border-2 border-nogoCoral bg-rose-500/10 flex items-center justify-center shrink-0">
+          <div class="w-14 h-14 rounded-xl border-2 border-nogoCoral bg-rose-500/10 flex items-center justify-center shrink-0" data-shell-stimulus>
             <svg class="w-8 h-8 text-nogoCoral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -104,15 +105,13 @@
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 pt-2">
-        <button id="btn-start-practice" class="flex-1 py-3.5 px-6 rounded-xl bg-goLime hover:bg-lime-400 active:scale-[0.99] text-slate-950 font-bold text-sm tracking-wide uppercase transition shadow-lg shadow-lime-500/10">
+        <button id="btn-start-practice" class="shell-primary flex-1 py-3.5 px-6 rounded-xl bg-goLime hover:bg-lime-400 active:scale-[0.99] text-slate-950 font-bold text-sm tracking-wide uppercase transition shadow-lg shadow-lime-500/10">
           Start Practice Block (8 Trials)
         </button>
       </div>
       <div class="mt-3 flex justify-center gap-2">
         <a class="trial-more" href="index.html">Hub</a>
         <a class="trial-more" href="gonogo-info.html">Task info</a>
-        <a class="trial-more" data-shell-arcade href="gonogo_game.html?mode=classical">Classical</a>
-        <a class="trial-more" data-shell-summary hidden href="gonogo_game.html">Gamified</a>
       </div>
     </section>
 
@@ -127,7 +126,7 @@
         <div>MAIN BLOCK LENGTH: <strong class="text-white">40 High-Tempo Trials</strong></div>
         <div>Keep your fingers poised over the Left and Right response zones.</div>
       </div>
-      <button id="btn-start-main" class="w-full sm:w-auto min-w-[240px] py-3.5 px-8 rounded-xl bg-goLime hover:bg-lime-400 text-slate-950 font-bold text-sm uppercase tracking-wider transition" data-shell-copy data-classical="Begin Main Block (40 Trials)">
+      <button id="btn-start-main" class="shell-primary w-full sm:w-auto min-w-[240px] py-3.5 px-8 rounded-xl bg-goLime hover:bg-lime-400 text-slate-950 font-bold text-sm uppercase tracking-wider transition" data-shell-copy data-classical="Begin Main Block (40 Trials)">
         Launch Main Block (40 Trials)
       </button>
       <div class="mt-3 flex justify-center gap-2">
@@ -152,7 +151,7 @@
         <!-- Dynamic SVG Target (Go Arrow or No-Go Stop Signal) -->
         <div id="stim-target" class="hidden flex-col items-center justify-center w-full h-full">
           <div id="stim-badge" class="mb-2 px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-widest"></div>
-          <div id="stim-icon" class="w-28 h-28 flex items-center justify-center"></div>
+          <div id="stim-icon" class="w-28 h-28 flex items-center justify-center" data-shell-stimulus></div>
         </div>
 
         <!-- Immediate Trial Feedback Overlay -->
@@ -185,7 +184,8 @@
     </section>
 
     <!-- 4. End Summary & Data Export Screen -->
-    <section id="screen-results" class="hidden w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6 max-h-[86dvh] overflow-y-auto">
+    <section id="screen-results" class="shell-screen hidden w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6 max-h-[86dvh] overflow-y-auto">
+        <div data-shell-toggle></div>
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
         <div>
           <span class="text-xs font-mono uppercase tracking-widest text-goLime">Session Complete</span>
@@ -231,7 +231,7 @@
           </svg>
           <span>Download CSV Log</span>
         </button>
-        <button id="btn-restart" class="py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs uppercase tracking-wider transition border border-slate-700">
+        <button id="btn-restart" class="shell-primary py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs uppercase tracking-wider transition border border-slate-700">
           Run New Session
         </button>
       </div>

@@ -284,22 +284,23 @@
       }
 
       // Draw central fixation cross
-      drawFixationCross(cx, cy, '#f59e0b');
+      drawFixationCross(cx, cy, mode === 'classical' ? '#111111' : '#f59e0b');
       ctx.restore();
     }
 
     function drawFixationCross(cx, cy, color = '#f59e0b') {
       ctx.save();
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = mode === 'classical' ? '#111111' : color;
       ctx.lineWidth = 2.2;
       ctx.lineCap = 'round';
       const arm = 7;
 
-      // Dark halo behind fixation cross for high contrast
-      ctx.beginPath();
-      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(6, 9, 17, 0.72)';
-      ctx.fill();
+      if (mode !== 'classical') {
+        ctx.beginPath();
+        ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(6, 9, 17, 0.72)';
+        ctx.fill();
+      }
 
       ctx.beginPath();
       ctx.moveTo(cx - arm, cy);

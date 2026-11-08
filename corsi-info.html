@@ -60,6 +60,12 @@
         </section>
 
         <section>
+            <h2>Classical presentation</h2>
+            <p>The welcome and results screens have a Gamified | Classical control. The choice is stored in this browser as <code>project-trial:mode</code>. <code>?mode=classical</code> still opens the lab shell.</p>
+            <p>A specific Corsi bibliographic record was not re-verified for this shell. Classical shows nine identical blocks on a gray board. They light in one plain color, then the same sequence is tapped back. Span rules and timings are unchanged. Sequence tones are off, and the audio-cues select is hidden.</p>
+        </section>
+
+        <section>
             <h2>Shells</h2>
             <p>The same Corsi core runs in two shells. <a href="corsi_game.html">Corsi Span</a> is the gamified shell. <a href="corsi_game.html?mode=classical">Classical Corsi span</a> is the quiet lab shell on a mid-gray canvas. Warmup is still 2 trials at span 3. The progression menu, staircase or fixed, stays in both shells, and the default is still the staircase. There is no live score during trials. The end screen keeps max span, correct sequences, block score (the sum of correct span lengths), the product, and mean tap time. Block score on that screen is part of the summary.</p>
             <p>Documented exception: sequence tones and tap tones are off in the classical shell, including the go-cue tone. Flash timing is unchanged: 650 ms before the first flash, each block lit for 500 ms, 250 ms between blocks, and 200 ms before the go cue. The go cue is still shown. Gamified keeps AUDIO CUES and every current tone. Classical hides AUDIO CUES, ignores that control, and does not write the shared <code>project-trial:sfx</code> key. During classical practice the banner after a sequence is a brief Correct or Incorrect, with no tone. During the classical main block those banners are not shown. The 900 ms pause before the next sequence still runs, and the taps stay on the blocks until that pause ends. The gamified shell keeps the CORRECT SEQUENCE and INCORRECT SEQUENCE banners and the tones.</p>

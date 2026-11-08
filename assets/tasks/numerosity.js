@@ -283,8 +283,8 @@
 
         // Subtle subtle inner frame reference
         ctx.fillStyle = '#f8fafc';
-        ctx.shadowColor = 'rgba(52, 211, 153, 0.45)';
-        ctx.shadowBlur = 6;
+        ctx.shadowColor = mode === 'classical' ? 'transparent' : 'rgba(52, 211, 153, 0.45)';
+        ctx.shadowBlur = mode === 'classical' ? 0 : 6;
 
         for (let i = 0; i < dots.length; i++) {
           ctx.beginPath();

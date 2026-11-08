@@ -1,36 +1,43 @@
 /*
-  Classical shell. Quiet lab chrome for a task that also has a gamified shell.
+  Classical shell. Quiet lab chrome for every hub task.
 
-  The run canvas is PsychoPy's default mid-gray, #7f7f7f (RGB 127,127,127).
-  Panels and the HUD sit on that same gray, a step lighter or darker, not on
-  cream. Stimulus ink is set by the task core and is not restyled here.
+  The field is PsychoPy's default mid-gray, #7f7f7f. Type is Arial.
+  Decorative neon (glow, fire, shake, combo bounce, colored borders,
+  drop shadows, arcade display faces) is turned off for the whole page.
+  Stimulus ink is left alone when the node is marked data-shell-stimulus:
+  Stroop word color, oddball O/X colors, go / no-go symbols, brightness
+  squares, and the flanker string. Chrome around those nodes is plain.
 
-  Scoped to html[data-trial-mode="classical"]. Gamified pages link this file
-  and stay neon, because every rule requires that attribute. Token overrides
-  sit on body so they beat the task page's body variables. Arcade slots are
-  forced off: a Tailwind display utility must not bring Score or Combo back.
+  Scoped to html[data-trial-mode="classical"]. Gamified pages link this
+  file and stay neon, because every rule requires that attribute.
 */
 
-html[data-trial-mode="classical"] {
-    background-color: #7f7f7f;
+html[data-trial-mode="classical"],
+html[data-trial-mode="classical"] body {
+    background-color: #7f7f7f !important;
+    background-image: none !important;
+    color: #111111 !important;
 }
 
-html[data-trial-mode="classical"] body {
-    --trial-bg: #7f7f7f;
-    --trial-surface: #8a8a8a;
-    --trial-text: #111111;
-    --trial-muted: #1a1a1a;
-    --trial-faint: #222222;
-    --trial-line: rgba(0, 0, 0, 0.28);
-    --trial-pad-border: rgba(0, 0, 0, 0.45);
-    --trial-pad-bg: #a3a3a3;
-    --trial-pad-bg-active: #8f8f8f;
-    --trial-pad-active-shadow: none;
-    --trial-font: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
-    --trial-display: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
-    --trial-accent: #1a1a1a;
-    background-color: #7f7f7f;
-    color: var(--trial-text);
+html[data-trial-mode="classical"] body,
+html[data-trial-mode="classical"] body * {
+    font-family: Arial, Helvetica, sans-serif !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+}
+
+/* Chrome wash. Stimulus subtrees keep task-defined ink and spacing. */
+html[data-trial-mode="classical"] body :where(:not([data-shell-stimulus], [data-shell-stimulus] *)) {
+    color: #161616 !important;
+    border-color: #4a4a4a !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
 }
 
 html[data-trial-mode="classical"] [data-shell-arcade],
@@ -38,137 +45,250 @@ html[data-trial-mode="classical"] [data-shell-live] {
     display: none !important;
 }
 
-html[data-trial-mode="classical"] .stimulus-text,
-html[data-trial-mode="classical"] .shake,
-html[data-trial-mode="classical"] .fire-effect,
-html[data-trial-mode="classical"] .combo-text {
-    text-shadow: none;
-    animation: none;
-}
-
-html[data-trial-mode="classical"] #screen-task {
-    background-color: #7f7f7f;
-}
-
+html[data-trial-mode="classical"] .shell-screen,
 html[data-trial-mode="classical"] #screen-welcome,
-html[data-trial-mode="classical"] #screen-results {
-    background-color: #8a8a8a;
-    border-color: #4a4a4a;
-    box-shadow: none;
-    color: var(--trial-text);
+html[data-trial-mode="classical"] #screen-results,
+html[data-trial-mode="classical"] #screen-intro,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-end,
+html[data-trial-mode="classical"] #screen-start,
+html[data-trial-mode="classical"] #screen-summary,
+html[data-trial-mode="classical"] #screenStart,
+html[data-trial-mode="classical"] #screenTransition,
+html[data-trial-mode="classical"] #screenEnd,
+html[data-trial-mode="classical"] #view-welcome,
+html[data-trial-mode="classical"] #view-results {
+    background-color: #8a8a8a !important;
+    color: #111111 !important;
+    border: 1px solid #4a4a4a !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
 }
 
-html[data-trial-mode="classical"] #screen-welcome h1,
-html[data-trial-mode="classical"] #screen-results h2,
+html[data-trial-mode="classical"] #screen-task,
+html[data-trial-mode="classical"] #screen-arena,
+html[data-trial-mode="classical"] #screen-trial,
+html[data-trial-mode="classical"] #view-arena,
+html[data-trial-mode="classical"] #screenArena {
+    background-color: #7f7f7f !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] .shell-panel,
+html[data-trial-mode="classical"] .shell-note,
+html[data-trial-mode="classical"] #hud-stats,
+html[data-trial-mode="classical"] #confidence-container {
+    background-color: #737373 !important;
+    border: 1px solid #4a4a4a !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+    color: #111111 !important;
+}
+
+html[data-trial-mode="classical"] button:not(.shell-primary):not(.shell-mode-btn),
+html[data-trial-mode="classical"] select {
+    background-color: #d9d9d9 !important;
+    color: #111111 !important;
+    border: 1px solid #333333 !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] button.shell-primary {
+    background-color: #2c2c2c !important;
+    color: #f4f4f4 !important;
+    border: 1px solid #111111 !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html[data-trial-mode="classical"] button.shell-primary * {
+    color: #f4f4f4 !important;
+    background-color: transparent !important;
+    text-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] .trial-pad,
+html[data-trial-mode="classical"] .touch-pad,
+html[data-trial-mode="classical"] .response-pad {
+    background-color: #d4d4d4 !important;
+    color: #111111 !important;
+    border: 1px solid #333333 !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+html[data-trial-mode="classical"] .trial-pad *,
+html[data-trial-mode="classical"] .touch-pad *,
+html[data-trial-mode="classical"] .response-pad * {
+    color: #111111 !important;
+    text-shadow: none !important;
+    filter: none !important;
+}
+
+html[data-trial-mode="classical"] .trial-pad-key,
 html[data-trial-mode="classical"] .game-title {
-    color: var(--trial-text);
-    letter-spacing: 0.01em;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 2rem !important;
+    letter-spacing: normal !important;
+    line-height: 1.2 !important;
 }
 
-html[data-trial-mode="classical"] .shell-kicker {
-    color: var(--trial-faint);
+/* Instructional color keys inside a stimulus slot (Stroop legend, oddball exemplars). */
+html[data-trial-mode="classical"] [data-shell-stimulus] .text-red-500 { color: #ff4b4b !important; }
+html[data-trial-mode="classical"] [data-shell-stimulus] .text-green-500 { color: #22c55e !important; }
+html[data-trial-mode="classical"] [data-shell-stimulus] .text-blue-500 { color: #4444ff !important; }
+html[data-trial-mode="classical"] [data-shell-stimulus] .text-yellow-500 { color: #eab308 !important; }
+html[data-trial-mode="classical"] [data-shell-stimulus] .text-cyan-400 { color: #06b6d4 !important; }
+html[data-trial-mode="classical"] [data-shell-stimulus] .text-pink-500 { color: #ec4899 !important; }
+
+html[data-trial-mode="classical"] #stimulus-display {
+    color: #111111 !important;
 }
 
-html[data-trial-mode="classical"] .shell-panel {
-    background-color: #737373;
-    border-color: #4a4a4a;
+html[data-trial-mode="classical"] .stimulus-square {
+    border-radius: 0 !important;
+    box-shadow: none !important;
 }
 
-html[data-trial-mode="classical"] .shell-panel p,
-html[data-trial-mode="classical"] .shell-ink {
-    color: var(--trial-text);
+html[data-trial-mode="classical"] canvas,
+html[data-trial-mode="classical"] .neon-aperture {
+    background-color: #7f7f7f !important;
+    box-shadow: none !important;
 }
 
-html[data-trial-mode="classical"] .shell-ink {
-    text-decoration: underline;
-    font-weight: 700;
+html[data-trial-mode="classical"] .neon-aperture {
+    border: 1px solid #333333 !important;
+    border-radius: 50% !important;
 }
 
-html[data-trial-mode="classical"] #btn-start,
-html[data-trial-mode="classical"] #btn-restart {
-    background-color: #292524;
-    color: #fafaf9;
-    box-shadow: none;
+html[data-trial-mode="classical"] body:has(#screen-start:not(.hidden)) #aperture-container,
+html[data-trial-mode="classical"] body:has(#screen-transition:not(.hidden)) #aperture-container,
+html[data-trial-mode="classical"] body:has(#screen-summary:not(.hidden)) #aperture-container {
+    display: none !important;
 }
 
-html[data-trial-mode="classical"] #btn-start:hover,
-html[data-trial-mode="classical"] #btn-restart:hover {
-    background-color: #1c1917;
-    transform: none;
+html[data-trial-mode="classical"] .stim-box,
+html[data-trial-mode="classical"] .stim-box.active-stim {
+    background-color: #7f7f7f !important;
+    border: 1px solid #333333 !important;
+    box-shadow: none !important;
+    border-radius: 2px !important;
+}
+
+html[data-trial-mode="classical"] .corsi-arena,
+html[data-trial-mode="classical"] .corsi-arena.arena-go,
+html[data-trial-mode="classical"] .corsi-arena.arena-watch {
+    background: #6a6a6a !important;
+    background-image: none !important;
+    border: 1px solid #333333 !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] .corsi-block {
+    background: #d8d8d8 !important;
+    border: 2px solid #222222 !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] .corsi-block.lit {
+    background: #ffffff !important;
+    border-color: #111111 !important;
+    box-shadow: none !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+html[data-trial-mode="classical"] .corsi-block.tapped,
+html[data-trial-mode="classical"] .corsi-block.selected-trace {
+    background: #d0d0d0 !important;
+    border-color: #111111 !important;
+    box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] .corsi-block.tapped {
+    transform: translate(-50%, -50%) !important;
+}
+
+html[data-trial-mode="classical"] .corsi-block .tap-badge {
+    color: #111111 !important;
+    background: #f4f4f4 !important;
+    border: 1px solid #222222 !important;
+    border-radius: 2px !important;
+}
+
+html[data-trial-mode="classical"] .slot-card,
+html[data-trial-mode="classical"] .slot-card.selected {
+    background-color: #8a8a8a !important;
+    border: 2px solid #333333 !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html[data-trial-mode="classical"] .slot-card svg,
+html[data-trial-mode="classical"] .slot-card svg * {
+    stroke: #111111 !important;
+}
+
+html[data-trial-mode="classical"] .slot-card svg polygon {
+    fill: transparent !important;
+}
+
+html[data-trial-mode="classical"] .slot-card svg circle,
+html[data-trial-mode="classical"] .slot-card svg rect {
+    fill: #111111 !important;
+}
+
+html[data-trial-mode="classical"] .touch-pad:active,
+html[data-trial-mode="classical"] .touch-pad.active-press,
+html[data-trial-mode="classical"] .response-pad:active,
+html[data-trial-mode="classical"] .response-pad.pad-active,
+html[data-trial-mode="classical"] .response-pad.pad-pressed {
+    background-color: #bdbdbd !important;
+    border-color: #111111 !important;
+    box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] #deadline-progress,
+html[data-trial-mode="classical"] #progress-bar,
+html[data-trial-mode="classical"] #hudProgressBar {
+    background-color: #222222 !important;
+    background-image: none !important;
+    box-shadow: none !important;
 }
 
 html[data-trial-mode="classical"] #hud {
-    justify-content: center;
+    justify-content: center !important;
 }
 
-html[data-trial-mode="classical"] .trial-stat-split {
-    border-left: none;
-    padding-left: 0;
+html[data-trial-mode="classical"] .shell-mode {
+    background-color: #cfcfcf !important;
+    border: 1px solid #222222 !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
 }
 
-html[data-trial-mode="classical"] #feedback-area {
-    color: #000000;
-    font-weight: 700;
-    text-shadow: none;
+html[data-trial-mode="classical"] .shell-mode-btn {
+    background-color: transparent !important;
+    color: #111111 !important;
+    border: 0 !important;
+    border-radius: 2px !important;
+    letter-spacing: normal !important;
 }
 
-html[data-trial-mode="classical"] #hud-stats {
-    background-color: #737373;
-    border-color: rgba(0, 0, 0, 0.28);
-    box-shadow: none;
-    color: var(--trial-text);
+html[data-trial-mode="classical"] .shell-mode-btn[aria-checked="true"] {
+    background-color: #2c2c2c !important;
+    color: #f4f4f4 !important;
 }
 
-html[data-trial-mode="classical"] #hud-stats .text-green-400,
-html[data-trial-mode="classical"] #hud-stats .text-blue-400,
-html[data-trial-mode="classical"] #hud-stats .text-indigo-400,
-html[data-trial-mode="classical"] #stat-acc,
-html[data-trial-mode="classical"] #stat-rt,
-html[data-trial-mode="classical"] #trial-counter {
-    color: var(--trial-text);
-}
-
-html[data-trial-mode="classical"] #screen-results .bg-slate-800,
-html[data-trial-mode="classical"] .shell-note {
-    background-color: #737373;
-    border-color: #4a4a4a;
-    color: var(--trial-text);
-}
-
-html[data-trial-mode="classical"] #screen-results h3,
-html[data-trial-mode="classical"] #interpretation-text,
-html[data-trial-mode="classical"] #result-congruent,
-html[data-trial-mode="classical"] #result-incongruent,
-html[data-trial-mode="classical"] #result-accuracy,
-html[data-trial-mode="classical"] #result-mean,
-html[data-trial-mode="classical"] #result-congruent .text-green-400,
-html[data-trial-mode="classical"] #result-incongruent .text-orange-400 {
-    color: var(--trial-text);
-    font-style: normal;
-}
-
-html[data-trial-mode="classical"] #result-incongruent {
-    border-color: #4a4a4a;
-}
-
-html[data-trial-mode="classical"] .text-slate-500,
-html[data-trial-mode="classical"] #orientation-note {
-    color: var(--trial-text);
-}
-
-html[data-trial-mode="classical"] #screen-results .grid {
-    grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-    html[data-trial-mode="classical"] #screen-results .grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-html[data-trial-mode="classical"] .trial-orient-nudge {
-    background: var(--trial-surface);
-    color: var(--trial-text);
+html[data-trial-mode="classical"] a {
+    color: #111111 !important;
 }
 
 /*

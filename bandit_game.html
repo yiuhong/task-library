@@ -69,7 +69,8 @@
   <main class="flex-1 flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden">
 
     <!-- SCREEN 1: WELCOME & CONFIGURATION -->
-    <section id="screen-welcome" class="w-full max-w-2xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6">
+    <section id="screen-welcome" class="shell-screen w-full max-w-2xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div data-shell-toggle></div>
       <div class="border-b border-[#1e2536] pb-4">
         <p class="font-mono text-xs uppercase tracking-widest text-yellow-500 mb-1">Cognitive Paradigm // Reinforcement Learning</p>
         <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100">Probabilistic Reversal Learning</h1>
@@ -121,15 +122,13 @@
         <div class="text-xs font-mono text-slate-400">
           Structure: <span class="text-slate-200">Practice (6 trials)</span> → <span class="text-slate-200">Main Block (48 trials)</span>
         </div>
-        <button id="btn-start-practice" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-600 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
+        <button id="btn-start-practice" class="shell-primary w-full sm:w-auto px-6 py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-600 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
           Start Practice Block →
         </button>
       </div>
       <div class="mt-3 flex justify-center gap-2">
         <a class="trial-more" href="index.html">Hub</a>
         <a class="trial-more" href="bandit-info.html">Task info</a>
-        <a class="trial-more" data-shell-arcade href="bandit_game.html?mode=classical">Classical</a>
-        <a class="trial-more" data-shell-summary hidden href="bandit_game.html">Gamified</a>
       </div>
     </section>
 
@@ -147,7 +146,7 @@
         </p>
       </div>
       <div class="pt-2">
-        <button id="btn-start-main" class="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
+        <button id="btn-start-main" class="shell-primary w-full sm:w-auto px-8 py-3.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
           Launch Main Block (48 Trials) →
         </button>
       </div>
@@ -255,7 +254,8 @@
     </section>
 
     <!-- SCREEN 4: END SUMMARY & TELEMETRY EXPORT -->
-    <section id="screen-results" class="hidden w-full max-w-4xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6 my-4">
+    <section id="screen-results" class="shell-screen hidden w-full max-w-4xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6 my-4">
+        <div data-shell-toggle></div>
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1e2536] pb-4">
         <div>
           <p class="font-mono text-xs uppercase tracking-widest text-yellow-500">Session Complete // Behavioral Summary</p>
@@ -346,7 +346,7 @@
 
       <!-- Actions: Download CSV & Restart -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-        <button id="btn-restart" type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#090b10] hover:bg-slate-800 text-slate-300 border border-[#1e2536] font-mono text-xs uppercase tracking-wider transition">
+        <button id="btn-restart" type="button" class="shell-primary w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#090b10] hover:bg-slate-800 text-slate-300 border border-[#1e2536] font-mono text-xs uppercase tracking-wider transition">
           ↻ New Session
         </button>
 

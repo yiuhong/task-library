@@ -56,6 +56,12 @@
         </section>
 
         <section>
+            <h2>Classical presentation</h2>
+            <p>The welcome and results screens have a Gamified | Classical control. The choice is stored in this browser as <code>project-trial:mode</code>. <code>?mode=classical</code> still opens the lab shell.</p>
+            <p>Eriksen and Eriksen (1974), <a href="https://doi.org/10.3758/bf03203267">doi:10.3758/bf03203267</a>, used a central target letter with flanking letters. This demo already uses arrows. Classical draws that same array as plain dark glyphs on gray, with the center arrow in the same ink as the flankers. Trial counts, the 1500 ms window, and the left/right mapping are unchanged.</p>
+        </section>
+
+        <section>
             <h2>Shells</h2>
             <p>The same flanker core runs in two shells. <a href="flanker_game.html">Eriksen Flanker</a> is the gamified shell. <a href="flanker_game.html?mode=classical">Classical Flanker</a> is the quiet lab shell on a mid-gray canvas. Both use one trial list: 6 practice trials and 36 main trials, with the same arrays, keys, and timings. Neither shell plays sound or keeps a score.</p>
             <p>The gamified shell shows TOO SLOW, ✓ CORRECT, or ✕ INCORRECT after every practice trial and every main trial, with the response time or the target side underneath. Classical practice keeps a short word for the 400 ms hold only: Correct, Incorrect, or No response. It does not show the response time or that subtitle. The classical main block writes no words. The feedback line is cleared, and the 400 ms hold and 350 ms blank still run, so the time from one trial to the next does not change. The end screen is the same in both shells: main-block accuracy, mean correct response time, and the conflict effect. Practice is not part of those totals.</p>

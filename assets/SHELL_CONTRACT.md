@@ -1,6 +1,6 @@
 # Shell contract
 
-Project Trial. Architecture C: shared presentation shells, science in task cores. Every hub task is on this contract. `noematachograph.html` and `vr.html` are not.
+Project Trial. Architecture C: shared presentation shells, science in task cores. Every hub task is on this contract and loads `assets/tasks/<id>.js`. `noematachograph.html` and `vr.html` are not.
 
 ## Roles
 
@@ -12,24 +12,33 @@ Shells must not copy a core's parameter object into a second file. Two skins tha
 
 ## Mode
 
-One page loads one core. The shell reads the query string.
+One page loads one task. The shell reads the query string, then one site-wide preference.
 
-| URL | Shell |
-| --- | --- |
-| `<task>_game.html` | gamified (default) |
-| `<task>_game.html?mode=gamified` | gamified |
-| `<task>_game.html?mode=classical` | classical |
+| URL | Stored `project-trial:mode` | Shell |
+| --- | --- | --- |
+| `?mode=classical` | any, or none | classical |
+| `?mode=gamified` | any, or none | gamified |
+| any other `mode` value | any, or none | gamified |
+| no `mode` parameter | `classical` | classical |
+| no `mode` parameter | missing, `gamified`, or anything else | gamified |
 
-`TrialShell.readMode()` returns `classical` only when `mode` is `classical`, ignoring case. Any other value, including a missing parameter, is `gamified`. The live hub URL, with no query, stays the gamified entry.
+`TrialShell.readMode()` returns `classical` only for an explicit classical mode, ignoring case, or for a stored `classical` when the URL has no `mode` parameter. A missing parameter with no stored choice stays gamified, which is the previous default. An explicit `?mode=classical` or `?mode=gamified` is written back to `localStorage` key `project-trial:mode`. Opening a task with no `mode` parameter does not write the key.
 
 Hub tasks on this contract: Stroop, Oddball, Flanker, Go / No-Go, Brightness, Numerosity, RDK, Visual Working Memory, Corsi, and Reversal Learning (`bandit_game.html`). Each page loads `assets/tasks/<id>.js`. The trial list is not copied into a second file.
 
-`TrialShell.apply(mode)` does four things:
+The welcome screen and the results screen each have a Gamified | Classical control (`[data-shell-toggle]`). Choosing a segment stores the mode and reloads the page with `?mode=` so the task remounts in that shell. The hub cards do not carry a Classical link. Deep links such as `stroop_game.html?mode=classical` still open the lab shell.
+
+`TrialShell.apply(mode)` does five things:
 
 1. Sets `data-trial-mode` on `<html>` and `<body>`.
-2. Hides `[data-shell-arcade]` in the classical shell. Score, combo, and other game chrome use this attribute.
-3. Shows `[data-shell-summary]` only in the classical shell. Accuracy and mean RT on the end screen use this attribute.
+2. Hides `[data-shell-arcade]` in the classical shell. Score, combo, reward tones controls, and other game chrome use this attribute. `[data-shell-live]` (running accuracy and mean RT) is hidden by classical CSS.
+3. Shows `[data-shell-summary]` only in the classical shell. Lab-only instructions use this attribute.
 4. Writes `[data-shell-copy]` text from `data-gamified` or `data-classical`. If `data-gamified` is omitted, the element's text is the gamified string.
+5. Fills each `[data-shell-toggle]` with the segmented control.
+
+Call `apply(readMode())` in the head, before the stylesheets, and again after the landmarks exist. The head call stamps the attribute before first paint. `assets/shells/shell.js` also applies on `DOMContentLoaded`.
+
+`[data-shell-stimulus]` marks ink that is part of the task (Stroop color words, oddball O and X, go and no-go symbols, brightness squares, the flanker string). Classical CSS leaves that ink alone and strips glow, shadow, arcade type, and neon borders everywhere else. The field is `#7f7f7f`. Type is Arial.
 
 Theme CSS:
 
@@ -114,7 +123,7 @@ Where a task already logs, the row or payload carries `mode` (`gamified` or `cla
 
 The arcade policy also requires `stat-score`, `stat-combo`, and `final-score`. Classical keeps those nodes in the page and hides them with `[data-shell-arcade]`. The core does not write a score unless the policy says so.
 
-Stroop main block (both shells): 20 trials, 10 congruent and 10 incongruent, colors RED `#ff4b4b` / GREEN `#44ff44` / BLUE `#4444ff` / YELLOW `#ffff44`, keys R G B Y, fixation 400 ms (`READY?`), response window 2000 ms, feedback hold 400 ms, blank 300 ms. The gamified shell has no practice block. Classical adds 8 practice trials with the same builder, colors, keys, and timings. Those trials are not part of the main-block summary. Details match `stroop-info.html`.
+Stroop main block (both shells): 20 trials, 10 congruent and 10 incongruent, colors RED `#ff4b4b` / GREEN `#44ff44` / BLUE `#4444ff` / YELLOW `#ffff44`, keys R G B Y, fixation 400 ms, response window 2000 ms, feedback hold 400 ms, blank 300 ms. Gamified fixation text is `READY?`. Classical fixation text is `+` for the same 400 ms. The gamified shell has no practice block. Classical adds 8 practice trials with the same builder, colors, keys, and timings. Those trials are not part of the main-block summary. Details match `stroop-info.html`. The classical screen follows Stroop (1935), doi:10.1037/h0054651: a colored color-word, name the ink, ignore the word.
 
 Stroop feedback:
 

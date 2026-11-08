@@ -68,6 +68,12 @@
         </section>
 
         <section>
+            <h2>Classical presentation</h2>
+            <p>The welcome and results screens have a Gamified | Classical control. The choice is stored in this browser as <code>project-trial:mode</code>. <code>?mode=classical</code> still opens the lab shell.</p>
+            <p>No single oddball paper was re-checked for this shell. The lab screen keeps this demo’s stimuli: frequent O in <code>#06b6d4</code>, rare X in <code>#ec4899</code>, the same rate and timings. It drops the dash title, score, combo, glow, shake, and reward tones. Press J for X. Do nothing for O.</p>
+        </section>
+
+        <section>
             <h2>Shells</h2>
             <p>The same Oddball core runs in two shells. <a href="oddball_game.html">Oddball Dash</a> is the gamified shell. <a href="oddball_game.html?mode=classical">Classical Oddball</a> is the quiet lab shell on a mid-gray canvas. It uses the same main block: 30 trials, <code>floor(30 × 0.2)</code> = 6 oddball and 24 standard, the same shapes, the J key, and the same timings, without score, combo, shake, fire, or reward sounds. During a trial it does not show accuracy or response time. The trial counter stays. Its label says Practice during practice and Trial during the main block.</p>
             <p>Classical starts with 10 practice trials from the same generator, so <code>floor(10 × 0.2)</code> = 2 oddball and 8 standard, and the first two trials are standards. Practice runs straight into the main block, with no extra click. Practice shows Correct, Incorrect, or No response for the 300 ms hold. No response is a timeout on an oddball. A correct withhold is Correct. A false alarm is Incorrect. A hit is Correct. That line does not include response time, and it does not use the gamified words. The main block shows no words after a trial. The 300 ms hold and 400 ms blank still run. Practice is saved with <code>block</code> = <code>practice</code> and is left out of the end screen. That screen hides the score and reports standard accuracy, oddball speed (mean response time of oddball hits), and overall accuracy for the 30 main trials. The sentence is plain and does not include max combo. The scoring row above describes the gamified shell only. Saved rows include <code>mode</code> (<code>gamified</code> or <code>classical</code>).</p>
