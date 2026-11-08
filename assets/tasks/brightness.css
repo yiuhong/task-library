@@ -1,0 +1,94 @@
+/*
+  Brightness stimulus layout shared by both shells.
+  Square luminance is set by the task core and is not restyled here.
+*/
+
+body {
+    --trial-accent: #818cf8;
+    --trial-pad-size: 5rem;
+    --trial-pad-size-compact: 5rem;
+    --trial-pad-bg-active: rgba(255, 255, 255, 0.4);
+    --trial-pad-active-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    --trial-hud-padding-compact: 0.45rem 0.6rem;
+    --trial-task-pad-top-compact: 4.2rem;
+    --trial-task-pad-bottom-compact: 8.2rem;
+}
+
+.stimulus-square {
+    width: 140px;
+    height: 140px;
+    border-radius: 1rem;
+    transition: transform 0.1s;
+}
+
+.stimulus-square.pop {
+    transform: scale(1.05);
+}
+
+/* Ensuring invisible elements still occupy exact layout space */
+.invisible {
+    visibility: hidden;
+}
+
+#confidence-container {
+    touch-action: manipulation;
+}
+
+@media (max-width: 560px), (max-height: 500px) and (max-width: 900px) {
+    #screen-welcome {
+        max-height: 100dvh;
+        margin: 0.4rem;
+        padding: 1.1rem;
+    }
+
+    #screen-welcome h1 {
+        font-size: 2.4rem;
+    }
+
+    #welcome-keys {
+        gap: 1.25rem;
+    }
+
+    .stimulus-square {
+        width: 92px;
+        height: 92px;
+    }
+
+    #stimulus-row {
+        height: 8.5rem;
+    }
+
+    #stimulus-row > * + * {
+        margin-left: 0.65rem;
+    }
+
+    #center-anchor {
+        width: 2rem;
+    }
+
+    #fixation-cross {
+        font-size: 2.4rem;
+    }
+
+    #footer-controls {
+        padding-left: 0.7rem;
+        padding-right: 0.7rem;
+        padding-bottom: calc(0.3rem + env(safe-area-inset-bottom));
+        max-width: none;
+    }
+
+    #confidence-container {
+        white-space: normal;
+        padding: 1rem 0.85rem;
+        max-width: calc(100vw - 1rem);
+    }
+
+    #confidence-row > * + * {
+        margin-left: 1.25rem;
+    }
+
+    #screen-results {
+        max-height: 100dvh;
+        padding: 1rem;
+    }
+}

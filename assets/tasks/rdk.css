@@ -1,0 +1,140 @@
+    :root {
+      --trial-accent: #f59e0b;
+      --bg-primary: #060911;
+      --bg-card: rgba(13, 19, 34, 0.88);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent-amber: #f59e0b;
+      --accent-amber-dim: rgba(245, 158, 11, 0.18);
+      --accent-amber-border: rgba(245, 158, 11, 0.45);
+      --feedback-correct: #10b981;
+      --feedback-wrong: #f43f5e;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      height: 100%;
+    }
+
+    .neon-card {
+      background: var(--bg-card);
+      border: 1px solid var(--accent-amber-border);
+      box-shadow: 0 0 24px -6px rgba(245, 158, 11, 0.22), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(10px);
+    }
+
+    .neon-aperture {
+      border: 2px solid rgba(245, 158, 11, 0.55);
+      box-shadow: 0 0 32px rgba(245, 158, 11, 0.18), inset 0 0 28px rgba(0, 0, 0, 0.85);
+    }
+
+    .response-pad {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: transform 0.06s ease, border-color 0.12s ease, background-color 0.12s ease;
+    }
+
+    .response-pad:active,
+    .response-pad.pad-active {
+      transform: scale(0.97);
+      border-color: var(--accent-amber);
+      background-color: rgba(245, 158, 11, 0.22);
+    }
+
+    .micro-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .response-pad {
+        transition: none;
+      }
+    }
+  
+
+/*
+  Classical shell. Rules above are the gamified page, unchanged.
+  Every selector below requires data-trial-mode="classical".
+  The page around the aperture is mid-gray. Intro, transition, and
+  summary cards are #8a8a8a with #111 text and no glow. The canvas
+  fill, dot ink, and aperture ring are the stimulus and are not restyled.
+*/
+html[data-trial-mode="classical"] body {
+    background-color: #7f7f7f;
+    background-image: none;
+    color: #111111;
+}
+html[data-trial-mode="classical"] #aperture-container {
+    background-color: #7f7f7f;
+}
+html[data-trial-mode="classical"] #screen-start,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-summary {
+    background: #8a8a8a;
+    color: #111111;
+    border-color: #4a4a4a;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+html[data-trial-mode="classical"] #screen-start *,
+html[data-trial-mode="classical"] #screen-transition *,
+html[data-trial-mode="classical"] #screen-summary * {
+    color: #111111;
+    text-shadow: none;
+    box-shadow: none;
+    background-color: transparent;
+    border-color: rgba(0, 0, 0, 0.28);
+}
+html[data-trial-mode="classical"] #screen-start button,
+html[data-trial-mode="classical"] #screen-transition button,
+html[data-trial-mode="classical"] #screen-summary button {
+    background-color: #292524;
+    color: #fafaf9;
+    border-color: #292524;
+    box-shadow: none;
+}
+html[data-trial-mode="classical"] header .neon-card {
+    background: #737373;
+    border-color: #4a4a4a;
+    box-shadow: none;
+    color: #111111;
+}
+html[data-trial-mode="classical"] header .neon-card * {
+    color: #111111;
+    text-shadow: none;
+    box-shadow: none;
+}
+html[data-trial-mode="classical"] #trial-status-label {
+    color: #111111;
+}
+html[data-trial-mode="classical"] #feedback-badge {
+    background-color: #8a8a8a;
+    color: #111111;
+    backdrop-filter: none;
+    box-shadow: none;
+}
+html[data-trial-mode="classical"] #feedback-badge * {
+    color: #111111;
+    text-shadow: none;
+}
+html[data-trial-mode="classical"] .response-pad:active,
+html[data-trial-mode="classical"] .response-pad.pad-active {
+    background-color: #a3a3a3;
+    border-color: #111111;
+    box-shadow: none;
+}

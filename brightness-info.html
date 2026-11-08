@@ -78,6 +78,12 @@
         </section>
 
         <section>
+            <h2>Shells</h2>
+            <p>The same brightness core runs in two shells. <a href="brightness_game.html">Luma Clash</a> is the gamified shell. <a href="brightness_game.html?mode=classical">Classical Brightness</a> is the quiet lab shell on a mid-gray canvas. Both shells use the same 40 trials, 10 in each condition, the same luminance values, keys, and timings. This task is the documented exception: neither shell has a practice block, and neither says whether a choice was right or wrong during a trial. Confidence is a rating, not correctness feedback. Missed trials still skip the rating.</p>
+            <p>The gamified shell plays the neutral tick, choice, and rating tones, the start and end tones, and a low buzz on a timeout. Classical plays none of those. The end screen keeps the same condition cards and the same interpretation sentence. Saved rows include a <code>mode</code> column (<code>gamified</code> or <code>classical</code>; blank on sessions saved before that field). There is no <code>block</code> column. The Feedback row above describes the gamified tones. The trial counts and luminance values are the same in both shells.</p>
+        </section>
+
+        <section>
             <h2>How to play</h2>
             <ul>
                 <li>Look at the center cross. Tap the pad on the brighter side, or press F for left and J for right. Pads call the same response path as the keyboard.</li>
@@ -90,13 +96,14 @@
         <section>
             <h2>Data</h2>
             <p>Each run is saved in this browser under the <code>localStorage</code> key <code>project-trial:brightness</code>. Refreshing, leaving, or closing the tab keeps it. Recalibrate, then start again, appends another session and does not resume an unfinished one. Nothing is uploaded. The browser keeps the newest 100 sessions for this task.</p>
-            <p>Download CSV writes every saved session as a file on the device. Columns are trialNum, condId, leftColor, rightColor, correctKey, responseKey, rt, isCorrect, confidence, confidenceKey, confidenceRT, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, record, sessionId, startedAt, endedAt, and complete. Trial rows use <code>record</code> = <code>trial</code>. The file name is still <code>luma_clash_data_</code> plus a timestamp. Session columns are appended after the original trial columns.</p>
+            <p>Download CSV writes every saved session as a file on the device. Columns are trialNum, condId, leftColor, rightColor, correctKey, responseKey, rt, isCorrect, confidence, confidenceKey, confidenceRT, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, record, sessionId, startedAt, endedAt, complete, and mode (<code>gamified</code> or <code>classical</code>; blank on sessions saved before that field). There is no <code>block</code> column. Trial rows use <code>record</code> = <code>trial</code>. The file name is still <code>luma_clash_data_</code> plus a timestamp. Session columns are appended after the original trial columns.</p>
             <p>Portrait and landscape both run. The page never locks the device direction. Each trial row stores the orientation at the moment the trial is saved. Extra CSV rows with <code>record</code> = <code>orientation</code> are the session turns: <code>start</code>, each <code>change</code>, and <code>end</code>, with ISO time and <code>orientationTMs</code> (milliseconds from <code>performance.now()</code>). A short note appears if you rotate, and the task keeps going. The same list is kept on the session as <code>orientationEvents</code>.</p>
             <p>Clear saved removes <code>project-trial:brightness</code> from this browser. It asks for a second click. The on-screen summary stays until you leave the results screen. Download before you clear if you still want the file.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="brightness_game.html">Play Brightness Detection</a>
+            <a class="trial-btn trial-btn-ghost" href="brightness_game.html?mode=classical">Classical Brightness</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>

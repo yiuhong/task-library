@@ -18,7 +18,7 @@
         <section>
             <h2>What it shows</h2>
             <p>Each trial shows a fixation cross, then a row of five symbols. The center symbol is <code>&lt;</code> or <code>&gt;</code>. On congruent trials the flankers point the same way. On incongruent trials they point the other way. On neutral trials the flankers are dashes. The summary compares accuracy and mean response time for those three conditions.</p>
-            <p>Each trial says correct, incorrect, or too slow. This is a teaching demo, not a clinical or normed test.</p>
+            <p>The gamified shell says correct, incorrect, or too slow after each trial. Classical practice uses a shorter word, and the classical main block does not. See Shells. This is a teaching demo, not a clinical or normed test.</p>
         </section>
 
         <section>
@@ -62,6 +62,12 @@
         </section>
 
         <section>
+            <h2>Shells</h2>
+            <p>The same flanker core runs in two shells. <a href="flanker_game.html">Eriksen Flanker</a> is the gamified shell. <a href="flanker_game.html?mode=classical">Classical Flanker</a> is the quiet lab shell on a mid-gray canvas. Both use one trial list: 6 practice trials and 36 main trials, with the same arrays, keys, and timings. Neither shell plays sound or keeps a score.</p>
+            <p>The gamified shell shows TOO SLOW, ✓ CORRECT, or ✕ INCORRECT after every practice trial and every main trial, with the response time or the target side underneath. Classical practice keeps a short word for the 400 ms hold only: Correct, Incorrect, or No response. It does not show the response time or that subtitle. The classical main block writes no words. The feedback line is cleared, and the 400 ms hold and 350 ms blank still run, so the time from one trial to the next does not change. The end screen is the same in both shells: main-block accuracy, mean correct response time, and the conflict effect. Practice is not part of those totals.</p>
+        </section>
+
+        <section>
             <h2>How to play</h2>
             <ul>
                 <li>Look at the center symbol. Choose the direction it points.</li>
@@ -74,11 +80,12 @@
         <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_flanker_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
-            <p>Download Trial CSV writes the current run, practice and main, as a file on the device. Columns are trial, block, condition, target_dir, flanker_dir, response, correct, rt_ms, and timestamp. The file name is <code>flanker_conflict_</code> plus a timestamp. The page does not log orientation turns.</p>
+            <p>Download Trial CSV writes the current run, practice and main, as a file on the device. Columns are trial, block, condition, target_dir, flanker_dir, response, correct, rt_ms, timestamp, and mode (<code>gamified</code> or <code>classical</code>). The saved payload includes the same trailing <code>mode</code> field. The file name is <code>flanker_conflict_</code> plus a timestamp. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="flanker_game.html">Play Eriksen Flanker</a>
+            <a class="trial-btn trial-btn-ghost" href="flanker_game.html?mode=classical">Classical Flanker</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>

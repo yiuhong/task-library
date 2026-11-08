@@ -1,0 +1,276 @@
+/*
+  Reversal Learning layout shared by both shells.
+  The geometric symbols keep their gold and white ink. Those colors are
+  the stimulus, so the card faces stay dark enough for the strokes to read.
+*/
+
+:root {
+  --trial-accent: #eab308;
+  --bg-primary: #090b10;
+  --bg-panel: #11151f;
+  --border-color: #1e2536;
+  --accent-gold: #eab308;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Slot Card Animations & States */
+.slot-card {
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.16s ease,
+              box-shadow 0.16s ease,
+              background-color 0.16s ease;
+}
+
+.slot-card.selected {
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 28px rgba(234, 179, 8, 0.35), inset 0 0 16px rgba(234, 179, 8, 0.12);
+  transform: scale(1.035);
+}
+
+.slot-card.unselected-dim {
+  opacity: 0.35;
+  transform: scale(0.97);
+}
+
+@keyframes pulseWin {
+  0% { transform: scale(0.85); opacity: 0; }
+  45% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shakeNull {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+}
+
+.feedback-win {
+  animation: pulseWin 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.feedback-null {
+  animation: shakeNull 0.28s ease-in-out forwards;
+}
+
+.touch-pad {
+  transition: background-color 0.1s ease, transform 0.08s ease, border-color 0.1s ease;
+  touch-action: manipulation;
+}
+
+.touch-pad:active, .touch-pad.active-press {
+  background-color: rgba(234, 179, 8, 0.22) !important;
+  border-color: #eab308 !important;
+  transform: translateY(2px);
+}
+
+/* Custom Scrollbar for results screen */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090b10;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2536;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #eab308;
+}
+
+/*
+  Classical shell. Mid-gray page, gray intro and results panels, dark text,
+  no gold glow. Symbol SVG ink is not restyled. +10 / +0 stays on screen.
+*/
+
+html[data-trial-mode="classical"] {
+  background-color: #7f7f7f;
+}
+
+html[data-trial-mode="classical"] body {
+  background-color: #7f7f7f !important;
+  color: #111111;
+}
+
+html[data-trial-mode="classical"] header,
+html[data-trial-mode="classical"] footer,
+html[data-trial-mode="classical"] main,
+html[data-trial-mode="classical"] #screen-arena {
+  background-color: #7f7f7f !important;
+  color: #111111 !important;
+  box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] header,
+html[data-trial-mode="classical"] footer {
+  border-color: #4a4a4a !important;
+}
+
+html[data-trial-mode="classical"] #screen-welcome,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-results {
+  background-color: #8a8a8a !important;
+  color: #111111 !important;
+  border-color: #4a4a4a !important;
+  box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] #screen-welcome .bg-\[\#090b10\],
+html[data-trial-mode="classical"] #screen-welcome .bg-\[\#090b10\]\/70,
+html[data-trial-mode="classical"] #screen-results .bg-\[\#090b10\] {
+  background-color: #737373 !important;
+  border-color: #4a4a4a !important;
+  color: #111111 !important;
+}
+
+html[data-trial-mode="classical"] #screen-results .bg-\[\#11151f\] {
+  background-color: #737373 !important;
+  color: #111111 !important;
+}
+
+html[data-trial-mode="classical"] #screen-welcome select {
+  background-color: #d4d4d4 !important;
+  color: #111111 !important;
+  border-color: #4a4a4a !important;
+}
+
+html[data-trial-mode="classical"] .text-slate-100,
+html[data-trial-mode="classical"] .text-slate-200,
+html[data-trial-mode="classical"] .text-slate-300,
+html[data-trial-mode="classical"] .text-slate-400,
+html[data-trial-mode="classical"] .text-slate-500,
+html[data-trial-mode="classical"] .text-yellow-500,
+html[data-trial-mode="classical"] .text-yellow-400,
+html[data-trial-mode="classical"] .text-yellow-500\/80,
+html[data-trial-mode="classical"] .text-yellow-500\/90,
+html[data-trial-mode="classical"] .text-emerald-300,
+html[data-trial-mode="classical"] .group-hover\:text-yellow-400 {
+  color: #111111 !important;
+}
+
+/* Deck labels sit on the dark cards. The gray-page text rule above
+   would hide them. The symbols themselves are SVG strokes. */
+html[data-trial-mode="classical"] .slot-card .text-slate-400,
+html[data-trial-mode="classical"] .slot-card .text-yellow-500\/80 {
+  color: #e5e5e5 !important;
+}
+
+html[data-trial-mode="classical"] kbd {
+  background-color: #d4d4d4 !important;
+  border-color: #4a4a4a !important;
+}
+
+html[data-trial-mode="classical"] header .animate-pulse,
+html[data-trial-mode="classical"] header .bg-yellow-500 {
+  background-color: #111111 !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+html[data-trial-mode="classical"] #hud-phase-badge,
+html[data-trial-mode="classical"] #storage-status {
+  background-color: #737373 !important;
+  color: #111111 !important;
+  border-color: #4a4a4a !important;
+  box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] .shadow-2xl,
+html[data-trial-mode="classical"] .shadow-lg,
+html[data-trial-mode="classical"] .shadow-xl,
+html[data-trial-mode="classical"] [class*="shadow-yellow"] {
+  box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] .slot-card.selected {
+  border-color: #111111 !important;
+  box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] #pad-left,
+html[data-trial-mode="classical"] #pad-right {
+  background-color: #8a8a8a !important;
+  border-color: #4a4a4a !important;
+  box-shadow: none !important;
+  color: #111111 !important;
+}
+
+html[data-trial-mode="classical"] #pad-left:hover,
+html[data-trial-mode="classical"] #pad-right:hover {
+  border-color: #111111 !important;
+}
+
+html[data-trial-mode="classical"] .touch-pad:active,
+html[data-trial-mode="classical"] .touch-pad.active-press {
+  background-color: #737373 !important;
+  border-color: #111111 !important;
+}
+
+html[data-trial-mode="classical"] #btn-start-practice,
+html[data-trial-mode="classical"] #btn-start-main,
+html[data-trial-mode="classical"] #btn-download-csv {
+  background-color: #292524 !important;
+  color: #fafaf9 !important;
+  box-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] #btn-start-practice:hover,
+html[data-trial-mode="classical"] #btn-start-main:hover,
+html[data-trial-mode="classical"] #btn-download-csv:hover {
+  background-color: #1c1917 !important;
+}
+
+html[data-trial-mode="classical"] #btn-restart {
+  background-color: #737373 !important;
+  color: #111111 !important;
+  border-color: #4a4a4a !important;
+  box-shadow: none !important;
+}
+
+/* Reward text stays. The box is a gray panel so +10 and +0 stay readable. */
+html[data-trial-mode="classical"] #feedback-box {
+  background-color: #e5e5e5 !important;
+  color: #111111 !important;
+  border-color: #111111 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] #feedback-icon,
+html[data-trial-mode="classical"] #feedback-pts,
+html[data-trial-mode="classical"] #feedback-sub {
+  color: #111111 !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+}
+
+html[data-trial-mode="classical"] ::-webkit-scrollbar-track {
+  background: #7f7f7f;
+}
+
+html[data-trial-mode="classical"] ::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+}
+
+html[data-trial-mode="classical"] ::-webkit-scrollbar-thumb:hover {
+  background: #222222;
+}

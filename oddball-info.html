@@ -26,7 +26,7 @@
             <dl class="trial-defs">
                 <div>
                     <dt>Trials</dt>
-                    <dd>30. Oddball rate 0.2, so <code>floor(30 × 0.2)</code> = 6 oddball and 24 standard. No practice block.</dd>
+                    <dd>30. Oddball rate 0.2, so <code>floor(30 × 0.2)</code> = 6 oddball and 24 standard. The gamified shell has no practice block.</dd>
                 </div>
                 <div>
                     <dt>Standard</dt>
@@ -74,6 +74,12 @@
         </section>
 
         <section>
+            <h2>Shells</h2>
+            <p>The same Oddball core runs in two shells. <a href="oddball_game.html">Oddball Dash</a> is the gamified shell. <a href="oddball_game.html?mode=classical">Classical Oddball</a> is the quiet lab shell on a mid-gray canvas. It uses the same main block: 30 trials, <code>floor(30 × 0.2)</code> = 6 oddball and 24 standard, the same shapes, the J key, and the same timings, without score, combo, shake, fire, or reward sounds. During a trial it does not show accuracy or response time. The trial counter stays. Its label says Practice during practice and Trial during the main block.</p>
+            <p>Classical starts with 10 practice trials from the same generator, so <code>floor(10 × 0.2)</code> = 2 oddball and 8 standard, and the first two trials are standards. Practice runs straight into the main block, with no extra click. Practice shows Correct, Incorrect, or No response for the 300 ms hold. No response is a timeout on an oddball. A correct withhold is Correct. A false alarm is Incorrect. A hit is Correct. That line does not include response time, and it does not use the gamified words. The main block shows no words after a trial. The 300 ms hold and 400 ms blank still run. Practice is saved with <code>block</code> = <code>practice</code> and is left out of the end screen. That screen hides the score and reports standard accuracy, oddball speed (mean response time of oddball hits), and overall accuracy for the 30 main trials. The sentence is plain and does not include max combo. The scoring row above describes the gamified shell only. Saved rows include <code>mode</code> (<code>gamified</code> or <code>classical</code>).</p>
+        </section>
+
+        <section>
             <h2>How to play</h2>
             <ul>
                 <li>Tap the J pad or press J only when the pink X appears. Pads call the same response path as the keyboard.</li>
@@ -86,13 +92,14 @@
         <section>
             <h2>Data</h2>
             <p>Each run is saved in this browser under the <code>localStorage</code> key <code>project-trial:oddball</code>. Refreshing, leaving, or closing the tab keeps it. Play again appends another session and does not resume an unfinished one. Nothing is uploaded. The browser keeps the newest 100 sessions for this task.</p>
-            <p>Download CSV writes every saved session as a file on the device. Columns are trialNum, type, responseKey (<code>j</code> or <code>withhold</code>), rt (empty when the response was a withhold), isCorrect, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, record, sessionId, startedAt, endedAt, and complete. Trial rows use <code>record</code> = <code>trial</code>. The file name is <code>oddball_dash_data_</code> plus a timestamp.</p>
+            <p>Download CSV writes every saved session as a file on the device. Columns are trialNum, type, responseKey (<code>j</code> or <code>withhold</code>), rt (empty when the response was a withhold), isCorrect, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, record, sessionId, startedAt, endedAt, complete, and mode (<code>gamified</code> or <code>classical</code>; blank on sessions saved before that field). A classical download adds <code>block</code> (<code>practice</code> or <code>main</code>). Trial numbers restart at 1 in each block. The gamified download does not add that column. Trial rows use <code>record</code> = <code>trial</code>. The file name is <code>oddball_dash_data_</code> plus a timestamp.</p>
             <p>Portrait and landscape both run. The page never locks the device direction. Each trial row stores the orientation at the response. Extra CSV rows with <code>record</code> = <code>orientation</code> are the session turns: <code>start</code>, each <code>change</code>, and <code>end</code>, with ISO time (<code>orientationAt</code>) and <code>orientationTMs</code> (milliseconds from <code>performance.now()</code>). A short note appears if you rotate, and the task keeps going. The results screen reports the starting orientation and how many turns were logged.</p>
             <p>Clear saved removes <code>project-trial:oddball</code> from this browser. It asks for a second click. The on-screen summary stays until you leave the results screen. Download before you clear if you still want the file. Play again returns to the welcome screen, and the max combo resets.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="oddball_game.html">Play Oddball Dash</a>
+            <a class="trial-btn trial-btn-ghost" href="oddball_game.html?mode=classical">Classical Oddball</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>

@@ -1,0 +1,118 @@
+:root {
+  --trial-accent: #fb7185;
+  --bg-base: #090a0f;
+  --bg-panel: #12141d;
+  --bg-elevated: #1a1d2a;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-primary: #f43f5e;
+  --accent-hover: #fb7185;
+  --accent-dim: rgba(244, 63, 94, 0.15);
+  --border-subtle: rgba(148, 163, 184, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.neon-glow {
+  box-shadow: 0 0 22px rgba(244, 63, 94, 0.35), inset 0 0 8px rgba(244, 63, 94, 0.15);
+}
+
+.neon-text {
+  text-shadow: 0 0 14px rgba(244, 63, 94, 0.55);
+}
+
+.stimulus-array {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.22em;
+  font-variant-numeric: tabular-nums;
+}
+
+.touch-pad {
+  transition: transform 0.06s ease, background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.touch-pad:active,
+.touch-pad.active-press {
+  transform: scale(0.97);
+  background-color: rgba(244, 63, 94, 0.22);
+  border-color: #f43f5e;
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+}
+
+/*
+  Classical shell extras for this page.
+  Gamified rules above are unchanged. These overrides are scoped to
+  html[data-trial-mode="classical"] so a dark body, neon glow, and
+  light-on-dark cards do not win over the lab gray. Trial stimulus
+  ink (arrows, go green, no-go red) is not restyled.
+*/
+
+html[data-trial-mode="classical"] body {
+  background-color: #7f7f7f;
+  color: #111;
+}
+
+html[data-trial-mode="classical"] .neon-glow,
+html[data-trial-mode="classical"] .neon-text {
+  box-shadow: none;
+  text-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-end {
+  background-color: #8a8a8a;
+  color: #111;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro div,
+html[data-trial-mode="classical"] #screen-transition div,
+html[data-trial-mode="classical"] #screen-end div {
+  background-color: #8a8a8a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-end table,
+html[data-trial-mode="classical"] #screen-end thead,
+html[data-trial-mode="classical"] #screen-end tbody,
+html[data-trial-mode="classical"] #screen-end tr,
+html[data-trial-mode="classical"] #screen-end th,
+html[data-trial-mode="classical"] #screen-end td {
+  background-color: #8a8a8a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro *:not(button):not(svg):not(path),
+html[data-trial-mode="classical"] #screen-transition *:not(button):not(svg):not(path),
+html[data-trial-mode="classical"] #screen-end *:not(button):not(svg):not(path) {
+  color: #111;
+}
+
+html[data-trial-mode="classical"] header,
+html[data-trial-mode="classical"] header *:not(svg):not(path) {
+  color: #111;
+}
+
+html[data-trial-mode="classical"] header {
+  background-color: #7f7f7f;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] header div:not(#progress-bar) {
+  background-color: #7f7f7f;
+  box-shadow: none;
+}

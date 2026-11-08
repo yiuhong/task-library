@@ -70,6 +70,12 @@
         </section>
 
         <section>
+            <h2>Shells</h2>
+            <p>The same visual working memory core runs in two shells. <a href="vwm_game.html">Visual Working Memory</a> is the gamified shell. <a href="vwm_game.html?mode=classical">Classical visual working memory</a> is the quiet lab shell on a mid-gray canvas. Practice is still 6 trials and can still be skipped. The main block is still 36 trials at set sizes 4, 6, and 8, with the same colors, timings, and same/different balance. Neither shell plays sound, and neither shell has an arcade score.</p>
+            <p>Gamified practice and main trials show the existing per-trial words, including the response time. Classical practice, when it is not skipped, shows only Correct, Incorrect, or No response, with no response-time subtitle. The probe still waits until you answer, so a finished practice trial reads Correct or Incorrect. The classical main block shows no per-trial words. The 500 ms interval after the choice still runs. The end screen in both shells keeps accuracy, mean response time, hit rate, false alarms, Cowan's K, and Pashler's K.</p>
+        </section>
+
+        <section>
             <h2>How to play</h2>
             <ul>
                 <li>Keep looking at the center cross. When the probe appears, decide whether that location changed color.</li>
@@ -81,11 +87,12 @@
         <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_vwm_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
-            <p>Download CSV writes the current run, practice and main. Columns are trial, block, set_size, trial_type, response (<code>SAME</code> or <code>DIFFERENT</code>), correct, rt_ms, and timestamp. The file name is <code>vWM_change_detection_</code> plus a timestamp. The saved payload also keeps the summary and the probe mode at the end of the run. Those are not CSV columns. The page does not log orientation turns.</p>
+            <p>Download CSV writes the current run, practice and main. Columns are trial, block, set_size, trial_type, response (<code>SAME</code> or <code>DIFFERENT</code>), correct, rt_ms, timestamp, and mode. <code>mode</code> is <code>gamified</code> or <code>classical</code> and is the last column. The file name is <code>vWM_change_detection_</code> plus a timestamp. The saved payload also keeps the summary, the probe mode, and mode. The summary and the probe mode are not CSV columns. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="vwm_game.html">Play Visual Working Memory</a>
+            <a class="trial-btn trial-btn-ghost" href="vwm_game.html?mode=classical">Classical visual working memory</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>
