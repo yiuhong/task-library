@@ -13,13 +13,18 @@
   setEnabled() and bindToggle() write the key. isEnabled() only reads it.
   A choice stored in one task is the choice in the next task.
 
-  When the key is missing, the session uses options.defaultEnabled, which
-  is true if omitted. Opening a task and playing it does not write the
-  default, so a missing key stays missing.
+  When the key is missing, sound is on. That shared default is
+  TrialAudio.defaultEnabled (true). create(), ensureContext(), and
+  playTone() do not write the key. A missing key stays missing until
+  the user toggles mute, SFX, or audio cues. setEnabled() and
+  bindToggle() are what store "on" or "off".
 
-  Exception: noematachograph.html calls create({ defaultEnabled: false }).
-  A first visit with no stored key stays quiet, matching its original
-  Enable/Disable control. A stored "on" or "off" from any task wins.
+  Pass defaultEnabled only to opt out of that shared default.
+  noematachograph.html is the only caller that does:
+  create({ defaultEnabled: false }). A first visit with no stored key
+  stays on Enable Audio, so the tuning fork and shout spikes do not
+  start by themselves. A stored "on" or "off" from any task, including
+  Noematachograph, wins on every page.
 
   Stroop Dash, Oddball, Brightness Detection, and vr.html have no mute
   control. They still honor project-trial:sfx and stay audible when the
@@ -61,6 +66,7 @@
 */
 (function (global) {
     var STORAGE_KEY = "project-trial:sfx";
+    var DEFAULT_ENABLED = true;
     var GAIN_FLOOR = 0.0001;
 
     var ctx = null;
@@ -91,7 +97,7 @@
         if (!ready) {
             ready = true;
             persistEnabled = opts.persist !== false;
-            var fallback = true;
+            var fallback = DEFAULT_ENABLED;
             if (typeof opts.defaultEnabled === "boolean") fallback = opts.defaultEnabled;
             if (!persistEnabled) {
                 enabled = fallback;
@@ -239,6 +245,7 @@
 
     global.TrialAudio = {
         storageKey: STORAGE_KEY,
+        defaultEnabled: DEFAULT_ENABLED,
         create: create
     };
 })(window);
