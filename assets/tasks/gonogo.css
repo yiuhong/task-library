@@ -1,0 +1,118 @@
+:root {
+  --trial-accent: #84cc16;
+  --bg-primary: #07090e;
+  --bg-panel: #0f141f;
+  --accent-go: #84cc16;
+  --accent-nogo: #fb7185;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  height: 100dvh;
+  width: 100vw;
+  margin: 0;
+}
+
+.stimulus-box {
+  transition: transform 0.06s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.touch-pad {
+  transition: background-color 0.08s ease, border-color 0.08s ease, transform 0.05s ease;
+}
+
+.touch-pad:active, .touch-pad.active-press {
+  transform: scale(0.97);
+  border-color: var(--accent-go);
+  background-color: rgba(132, 204, 22, 0.14);
+}
+
+/* Countdown bar animation */
+@keyframes shrinkBar {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.deadline-bar {
+  transform-origin: left center;
+}
+
+/*
+  Classical shell extras for this page.
+  Gamified rules above are unchanged. These overrides are scoped to
+  html[data-trial-mode="classical"] so a dark body, neon glow, and
+  light-on-dark cards do not win over the lab gray. Trial stimulus
+  ink (arrows, go green, no-go red) is not restyled.
+*/
+
+html[data-trial-mode="classical"] body {
+  background-color: #7f7f7f;
+  color: #111;
+}
+
+html[data-trial-mode="classical"] .neon-glow,
+html[data-trial-mode="classical"] .neon-text {
+  box-shadow: none;
+  text-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-results {
+  background-color: #8a8a8a;
+  color: #111;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro div,
+html[data-trial-mode="classical"] #screen-transition div,
+html[data-trial-mode="classical"] #screen-results div {
+  background-color: #8a8a8a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro *:not(button):not(svg):not(path),
+html[data-trial-mode="classical"] #screen-transition *:not(button):not(svg):not(path),
+html[data-trial-mode="classical"] #screen-results *:not(button):not(svg):not(path) {
+  color: #111;
+}
+
+html[data-trial-mode="classical"] header,
+html[data-trial-mode="classical"] header *:not(svg):not(path) {
+  color: #111;
+}
+
+html[data-trial-mode="classical"] header {
+  background-color: #7f7f7f;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] header div:not(#progress-bar) {
+  background-color: #7f7f7f;
+  box-shadow: none;
+}
+
+/* Instruction icons stay green and red. A dark plate keeps that ink visible
+   on the gray card. The live trial frame is not in this screen. */
+html[data-trial-mode="classical"] #screen-intro .border-goLime,
+html[data-trial-mode="classical"] #screen-intro .border-nogoCoral {
+  background-color: #1a1a1a;
+}
+
+/* The green and red borders stay. The neon halo does not. */
+html[data-trial-mode="classical"] #stimulus-frame {
+  box-shadow: none !important;
+}

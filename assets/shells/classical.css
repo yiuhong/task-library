@@ -170,3 +170,56 @@ html[data-trial-mode="classical"] .trial-orient-nudge {
     background: var(--trial-surface);
     color: var(--trial-text);
 }
+
+/*
+  Quiet skin for hub tasks other than Stroop. Stroop rules above still apply.
+  These selectors cover the lab-style pages (intro, transition, arena, end).
+  Stimulus ink stays with the task core: do not recolor arrows, dots, or swatches.
+*/
+
+html[data-trial-mode="classical"] header,
+html[data-trial-mode="classical"] footer,
+html[data-trial-mode="classical"] main {
+    background-color: #7f7f7f;
+    color: #111111;
+    box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-end,
+html[data-trial-mode="classical"] #screen-start,
+html[data-trial-mode="classical"] #screen-summary,
+html[data-trial-mode="classical"] #screen-arena,
+html[data-trial-mode="classical"] #screen-trial {
+    color: #111111;
+}
+
+html[data-trial-mode="classical"] #screen-intro,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-end,
+html[data-trial-mode="classical"] #screen-start,
+html[data-trial-mode="classical"] #screen-summary {
+    background-color: #8a8a8a;
+    border-color: #4a4a4a;
+    box-shadow: none;
+}
+
+html[data-trial-mode="classical"] .neon-glow,
+html[data-trial-mode="classical"] .neon-text,
+html[data-trial-mode="classical"] .neon-card,
+html[data-trial-mode="classical"] .animate-pulse {
+    box-shadow: none;
+    text-shadow: none;
+    animation: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro button,
+html[data-trial-mode="classical"] #screen-transition button,
+html[data-trial-mode="classical"] #screen-end button,
+html[data-trial-mode="classical"] #screen-start button,
+html[data-trial-mode="classical"] #screen-summary button,
+html[data-trial-mode="classical"] #screen-welcome button,
+html[data-trial-mode="classical"] #screen-results button {
+    box-shadow: none;
+}

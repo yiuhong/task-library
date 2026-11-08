@@ -18,7 +18,7 @@
         <section>
             <h2>What it shows</h2>
             <p>Each trial shows a fixation cross, then two arrays of same-sized dots, then a brief mask. The larger count is on the left or the right. The gap between the counts is easy, medium, or hard. The main-block summary reports accuracy, mean response time, and median response time, plus accuracy and mean response time for each gap.</p>
-            <p>That split is headed “Weber Fraction / Difficulty Breakdown.” The rows are percent correct and mean response time. The demo does not compute a Weber fraction. Each trial says correct, incorrect, or too slow. This is a teaching demo, not a clinical or normed test.</p>
+            <p>That split is headed “Weber Fraction / Difficulty Breakdown.” The rows are percent correct and mean response time. The demo does not compute a Weber fraction. The gamified shell says correct, incorrect, or too slow after each trial. This is a teaching demo, not a clinical or normed test.</p>
         </section>
 
         <section>
@@ -66,15 +66,15 @@
                 </div>
                 <div>
                     <dt>Choice window</dt>
-                    <dd>4000 ms after the mask, with empty boxes and a question mark. A timeout is incorrect, shows TOO SLOW, and is left out of the mean and median response times.</dd>
+                    <dd>4000 ms after the mask, with empty boxes and a question mark. A timeout is incorrect and is left out of the mean and median response times. The gamified shell shows TOO SLOW.</dd>
                 </div>
                 <div>
                     <dt>Feedback</dt>
-                    <dd>450 ms. Correct, incorrect, or too slow, with the response time when there was a choice. Then a 350 ms blank before the next trial.</dd>
+                    <dd>450 ms, then a 350 ms blank before the next trial. On the gamified shell the hold shows correct, incorrect, or too slow, with the response time when there was a choice. The classical shell uses the same 450 ms and 350 ms. See Shells.</dd>
                 </div>
                 <div>
                     <dt>Sound</dt>
-                    <dd>On at the start. SFX turns the tones off. Correct is a short high tone, incorrect a lower tone, and a timeout a buzz.</dd>
+                    <dd>On at the start of the gamified shell. SFX turns the tones off. Correct is a short high tone, incorrect a lower tone, and a timeout a buzz. The classical shell plays no tones and does not write the shared mute key.</dd>
                 </div>
                 <div>
                     <dt>Accuracy</dt>
@@ -85,6 +85,12 @@
                     <dd>Taken from choices that were not timeouts, including incorrect choices. If every trial in the set timed out, both are 0 ms. The median is the middle value, or the rounded average of the two middle values when the count is even.</dd>
                 </div>
             </dl>
+        </section>
+
+        <section>
+            <h2>Shells</h2>
+            <p>The same numerosity core runs in two shells. <a href="numerosity_game.html">Numerosity Comparison</a> is the gamified shell. A missing mode, or any mode other than classical, plays that shell as it does today: CORRECT, INCORRECT, or TOO SLOW after every practice trial and every main trial, the response time under that word, tones, and the SFX control. <a href="numerosity_game.html?mode=classical">Classical Numerosity</a> is the quiet lab shell. The page around the boxes is mid-gray. Dot color, size, and counts stay the same.</p>
+            <p>Both shells use the same 6 practice trials and the same 36-trial main block. Classical does not add a practice block and does not drop the one this task already has. That is the exception to Classical Stroop, which inserts extra practice. Classical practice shows only Correct, Incorrect, or No response. There is no millisecond subtitle and no tone. The main block shows no words and plays no tones. The 450 ms feedback hold and the 350 ms blank still run, so the timing does not change. During a trial, accuracy and mean response time are hidden. The trial counter and the block badge stay. The end screen is the summary in both shells: main-block accuracy, mean response time, median response time, and the difficulty breakdown. There is no arcade score. The SFX control is hidden in the classical shell and does not write <code>project-trial:sfx</code>.</p>
         </section>
 
         <section>
@@ -100,12 +106,13 @@
         <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_numerosity_v1</code>. A later finished run replaces that payload. Refreshing, leaving, or closing the tab keeps the last finished run. An unfinished run is not resumed. Nothing is uploaded. There is no Clear saved control and no store of older sessions.</p>
-            <p>Download Trial CSV writes the current run, practice and main, as a file on the device. Columns are trial, block, left_n, right_n, correct_side, response (<code>left</code>, <code>right</code>, or <code>timeout</code>), correct (<code>1</code> or <code>0</code>), rt_ms, and timestamp. The file name is <code>projectTrial_numerosity_</code> plus a timestamp. The saved payload also keeps block_trial, difficulty, delta_n, the timing config, and the main-block summary. Those fields are not CSV columns.</p>
+            <p>Download Trial CSV writes the current run, practice and main, as a file on the device. Columns are trial, block, left_n, right_n, correct_side, response (<code>left</code>, <code>right</code>, or <code>timeout</code>), correct (<code>1</code> or <code>0</code>), rt_ms, timestamp, and mode (<code>gamified</code> or <code>classical</code>). Mode is the last column. The columns before it stay in this order. The file name is <code>projectTrial_numerosity_</code> plus a timestamp. The saved payload also keeps block_trial, difficulty, delta_n, the timing config, and the main-block summary. Those fields are not CSV columns. The payload gains a <code>mode</code> field, <code>gamified</code> or <code>classical</code>.</p>
             <p>The page does not lock orientation and does not log portrait or landscape turns.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="numerosity_game.html">Play Numerosity Comparison</a>
+            <a class="trial-btn trial-btn-ghost" href="numerosity_game.html?mode=classical">Classical Numerosity</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>
