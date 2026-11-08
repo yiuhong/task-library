@@ -1,0 +1,169 @@
+/*
+  Visual working memory layout shared by both shells.
+  Square colors are drawn on the canvas and are not restyled.
+*/
+    :root {
+      --trial-accent: #38bdf8;
+      --bg-primary: #090d16;
+      --bg-surface: #111827;
+      --bg-panel: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-primary: #38bdf8;
+      --accent-dim: rgba(56, 189, 248, 0.15);
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    .arena-shadow {
+      box-shadow: 0 0 40px -10px rgba(56, 189, 248, 0.12), inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .response-pad {
+      transition: transform 0.08s ease, background-color 0.12s ease, border-color 0.12s ease;
+    }
+    .response-pad:active, .response-pad.active-key {
+      transform: scale(0.97);
+      background-color: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+    }
+
+    /* Custom Scrollbar for Results view */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  
+
+/*
+  Classical shell for this page. Page canvas is PsychoPy mid-gray.
+  Panels are one step lighter. Square colors are canvas ink and are
+  not restyled. The sample swatches in the instructions stay as they are.
+*/
+html[data-trial-mode="classical"] {
+  background-color: #7f7f7f;
+}
+
+html[data-trial-mode="classical"] body {
+  background-color: #7f7f7f;
+  color: #111111;
+}
+
+html[data-trial-mode="classical"] header,
+html[data-trial-mode="classical"] header *,
+html[data-trial-mode="classical"] #screen-intro,
+html[data-trial-mode="classical"] #screen-intro *,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-transition *,
+html[data-trial-mode="classical"] #screen-results,
+html[data-trial-mode="classical"] #screen-results *,
+html[data-trial-mode="classical"] #response-footer,
+html[data-trial-mode="classical"] #response-footer *,
+html[data-trial-mode="classical"] #phase-indicator,
+html[data-trial-mode="classical"] #feedback-badge {
+  color: #111111;
+  text-shadow: none;
+}
+
+html[data-trial-mode="classical"] header .rounded-full {
+  background-color: #292524;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #screen-intro,
+html[data-trial-mode="classical"] #screen-transition,
+html[data-trial-mode="classical"] #screen-results {
+  background-color: #8a8a8a;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] .bg-slate-950\/90,
+html[data-trial-mode="classical"] .bg-slate-950\/80,
+html[data-trial-mode="classical"] .bg-slate-950\/70,
+html[data-trial-mode="classical"] .bg-slate-950\/60,
+html[data-trial-mode="classical"] .bg-slate-950\/50,
+html[data-trial-mode="classical"] .bg-slate-950\/40,
+html[data-trial-mode="classical"] .bg-slate-950,
+html[data-trial-mode="classical"] .bg-slate-900\/95,
+html[data-trial-mode="classical"] .bg-slate-900\/90,
+html[data-trial-mode="classical"] .bg-slate-900,
+html[data-trial-mode="classical"] .bg-sky-950\/30,
+html[data-trial-mode="classical"] .bg-sky-500\/10 {
+  background-color: #8a8a8a;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] .shadow-2xl,
+html[data-trial-mode="classical"] .shadow-lg,
+html[data-trial-mode="classical"] .shadow-xl,
+html[data-trial-mode="classical"] .arena-shadow,
+html[data-trial-mode="classical"] [class*="shadow-["] {
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] select.bg-slate-900 {
+  background-color: #d4d4d4;
+  color: #111111;
+  border-color: #4a4a4a;
+}
+
+html[data-trial-mode="classical"] #btn-skip-to-main,
+html[data-trial-mode="classical"] #btn-restart,
+html[data-trial-mode="classical"] #btn-probe-mode {
+  background-color: #d4d4d4;
+  color: #111111;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] .response-pad,
+html[data-trial-mode="classical"] .response-pad:active,
+html[data-trial-mode="classical"] .response-pad.active-key {
+  background-color: #8a8a8a;
+  color: #111111;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #btn-start-practice,
+html[data-trial-mode="classical"] #btn-start-main,
+html[data-trial-mode="classical"] #btn-download-csv,
+html[data-trial-mode="classical"] #btn-start-practice *,
+html[data-trial-mode="classical"] #btn-start-main *,
+html[data-trial-mode="classical"] #btn-download-csv * {
+  background-color: #292524;
+  color: #fafaf9;
+  border-color: #292524;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #btn-start-practice:hover,
+html[data-trial-mode="classical"] #btn-start-main:hover,
+html[data-trial-mode="classical"] #btn-download-csv:hover {
+  background-color: #1c1917;
+  color: #fafaf9;
+}

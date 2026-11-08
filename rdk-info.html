@@ -18,7 +18,7 @@
         <section>
             <h2>What it shows</h2>
             <p>Each trial shows a fixation cross, then 150 white dots inside a circular aperture. Some dots move together left or right. The rest move at random. Coherence is easy (40%), medium (20%), or hard (8%). The main-block summary reports accuracy, mean response time, and median response time, plus the same accuracy and mean time at each coherence.</p>
-            <p>Each trial says correct, incorrect, or timeout. This is a teaching demo, not a clinical or normed test.</p>
+            <p>The gamified shell says correct, incorrect, or timeout after each trial. This is a teaching demo, not a clinical or normed test.</p>
         </section>
 
         <section>
@@ -50,13 +50,19 @@
                 </div>
                 <div>
                     <dt>Feedback</dt>
-                    <dd>400 ms, then a 350 ms blank. Sound is on at the start. SFX turns the tones off.</dd>
+                    <dd>400 ms, then a 350 ms blank. Those two durations are the same on the classical shell. On the gamified shell, sound is on at the start and SFX turns the tones off. The classical shell plays no tones and does not write the shared mute key. See Shells.</dd>
                 </div>
                 <div>
                     <dt>Repeat practice</dt>
                     <dd>Drops the in-memory log and runs the 6 practice trials again. Begin Main Block starts the 36. Run New Session starts practice over.</dd>
                 </div>
             </dl>
+        </section>
+
+        <section>
+            <h2>Shells</h2>
+            <p>The same motion-coherence core runs in two shells. <a href="rdk_game.html">RDK Motion Coherence</a> is the gamified shell. A missing mode, or any mode other than classical, plays that shell as it does today: CORRECT, INCORRECT, or TOO SLOW after every practice trial and every main trial, the response time under that word, tones (including the fixation chirp), and the SFX control. <a href="rdk_game.html?mode=classical">Classical motion coherence</a> is the quiet lab shell. The page around the aperture is mid-gray. Dot color, count, coherence, speed, and the aperture stay the same.</p>
+            <p>Both shells use the same 6 practice trials and the same 36-trial main block. Classical does not add a practice block and does not drop the one this task already has. That is the exception to Classical Stroop, which inserts extra practice. Classical practice shows only Correct, Incorrect, or No response. There is no millisecond subtitle and no tone. The main block shows no words and plays no tones. The 400 ms feedback hold and the 350 ms blank still run, so the timing does not change. During a trial, accuracy and mean response time are hidden. The block and trial index stay. The end screen is the summary in both shells: main-block accuracy, mean response time, median response time, and the coherence breakdown. There is no arcade score. The SFX control is hidden in the classical shell and does not write <code>project-trial:sfx</code>.</p>
         </section>
 
         <section>
@@ -70,12 +76,13 @@
 
         <section>
             <h2>Data</h2>
-            <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_rdk_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
-            <p>Download Trial CSV writes the current run as a file on the device. Columns are trial, block, coherence_pct, direction, response, correct, rt_ms, and timestamp. The file name is <code>rdk_motion_data_</code> plus a timestamp. The page does not log orientation turns.</p>
+            <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_rdk_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control. The payload gains a <code>mode</code> field, <code>gamified</code> or <code>classical</code>.</p>
+            <p>Download Trial CSV writes the current run as a file on the device. Columns are trial, block, coherence_pct, direction, response, correct, rt_ms, timestamp, and mode (<code>gamified</code> or <code>classical</code>). Mode is the last column. The columns before it stay in this order. The file name is <code>rdk_motion_data_</code> plus a timestamp. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="rdk_game.html">Play RDK Motion Coherence</a>
+            <a class="trial-btn trial-btn-ghost" href="rdk_game.html?mode=classical">Classical RDK</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>

@@ -1,6 +1,6 @@
 # Shell contract
 
-Project Trial phase 1. Architecture C: shared presentation shells, science in task cores. Stroop is the only task on this contract. Other hub tasks stay as they are.
+Project Trial. Architecture C: shared presentation shells, science in task cores. Every hub task is on this contract. `noematachograph.html` and `vr.html` are not.
 
 ## Roles
 
@@ -16,11 +16,13 @@ One page loads one core. The shell reads the query string.
 
 | URL | Shell |
 | --- | --- |
-| `stroop_game.html` | gamified (default) |
-| `stroop_game.html?mode=gamified` | gamified |
-| `stroop_game.html?mode=classical` | classical |
+| `<task>_game.html` | gamified (default) |
+| `<task>_game.html?mode=gamified` | gamified |
+| `<task>_game.html?mode=classical` | classical |
 
-`TrialShell.readMode()` returns `classical` only when `mode` is `classical`, ignoring case. Any other value, including a missing parameter, is `gamified`. The live Stroop Dash URL stays the gamified entry.
+`TrialShell.readMode()` returns `classical` only when `mode` is `classical`, ignoring case. Any other value, including a missing parameter, is `gamified`. The live hub URL, with no query, stays the gamified entry.
+
+Hub tasks on this contract: Stroop, Oddball, Flanker, Go / No-Go, Brightness, Numerosity, RDK, Visual Working Memory, Corsi, and Reversal Learning (`bandit_game.html`). Each page loads `assets/tasks/<id>.js`. The trial list is not copied into a second file.
 
 `TrialShell.apply(mode)` does four things:
 
@@ -34,7 +36,7 @@ Theme CSS:
 - `assets/trial-theme.css` is the shared dark Trial theme. Gamified Stroop uses it.
 - `assets/shells/gamified.css` holds optional feedback components (combo bounce, shake, fire) and the neon stimulus glow.
 - `assets/shells/classical.css` is the quiet lab theme. The run canvas is PsychoPy mid-gray `#7f7f7f`. Every rule is scoped to `html[data-trial-mode="classical"]`.
-- `assets/trial-audio.js` is the tone player. The shell passes an audio session only when the core's policy for that mode sets `audio: true`. Classical Stroop passes `null` and does not call `playTone`.
+- `assets/trial-audio.js` is the tone player. The shell passes an audio session only when the core's policy for that mode sets `audio: true`. A classical policy sets `audio: false` and passes `null`. Classical does not call `playTone`, and it does not write `project-trial:sfx`. Flanker, Go / No-Go, Visual Working Memory, and Reversal Learning are silent in both shells.
 
 ## What a task core exposes
 
@@ -86,6 +88,25 @@ The core may use `TrialStore` and `TrialOrientation`. Pass `mode` into `TrialSto
 ```
 
 The head `apply` stamps `data-trial-mode` before CSS, so the classical theme is the first paint, and it can retitle the page. The bottom `apply` runs after the landmarks exist and swaps the visible copy and HUD slots. Calling it twice is safe.
+
+## Classical feedback
+
+The shared classical skin is the mid-gray canvas, the hidden arcade and live-stat slots, and the quiet copy. It does not force every task to the same trial-by-trial words. A task that already has a short practice block keeps it. Practice, when it runs, uses brief Correct / Incorrect / No response. The main block stays quiet unless the table below says the outcome is the science. Adding practice must not change the main block's trial count or parameters.
+
+| Task | Classical practice | Main-block words | Exception |
+| --- | --- | --- | --- |
+| Stroop | 8 trials, same builder | none | Practice is classical-only. Main stays 20. |
+| Oddball | 10 trials, same generator (2 oddball, 8 standard, first two standard) | none | Practice is classical-only. Main stays 30. |
+| Flanker | existing 6 | none | |
+| Go / No-Go | existing 8 | none | The GO / NO-GO badge and the shrinking deadline bar stay. They are the stimulus, not the score. |
+| Brightness | none | none | No correctness words in either shell. Confidence is rated without being told right or wrong. Do not add practice. |
+| Numerosity | existing 6 | none | |
+| RDK | existing 6 | none | The dot field, count, coherence, speed, and aperture stay. Tones are off. |
+| Visual working memory | existing 6, still skippable | none | Skip to main still drops the practice log. |
+| Corsi | existing 2 warmup trials at span 3 | none | Sequence, tap, and go-cue tones are off. Flash timing is unchanged. The progression select stays. |
+| Reversal learning | existing 6 | +10 or +0 on every trial | Partial. The payoff is the reward, not a Correct / Incorrect judgment. The live point total hides. The end screen still reports points, the better-option rate, and reversals. |
+
+Where a task already logs, the row or payload carries `mode` (`gamified` or `classical`). Oddball's classical CSV also adds `block` (`practice` or `main`), and trial numbers restart at 1 in each block. The gamified Oddball CSV does not add `block`. Brightness has no block column.
 
 ## Stroop slots
 

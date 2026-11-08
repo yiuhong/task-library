@@ -1,0 +1,270 @@
+/*
+  Corsi span layout shared by both shells.
+  Block flash colors stay on .corsi-block.lit, .tapped, and .selected-trace.
+*/
+    :root {
+      --trial-accent: #e879f9;
+      --bg-primary: #07090e;
+      --bg-panel: #0f1420;
+      --border-slate: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-neon: #d946ef;
+      --accent-glow: rgba(217, 70, 239, 0.6);
+      --accent-soft: rgba(217, 70, 239, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+
+    /* Subtle experimental grid backdrop */
+    .bg-experimental-grid {
+      background-image:
+        radial-gradient(circle at 50% 20%, rgba(217, 70, 239, 0.08), transparent 60%),
+        linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+    }
+
+    /* Responsive square Corsi Arena */
+    .corsi-arena {
+      position: relative;
+      width: min(86vw, 520px);
+      height: min(86vw, 520px);
+      aspect-ratio: 1 / 1;
+      background: radial-gradient(circle at center, #0d1322 0%, #070a12 100%);
+      border: 2px solid #1e293b;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), inset 0 0 30px rgba(15, 23, 42, 0.8);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .corsi-arena.arena-go {
+      border-color: var(--accent-neon);
+      box-shadow: 0 0 28px rgba(217, 70, 239, 0.28), inset 0 0 24px rgba(217, 70, 239, 0.12);
+    }
+
+    .corsi-arena.arena-watch {
+      border-color: #334155;
+    }
+
+    /* Corsi Block Styling */
+    .corsi-block {
+      position: absolute;
+      width: 14.5%;
+      height: 14.5%;
+      transform: translate(-50%, -50%);
+      border-radius: 0.75rem;
+      background: linear-gradient(145deg, #162032, #0f172a);
+      border: 2px solid #334155;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+      transition: transform 0.08s ease, background-color 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .corsi-block.disabled-block {
+      cursor: default;
+    }
+
+    /* Sequence Presentation Illumination */
+    .corsi-block.lit {
+      background: radial-gradient(circle at center, #f0abfc 0%, #d946ef 65%, #a21caf 100%);
+      border-color: #fae8ff;
+      box-shadow: 0 0 28px var(--accent-glow), 0 0 52px rgba(217, 70, 239, 0.4), inset 0 0 10px #ffffff;
+      transform: translate(-50%, -50%) scale(1.08);
+      z-index: 20;
+    }
+
+    /* User Tap Flash */
+    .corsi-block.tapped {
+      background: linear-gradient(145deg, #c026d3, #86198f);
+      border-color: #f5d0fe;
+      box-shadow: 0 0 22px var(--accent-glow);
+      transform: translate(-50%, -50%) scale(0.95);
+      z-index: 15;
+    }
+
+    /* Selected Badge During Recall */
+    .corsi-block .tap-badge {
+      opacity: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fae8ff;
+      background: rgba(15, 20, 32, 0.78);
+      border: 1px solid rgba(217, 70, 239, 0.6);
+      border-radius: 9999px;
+      width: 1.4rem;
+      height: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.12s ease;
+      pointer-events: none;
+    }
+
+    .corsi-block.selected-trace {
+      border-color: rgba(217, 70, 239, 0.75);
+      background: linear-gradient(145deg, #241434, #141829);
+    }
+
+    .corsi-block.selected-trace .tap-badge {
+      opacity: 1;
+    }
+
+    /* Neon Button */
+    .btn-neon {
+      background: linear-gradient(135deg, #d946ef 0%, #a21caf 100%);
+      color: #ffffff;
+      border: 1px solid #f0abfc;
+      box-shadow: 0 0 18px rgba(217, 70, 239, 0.4);
+      transition: all 0.15s ease;
+    }
+
+    .btn-neon:hover:not(:disabled) {
+      box-shadow: 0 0 26px rgba(217, 70, 239, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .btn-neon:active:not(:disabled) {
+      transform: translateY(0px) scale(0.98);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07090e;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  
+
+/*
+  Classical shell for this page. Page canvas is PsychoPy mid-gray.
+  Panels are one step lighter, with the glow taken off the chrome.
+  Block flash colors are not restyled: .corsi-block.lit, .tapped,
+  and .selected-trace keep the gamified ink.
+*/
+html[data-trial-mode="classical"] {
+  background-color: #7f7f7f;
+}
+
+html[data-trial-mode="classical"] body,
+html[data-trial-mode="classical"] body.bg-experimental-grid {
+  background-color: #7f7f7f;
+  background-image: none;
+  color: #111111;
+}
+
+html[data-trial-mode="classical"] header,
+html[data-trial-mode="classical"] header *,
+html[data-trial-mode="classical"] footer,
+html[data-trial-mode="classical"] footer *,
+html[data-trial-mode="classical"] #view-welcome,
+html[data-trial-mode="classical"] #view-welcome *,
+html[data-trial-mode="classical"] #view-results,
+html[data-trial-mode="classical"] #view-results *,
+html[data-trial-mode="classical"] #arena-overlay,
+html[data-trial-mode="classical"] #arena-overlay *,
+html[data-trial-mode="classical"] #status-text,
+html[data-trial-mode="classical"] #tap-count-label,
+html[data-trial-mode="classical"] #btn-clear-seq {
+  color: #111111;
+  text-shadow: none;
+}
+
+html[data-trial-mode="classical"] header .rounded-full {
+  background-color: #292524;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #view-welcome,
+html[data-trial-mode="classical"] #view-results,
+html[data-trial-mode="classical"] #arena-overlay {
+  background-color: #8a8a8a;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] .bg-slate-950\/90,
+html[data-trial-mode="classical"] .bg-slate-950\/80,
+html[data-trial-mode="classical"] .bg-slate-950\/70,
+html[data-trial-mode="classical"] .bg-slate-950\/60,
+html[data-trial-mode="classical"] .bg-slate-950\/50,
+html[data-trial-mode="classical"] .bg-slate-950\/40,
+html[data-trial-mode="classical"] .bg-slate-950,
+html[data-trial-mode="classical"] .bg-slate-900\/95,
+html[data-trial-mode="classical"] .bg-slate-900\/90,
+html[data-trial-mode="classical"] .bg-slate-900,
+html[data-trial-mode="classical"] .bg-fuchsia-500\/10 {
+  background-color: #8a8a8a;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] .shadow-2xl,
+html[data-trial-mode="classical"] .shadow-lg,
+html[data-trial-mode="classical"] .shadow-xl,
+html[data-trial-mode="classical"] .corsi-arena,
+html[data-trial-mode="classical"] .corsi-arena.arena-go,
+html[data-trial-mode="classical"] .corsi-arena.arena-watch,
+html[data-trial-mode="classical"] [class*="shadow-["] {
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #tap-progress .bg-slate-800 {
+  background-color: #4a4a4a;
+  border-color: #292524;
+}
+
+html[data-trial-mode="classical"] #view-welcome .grid {
+  grid-template-columns: 1fr;
+}
+
+html[data-trial-mode="classical"] select.bg-slate-900,
+html[data-trial-mode="classical"] #btn-clear-seq,
+html[data-trial-mode="classical"] #btn-restart {
+  background-color: #d4d4d4;
+  color: #111111;
+  border-color: #4a4a4a;
+  box-shadow: none;
+}
+
+html[data-trial-mode="classical"] .btn-neon,
+html[data-trial-mode="classical"] .btn-neon:hover:not(:disabled),
+html[data-trial-mode="classical"] .btn-neon:active:not(:disabled),
+html[data-trial-mode="classical"] #btn-start-practice,
+html[data-trial-mode="classical"] #btn-download-csv,
+html[data-trial-mode="classical"] #overlay-btn {
+  background: #292524;
+  background-image: none;
+  color: #fafaf9;
+  border-color: #292524;
+  box-shadow: none;
+  transform: none;
+}
