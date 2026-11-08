@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Project Trial — RDK Motion Coherence Task</title>
+  <title data-shell-copy data-classical="Motion coherence">Project Trial — RDK Motion Coherence Task</title>
+  <script src="assets/shells/shell.js"></script>
+  <script>TrialShell.apply(TrialShell.readMode());</script>
 
   <!-- Project Trial Theme Link with Inline CSS Variable Fallbacks -->
   <link rel="stylesheet" href="assets/trial-theme.css" />
@@ -100,6 +102,8 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="assets/shells/gamified.css">
+  <link rel="stylesheet" href="assets/shells/classical.css">
 </head>
 <body class="min-h-screen flex flex-col justify-between select-none bg-[#060911] text-slate-300">
 
@@ -114,12 +118,12 @@
         </div>
       </div>
 
-      <div class="text-center">
+      <div class="text-center" data-shell-live>
         <div class="micro-label">Accuracy</div>
         <div id="hud-accuracy" class="font-mono text-sm font-bold text-amber-400">--%</div>
       </div>
 
-      <div class="text-center">
+      <div class="text-center" data-shell-live>
         <div class="micro-label">Mean RT</div>
         <div id="hud-rt" class="font-mono text-sm font-bold text-slate-100">-- ms</div>
       </div>
@@ -127,6 +131,7 @@
       <button
         id="btn-sfx"
         type="button"
+        data-shell-arcade
         aria-label="Toggle Sound Effects"
         aria-pressed="true"
         class="px-2.5 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono text-xs flex items-center gap-1.5 transition"
@@ -141,12 +146,13 @@
   <main class="flex-1 w-full max-w-2xl mx-auto px-3 py-2 flex flex-col items-center justify-center relative">
 
     <!-- SCREEN 1: START / INSTRUCTIONS OVERLAY -->
-    <section id="screen-start" class="neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+    <section id="screen-start" class="shell-screen neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+      <div data-shell-toggle></div>
       <div class="flex items-center justify-between mb-2">
-        <span class="micro-label text-amber-400">Project Trial // Psychophysics Module</span>
+        <span class="micro-label text-amber-400" data-shell-copy data-classical="Motion coherence">Project Trial // Psychophysics Module</span>
         <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">RDK v1.0</span>
       </div>
-      <h1 class="text-xl sm:text-2xl font-bold text-slate-100 tracking-tight mb-2">
+      <h1 class="text-xl sm:text-2xl font-bold text-slate-100 tracking-tight mb-2" data-shell-copy data-classical="Random dot motion">
         Random Dot Kinematogram
       </h1>
       <p class="text-sm text-slate-400 leading-relaxed mb-4">
@@ -185,7 +191,7 @@
       <button
         id="btn-start-practice"
         type="button"
-        class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-bold tracking-wide text-sm uppercase transition shadow-lg shadow-amber-500/20"
+        class="shell-primary w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-bold tracking-wide text-sm uppercase transition shadow-lg shadow-amber-500/20"
       >
         Start Practice Block (6 Trials)
       </button>
@@ -225,7 +231,7 @@
         <button
           id="btn-start-main"
           type="button"
-          class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
+          class="shell-primary flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
         >
           Begin Main Block (36 Trials)
         </button>
@@ -237,14 +243,15 @@
     </section>
 
     <!-- SCREEN 3: END SUMMARY OVERLAY -->
-    <section id="screen-summary" class="hidden neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+    <section id="screen-summary" class="shell-screen hidden neon-card rounded-2xl p-5 sm:p-6 w-full max-w-lg z-20">
+      <div data-shell-toggle></div>
       <div class="flex items-center justify-between mb-1">
         <span class="micro-label text-amber-400">Session Complete</span>
         <span id="storage-badge" class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
           ✓ Saved to localStorage
         </span>
       </div>
-      <h2 class="text-xl font-bold text-slate-100 mb-3">Psychometric Performance Summary</h2>
+      <h2 class="text-xl font-bold text-slate-100 mb-3" data-shell-copy data-classical="Session complete">Psychometric Performance Summary</h2>
 
       <!-- Overall Metrics -->
       <div class="grid grid-cols-3 gap-2.5 mb-4 text-center">
@@ -295,7 +302,7 @@
         <button
           id="btn-restart"
           type="button"
-          class="flex-1 py-3 rounded-xl border border-slate-700 hover:border-amber-500/50 text-slate-200 font-semibold text-xs uppercase tracking-wider transition"
+          class="shell-primary flex-1 py-3 rounded-xl border border-slate-700 hover:border-amber-500/50 text-slate-200 font-semibold text-xs uppercase tracking-wider transition"
         >
           ↻ Run New Session
         </button>
@@ -406,18 +413,23 @@
      * Task cues. Oscillators and the shared mute key live in assets/trial-audio.js.
      * Durations below are seconds.
      */
+    const trialClassical = TrialShell.readMode() === "classical";
     const audio = TrialAudio.create();
     const sfx = {
       playFixation() {
+        if (trialClassical) return;
         audio.playTone(520, 0.045, 'sine', 0.04);
       },
       playCorrect() {
+        if (trialClassical) return;
         audio.playTone(880, 0.11, 'triangle', 0.09);
       },
       playError() {
+        if (trialClassical) return;
         audio.playTone(220, 0.18, 'sawtooth', 0.08);
       },
       playTimeout() {
+        if (trialClassical) return;
         audio.playTone(160, 0.22, 'square', 0.07);
       }
     };
@@ -614,23 +626,23 @@
         }
       }
 
-      // Draw central fixation cross
-      drawFixationCross(cx, cy, '#f59e0b');
+      drawFixationCross(cx, cy, trialClassical ? "#111111" : "#f59e0b");
       ctx.restore();
     }
 
     function drawFixationCross(cx, cy, color = '#f59e0b') {
       ctx.save();
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = trialClassical ? "#111111" : color;
       ctx.lineWidth = 2.2;
       ctx.lineCap = 'round';
       const arm = 7;
 
-      // Dark halo behind fixation cross for high contrast
-      ctx.beginPath();
-      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(6, 9, 17, 0.72)';
-      ctx.fill();
+      if (!trialClassical) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(6, 9, 17, 0.72)';
+        ctx.fill();
+      }
 
       ctx.beginPath();
       ctx.moveTo(cx - arm, cy);
@@ -641,7 +653,7 @@
       ctx.restore();
     }
 
-    function renderStaticAperture(showFixation = true, crossColor = '#f59e0b') {
+    function renderStaticAperture(showFixation = true, crossColor = trialClassical ? "#111111" : "#f59e0b") {
       const cx = CONFIG.canvasSizePx / 2;
       const cy = CONFIG.canvasSizePx / 2;
       ctx.clearRect(0, 0, CONFIG.canvasSizePx, CONFIG.canvasSizePx);

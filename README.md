@@ -8,9 +8,9 @@ Project Trial is Yiu Hong Ko’s browser collection of attention, perception, an
 
 ## Shells and task cores
 
-Stroop is the pilot for a shell plus task-core split. The shell is chrome: frame, theme, HUD. The core is the science: parameters, trial loop, stimuli, keys, and feedback policy. Gamified and classical Stroop load `assets/tasks/stroop.js`, so the trial list is not copied into a second page.
+Every hub task has two shells on one page. The shell is chrome: frame, theme, HUD, and the Gamified | Classical control on the welcome and results screens. The task owns the science: parameters, trial loop, stimuli, keys, and feedback policy. Stroop’s loop is [`assets/tasks/stroop.js`](assets/tasks/stroop.js). The other hub tasks keep their loops in the page and use the same shell.
 
-Open classical Stroop at [`stroop_game.html?mode=classical`](stroop_game.html?mode=classical). `mode=classical` is the only switch. A missing or unknown `mode` stays gamified, and [`stroop_game.html`](stroop_game.html) is still Stroop Dash. Classical runs 8 practice trials with brief feedback, then the same 20-trial main block, with no live score, accuracy, or RT. The contract is [`assets/SHELL_CONTRACT.md`](assets/SHELL_CONTRACT.md). Other tasks are not on it yet.
+The control stores the last choice in `localStorage` under `project-trial:mode`. With no stored choice, a task stays gamified unless the URL says `?mode=classical`. `?mode=gamified` and `?mode=classical` still open that shell and update the stored choice. The hub cards do not link a separate Classical entry. Classical Stroop runs 8 practice trials with brief feedback, then the same 20-trial main block, with no live score, accuracy, or RT. The contract is [`assets/SHELL_CONTRACT.md`](assets/SHELL_CONTRACT.md).
 
 ## Wordmark
 
@@ -23,7 +23,7 @@ Approved black-and-white lockup, outlined in `assets/`:
 
 ## Live on the hub
 
-- **Stroop Dash** — [`stroop_game.html`](stroop_game.html). Selective attention and Stroop interference. Classical shell, same core: [`stroop_game.html?mode=classical`](stroop_game.html?mode=classical). Parameters: [`stroop-info.html`](stroop-info.html).
+- **Stroop Dash** — [`stroop_game.html`](stroop_game.html). Selective attention and Stroop interference. The in-task control switches to the classical shell (`?mode=classical` still opens it directly). Parameters: [`stroop-info.html`](stroop-info.html).
 - **Oddball** — [`oddball_game.html`](oddball_game.html). Rare-target detection among frequent standards. Parameters: [`oddball-info.html`](oddball-info.html).
 - **Brightness Detection** — [`brightness_game.html`](brightness_game.html). Luminance discrimination with confidence ratings. Parameters: [`brightness-info.html`](brightness-info.html).
 - **Numerosity Comparison** — [`numerosity_game.html`](numerosity_game.html). Which of two brief dot arrays had more dots. Parameters: [`numerosity-info.html`](numerosity-info.html).
@@ -46,7 +46,7 @@ Demos that want the dark Trial look link [`assets/trial-theme.css`](assets/trial
 
 Numerosity Comparison, RDK Motion Coherence, Eriksen Flanker, Visual Working Memory, Go / No-Go, and Reversal Learning each keep one payload (`projectTrial_numerosity_v1`, `projectTrial_rdk_v1`, `projectTrial_flanker_v1`, `projectTrial_vwm_v1`, `projectTrial_gonogo_v1`, `projectTrial_bandit_v1`) and download a CSV of the current run. A later finished run replaces that payload. Corsi Span appends finished runs under `projectTrial_corsi_v1`. These tasks do not use `trial-store.js` or `trial-orientation.js`.
 
-[`assets/trial-audio.js`](assets/trial-audio.js) plays the short Web Audio tones for tasks that already use sound. Mute is one `localStorage` key, `project-trial:sfx`, with values `on` and `off`. When that key is missing, sound is on. Opening or playing a task does not write the key. Noematachograph is the exception: with no stored choice it stays off, so Enable Audio is what a first visit shows, and the tuning fork does not start on its own. A stored `on` or `off` from any task, including Noematachograph, wins everywhere. Stroop Dash, Oddball, Brightness Detection, and [`vr.html`](vr.html) have no mute control of their own and follow the key. Classical Stroop does not call the tone player. Numerosity Comparison (`SFX: ON` / `SFX: OFF`), RDK Motion Coherence (`SFX ON` / `SFX OFF`), and Corsi Span (the setup `AUDIO CUES` select) keep their own controls and write the same key. The script tag has to come before the inline task script, without `defer`, `async`, or `type="module"`. Flanker, Go / No-Go, Visual Working Memory, and Reversal Learning stay silent.
+[`assets/trial-audio.js`](assets/trial-audio.js) plays the short Web Audio tones for tasks that already use sound. Mute is one `localStorage` key, `project-trial:sfx`, with values `on` and `off`. When that key is missing, sound is on. Opening or playing a task does not write the key. Noematachograph is the exception: with no stored choice it stays off, so Enable Audio is what a first visit shows, and the tuning fork does not start on its own. A stored `on` or `off` from any task, including Noematachograph, wins everywhere. Gamified Stroop Dash, Oddball, and Brightness Detection, and [`vr.html`](vr.html), have no mute control of their own and follow the key. Classical Stroop, Oddball, Brightness, RDK, Numerosity, and Corsi do not play tones. In that shell RDK and Numerosity hide their sound buttons, and Corsi hides the audio-cues select. Numerosity Comparison (`SFX: ON` / `SFX: OFF`), RDK Motion Coherence (`SFX ON` / `SFX OFF`), and Corsi Span (the setup `AUDIO CUES` select) keep those controls on the gamified shell and write the same key. The script tag has to come before the inline task script, without `defer`, `async`, or `type="module"`. Flanker, Go / No-Go, Visual Working Memory, and Reversal Learning stay silent.
 
 ## Not on the hub yet
 

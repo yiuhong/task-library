@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Eriksen Flanker Task | Project Trial</title>
+  <title data-shell-copy data-classical="Flanker">Eriksen Flanker Task | Project Trial</title>
+  <script src="assets/shells/shell.js"></script>
+  <script>TrialShell.apply(TrialShell.readMode());</script>
   <!-- External Theme Stylesheet with Inline Fallbacks -->
   <link rel="stylesheet" href="assets/trial-theme.css" />
   <!-- Tailwind CSS CDN -->
@@ -84,6 +86,8 @@
       box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
     }
   </style>
+  <link rel="stylesheet" href="assets/shells/gamified.css">
+  <link rel="stylesheet" href="assets/shells/classical.css">
 </head>
 <body class="h-screen w-screen flex flex-col justify-between select-none">
 
@@ -98,7 +102,7 @@
     <div class="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs sm:text-sm font-mono text-slate-400">
       <div class="flex items-center gap-2.5">
         <span class="inline-block w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-        <span class="font-semibold text-slate-200 tracking-wider uppercase">FLANKER CONFLICT</span>
+        <span class="font-semibold text-slate-200 tracking-wider uppercase" data-shell-copy data-classical="Flanker">FLANKER CONFLICT</span>
         <span id="hud-block-badge" class="px-2 py-0.5 rounded bg-accentDim text-accent border border-accent/30 text-[11px] uppercase">
           READY
         </span>
@@ -109,11 +113,11 @@
           <span class="text-slate-500">TRIAL</span>
           <span id="hud-trial" class="ml-1 text-slate-200 font-semibold">0 / 0</span>
         </div>
-        <div>
+        <div data-shell-live>
           <span class="text-slate-500">ACC</span>
           <span id="hud-acc" class="ml-1 text-slate-200 font-semibold">--%</span>
         </div>
-        <div class="hidden sm:block">
+        <div class="hidden sm:block" data-shell-live>
           <span class="text-slate-500">MEAN RT</span>
           <span id="hud-rt" class="ml-1 text-slate-200 font-semibold">-- ms</span>
         </div>
@@ -125,12 +129,13 @@
   <main class="relative flex-1 flex flex-col items-center justify-center px-4 overflow-y-auto">
 
     <!-- 1. INTRO / INSTRUCTIONS SCREEN -->
-    <section id="screen-intro" class="max-w-lg w-full bg-bgPanel border border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-2xl">
+    <section id="screen-intro" class="shell-screen max-w-lg w-full bg-bgPanel border border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div data-shell-toggle></div>
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-mono uppercase tracking-widest text-accent">Project Trial // Cognitive Battery</span>
+        <span class="text-xs font-mono uppercase tracking-widest text-accent" data-shell-copy data-classical="Center arrow only">Project Trial // Cognitive Battery</span>
         <span class="text-xs font-mono text-slate-500">v1.0</span>
       </div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight mb-3">
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight mb-3" data-shell-copy data-classical="Flanker">
         Eriksen Flanker Task
       </h1>
       <p class="text-sm text-slate-400 leading-relaxed mb-6">
@@ -171,7 +176,7 @@
         </div>
       </div>
 
-      <button id="btn-start-practice" class="w-full py-3.5 px-6 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold tracking-wide transition neon-glow cursor-pointer">
+      <button id="btn-start-practice" class="shell-primary w-full py-3.5 px-6 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold tracking-wide transition neon-glow cursor-pointer">
         Start Practice Block (6 Trials)
       </button>
       <div class="mt-3 flex justify-center gap-2">
@@ -190,7 +195,7 @@
       <p class="text-xs text-slate-400 leading-relaxed mb-6">
         The main experimental block consists of <strong class="text-slate-200">36 balanced trials</strong>. Keep your gaze on the central fixation cross and respond as rapidly and accurately as possible.
       </p>
-      <button id="btn-start-main" class="w-full py-3.5 px-6 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold tracking-wide transition neon-glow cursor-pointer">
+      <button id="btn-start-main" class="shell-primary w-full py-3.5 px-6 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold tracking-wide transition neon-glow cursor-pointer">
         Begin Main Block (36 Trials)
       </button>
       <div class="mt-3 flex justify-center gap-2">
@@ -208,7 +213,7 @@
         <div class="absolute bottom-6 w-0.5 h-3 bg-slate-700/70"></div>
 
         <!-- Fixation / Stimulus String / Feedback -->
-        <div id="stimulus-display" class="stimulus-array text-4xl sm:text-6xl font-bold text-slate-100 select-none text-center">
+        <div id="stimulus-display" class="stimulus-array text-4xl sm:text-6xl font-bold text-slate-100 select-none text-center" data-shell-stimulus>
           +
         </div>
 
@@ -218,7 +223,8 @@
     </section>
 
     <!-- 4. END / SUMMARY SCREEN -->
-    <section id="screen-end" class="hidden max-w-2xl w-full bg-bgPanel border border-slate-800/90 rounded-2xl p-5 sm:p-8 shadow-2xl my-auto">
+    <section id="screen-end" class="shell-screen hidden max-w-2xl w-full bg-bgPanel border border-slate-800/90 rounded-2xl p-5 sm:p-8 shadow-2xl my-auto">
+      <div data-shell-toggle></div>
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs font-mono uppercase tracking-widest text-accent">Session Complete</span>
         <span id="end-saved-indicator" class="text-xs font-mono text-emerald-400">● Saved to LocalStorage</span>
@@ -265,7 +271,7 @@
         <button id="btn-download-csv" class="flex-1 py-3 px-5 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold text-sm tracking-wide transition neon-glow cursor-pointer">
           Download Trial CSV
         </button>
-        <button id="btn-restart" class="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm tracking-wide transition cursor-pointer">
+        <button id="btn-restart" class="shell-primary py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm tracking-wide transition cursor-pointer" data-shell-copy data-classical="Run again">
           Run Again
         </button>
       </div>
@@ -311,6 +317,7 @@
      * PROJECT TRIAL: ERIKSEN FLANKER ATTENTIONAL CONFLICT TASK
      * All experimental parameters stored in CONFIG
      */
+    const trialClassical = TrialShell.readMode() === "classical";
     const CONFIG = {
       storageKey: "projectTrial_flanker_v1",
       practiceTrials: 6,          // Balanced: 3 conditions x 2 target directions = 6
@@ -580,17 +587,17 @@
       if (isTimeout) {
         el.stimulusDisplay.className =
           "font-mono text-2xl sm:text-4xl font-bold text-amber-400 select-none text-center";
-        el.stimulusDisplay.textContent = "TOO SLOW";
+        el.stimulusDisplay.textContent = trialClassical ? "No response" : "TOO SLOW";
         el.feedbackSubtext.textContent = "Respond within 1500 ms";
       } else if (isCorrect) {
         el.stimulusDisplay.className =
           "font-mono text-2xl sm:text-4xl font-bold text-emerald-400 select-none text-center";
-        el.stimulusDisplay.textContent = "✓ CORRECT";
+        el.stimulusDisplay.textContent = trialClassical ? "Correct" : "✓ CORRECT";
         el.feedbackSubtext.textContent = `${trialRecord.rt_ms} ms`;
       } else {
         el.stimulusDisplay.className =
           "font-mono text-2xl sm:text-4xl font-bold text-accent neon-text select-none text-center";
-        el.stimulusDisplay.textContent = "✕ INCORRECT";
+        el.stimulusDisplay.textContent = trialClassical ? "Incorrect" : "✕ INCORRECT";
         el.feedbackSubtext.textContent = `Target was ${currentTrial.target_dir.toUpperCase()}`;
       }
 

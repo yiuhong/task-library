@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Oddball Dash: Neon Edition</title>
+    <title data-shell-copy data-classical="Oddball">Oddball Dash: Neon Edition</title>
+    <script src="assets/shells/shell.js"></script>
+    <script>TrialShell.apply(TrialShell.readMode());</script>
     <link rel="stylesheet" href="assets/trial-theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -111,34 +113,38 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="assets/shells/gamified.css">
+    <link rel="stylesheet" href="assets/shells/classical.css">
 </head>
 <body class="trial-app trial-play h-screen w-screen flex flex-col items-center justify-center">
 
     <!-- Screen A: Welcome/Instructions -->
-    <div id="screen-welcome" class="max-w-2xl bg-slate-900 p-10 rounded-3xl border-4 border-cyan-500 shadow-[0_0_50px_rgba(6,182,212,0.3)] text-center animate-in fade-in zoom-in duration-300">
-        <h1 class="game-title text-6xl text-cyan-400 mb-2 tracking-tighter">ODDBALL DASH</h1>
-        <p class="text-cyan-200/60 mb-8 uppercase tracking-widest text-xs font-bold">The Ultimate Anomaly Detection Challenge</p>
+    <div id="screen-welcome" class="shell-screen max-w-2xl bg-slate-900 p-10 rounded-3xl border-4 border-cyan-500 shadow-[0_0_50px_rgba(6,182,212,0.3)] text-center animate-in fade-in zoom-in duration-300">
+        <div data-shell-toggle></div>
+        <h1 class="game-title text-6xl text-cyan-400 mb-2 tracking-tighter" data-shell-copy data-classical="Oddball">ODDBALL DASH</h1>
+        <p class="text-cyan-200/60 mb-8 uppercase tracking-widest text-xs font-bold" data-shell-copy data-classical="Press J for the rare X. Do nothing for the frequent O.">The Ultimate Anomaly Detection Challenge</p>
         
         <div class="text-left bg-slate-800/50 p-6 rounded-2xl border border-cyan-500/30 mb-8">
-            <p class="text-white mb-4 text-center">Maintain focus! A <span class="text-cyan-400 font-bold">STANDARD</span> shape appears most of the time. <span class="text-red-400 font-bold">DO NOT REACT.</span> But watch out for the rare <span class="text-pink-400 font-bold">ODDBALL</span> and strike!</p>
+            <p class="text-white mb-4 text-center" data-shell-arcade>Maintain focus! A <span class="text-cyan-400 font-bold">STANDARD</span> shape appears most of the time. <span class="text-red-400 font-bold">DO NOT REACT.</span> But watch out for the rare <span class="text-pink-400 font-bold">ODDBALL</span> and strike!</p>
+            <p class="text-sm mb-4 text-center" data-shell-summary hidden>The letter O is frequent. Do not respond. The letter X is rare. Press J when X appears.</p>
             
             <div id="legend-row" class="flex justify-center gap-12 mt-6">
                 <div class="flex flex-col items-center bg-slate-900 p-4 rounded-xl border border-cyan-500/50 w-40 opacity-50">
                     <span class="text-xs text-slate-400 mb-2 font-bold tracking-wider">FREQUENT (80%)</span>
-                    <div class="game-title text-5xl text-cyan-400 mb-4 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">O</div>
+                    <div class="game-title text-5xl text-cyan-400 mb-4 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" data-shell-stimulus>O</div>
                     <div class="text-cyan-400 text-sm font-bold mt-2">DO NOTHING</div>
                 </div>
                 <div class="flex flex-col items-center bg-slate-900 p-4 rounded-xl border border-pink-500/50 w-40 shadow-[0_0_15px_rgba(236,72,153,0.2)]">
                     <span class="text-xs text-pink-300 mb-2 font-bold tracking-wider animate-pulse">RARE (20%)</span>
-                    <div class="game-title text-5xl text-pink-500 mb-4 drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]">X</div>
+                    <div class="game-title text-5xl text-pink-500 mb-4 drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]" data-shell-stimulus>X</div>
                     <div class="trial-pad mb-2 text-pink-500">J</div>
                     <div class="text-pink-300 text-[10px] font-bold tracking-wider">TAP OR PRESS J</div>
                 </div>
             </div>
         </div>
 
-        <button id="btn-start" class="group relative bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
-            <span class="game-title text-2xl">INSERT COIN (START)</span>
+        <button id="btn-start" class="shell-primary group relative bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+            <span class="game-title text-2xl" data-shell-copy data-classical="Start">INSERT COIN (START)</span>
         </button>
         <div class="mt-4 flex justify-center gap-2">
             <a class="trial-more" href="index.html">Hub</a>
@@ -158,18 +164,18 @@
         
         <!-- DASHBOARD -->
         <div id="hud" class="trial-hud absolute top-0 w-full flex justify-between z-10">
-            <div class="flex flex-col">
+            <div class="flex flex-col" data-shell-arcade>
                 <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Score</span>
                 <span id="stat-score" class="score-readout trial-readout font-bold">00000</span>
             </div>
 
             <div id="hud-stats" class="trial-stats flex bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
-                <div class="text-center">
+                <div class="text-center" data-shell-live>
                     <span class="block text-[10px] text-slate-500 font-bold uppercase">Accuracy</span>
                     <span id="stat-acc" class="trial-stat font-bold text-green-400">0%</span>
                 </div>
-                <div class="text-center">
-                    <span class="block text-[10px] text-slate-500 font-bold uppercase">Avg Speed</span>
+                <div class="text-center" data-shell-live>
+                    <span class="block text-[10px] text-slate-500 font-bold uppercase" data-shell-copy data-classical="Mean RT">Avg Speed</span>
                     <span id="stat-rt" class="trial-stat font-bold text-blue-400">0ms</span>
                 </div>
                 <div class="text-center trial-stat-split">
@@ -178,7 +184,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col items-end">
+            <div class="flex flex-col items-end" data-shell-arcade>
                 <span class="text-[10px] text-orange-400 font-bold uppercase tracking-widest">Combo</span>
                 <span id="stat-combo" class="combo-readout trial-readout font-bold combo-text text-orange-500">x0</span>
             </div>
@@ -186,7 +192,7 @@
 
         <!-- Stimulus Display -->
         <div id="stimulus-container" class="flex flex-col items-center justify-center w-full">
-            <div id="display-area" class="stimulus-text text-center transition-transform duration-100"></div>
+            <div id="display-area" class="stimulus-text text-center transition-transform duration-100" data-shell-stimulus></div>
             <div id="feedback-container">
                 <div id="feedback-area" class="game-title text-2xl opacity-0 transition-all duration-75"></div>
             </div>
@@ -205,11 +211,12 @@
     </div>
 
     <!-- Screen C: Results -->
-    <div id="screen-results" class="trial-results hidden w-[min(56rem,calc(100%-1rem))] bg-slate-900 p-6 sm:p-10 rounded-3xl border-4 border-cyan-500 shadow-2xl fade-in">
-        <h2 class="text-5xl font-bold text-cyan-400 mb-8 text-center game-title">SESSION COMPLETE</h2>
+    <div id="screen-results" class="shell-screen trial-results hidden w-[min(56rem,calc(100%-1rem))] bg-slate-900 p-6 sm:p-10 rounded-3xl border-4 border-cyan-500 shadow-2xl fade-in">
+        <div data-shell-toggle></div>
+        <h2 class="text-5xl font-bold text-cyan-400 mb-8 text-center game-title" data-shell-copy data-classical="Session complete">SESSION COMPLETE</h2>
         
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center" data-shell-arcade>
                 <span class="text-xs text-slate-500 uppercase font-bold">Final Score</span>
                 <div id="final-score" class="text-4xl font-bold text-white game-title mt-2">0</div>
             </div>
@@ -224,7 +231,7 @@
         </div>
 
         <div class="bg-cyan-950/30 p-8 rounded-2xl border border-cyan-500/30 mb-10">
-            <h3 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest text-sm italic">Cognitive Analysis:</h3>
+            <h3 class="text-cyan-400 font-bold mb-4 uppercase tracking-widest text-sm italic" data-shell-copy data-classical="Summary">Cognitive Analysis:</h3>
             <p id="interpretation-text" class="text-cyan-100/80 leading-relaxed"></p>
         </div>
 
@@ -238,7 +245,7 @@
         </div>
 
         <div class="flex flex-col items-center gap-2">
-            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-12 rounded-2xl transition-all shadow-xl hover:bg-cyan-400 active:scale-95 game-title text-xl">
+            <button id="btn-restart" class="shell-primary bg-white text-slate-900 font-bold py-4 px-12 rounded-2xl transition-all shadow-xl hover:bg-cyan-400 active:scale-95 game-title text-xl" data-shell-copy data-classical="Run again">
                 PLAY AGAIN
             </button>
             <div class="flex justify-center gap-2">
@@ -252,6 +259,8 @@
     <script src="assets/trial-store.js"></script>
     <script src="assets/trial-audio.js"></script>
     <script>
+        const trialMode = TrialShell.readMode();
+        const trialClassical = trialMode === "classical";
         const orientation = TrialOrientation.createSession({ nudge: true });
         const store = TrialStore.create({
             taskId: 'oddball',
@@ -264,6 +273,7 @@
         const audio = TrialAudio.create();
         const AudioEngine = {
             playTone(freq, type, duration, volume, slideTo = null) {
+                if (trialClassical) return;
                 audio.playTone(freq, duration, type, volume, slideTo);
             },
             correct(combo, type) {
@@ -397,12 +407,11 @@
             // Show Stimulus
             displayArea.innerText = trial.char;
             displayArea.style.color = trial.color;
-            displayArea.style.textShadow = `0 0 30px ${trial.color}80`;
-            
-            // Slight pop animation
-            displayArea.classList.add('scale-110');
+            displayArea.style.textShadow = trialClassical ? "none" : `0 0 30px ${trial.color}80`;
 
-            if (state.combo > 10) displayArea.classList.add('fire-effect');
+            if (!trialClassical) displayArea.classList.add('scale-110');
+
+            if (!trialClassical && state.combo > 10) displayArea.classList.add('fire-effect');
 
             state.startTime = performance.now();
             state.isAcceptingInput = true;
@@ -447,8 +456,10 @@
                 AudioEngine.incorrect();
                 state.combo = 0;
                 showFeedback(key === null ? "MISS!" : "FALSE ALARM!", "text-red-500");
-                document.getElementById('stimulus-container').classList.add('shake');
-                setTimeout(() => document.getElementById('stimulus-container').classList.remove('shake'), 200);
+                if (!trialClassical) {
+                    document.getElementById('stimulus-container').classList.add('shake');
+                    setTimeout(() => document.getElementById('stimulus-container').classList.remove('shake'), 200);
+                }
             }
 
             state.results.push(Object.assign({
@@ -473,6 +484,11 @@
 
         function showFeedback(text, colorClass) {
             const el = document.getElementById('feedback-area');
+            if (trialClassical) {
+                el.innerText = "";
+                el.className = "game-title text-2xl opacity-0";
+                return;
+            }
             el.innerText = text;
             el.className = `game-title text-2xl opacity-100 transition-all ${colorClass}`;
         }
@@ -497,7 +513,9 @@
             document.querySelector('#result-oddball .rt-val').innerText = oddballSpeed;
 
             let message = "";
-            if (oddballHits.length === 0) {
+            if (trialClassical) {
+                message = "Standard accuracy " + standardAcc + "%. Mean response time on oddball hits " + oddballSpeed + " ms.";
+            } else if (oddballHits.length === 0) {
                  message = `You missed the oddballs completely! It's easy to get lulled into doing nothing.`;
             } else if (standardAcc < 80) {
                 message = `You caught the targets at ${oddballSpeed}ms, but struggled to inhibit your reactions on standard trials (${standardAcc}% Acc). This shows impulsivity!`;
@@ -505,7 +523,7 @@
                 message = `Incredible vigilance and inhibition! You successfully withheld responses on standard trials and reacted to targets in ${oddballSpeed}ms. This is a classic test of sustained attention.`;
             }
             
-            document.getElementById('interpretation-text').innerText = `${message} Max Combo Achieved: ${state.maxCombo}.`;
+            document.getElementById('interpretation-text').innerText = trialClassical ? message : `${message} Max Combo Achieved: ${state.maxCombo}.`;
         }
 
         function flashPad(el) {

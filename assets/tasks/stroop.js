@@ -269,7 +269,7 @@
             paintCounter();
             feedbackEl.textContent = "";
             feedbackEl.className = "game-title text-2xl opacity-0";
-            display.textContent = "READY?";
+            display.textContent = mode === "classical" ? "+" : "READY?";
             display.style.color = fixationColor();
             display.classList.remove("fire-effect");
 

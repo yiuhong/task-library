@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Project Trial — Probabilistic Reversal Learning (2-Armed Bandit)</title>
+  <title data-shell-copy data-classical="Reversal learning">Project Trial — Probabilistic Reversal Learning (2-Armed Bandit)</title>
+  <script src="assets/shells/shell.js"></script>
+  <script>TrialShell.apply(TrialShell.readMode());</script>
   
   <!-- Project Trial External Stylesheet with Inline Fallbacks -->
   <link rel="stylesheet" href="assets/trial-theme.css" />
@@ -130,6 +132,8 @@
       background: #eab308;
     }
   </style>
+  <link rel="stylesheet" href="assets/shells/gamified.css">
+  <link rel="stylesheet" href="assets/shells/classical.css">
 </head>
 
 <body class="min-h-screen flex flex-col justify-between bg-[#090b10] text-slate-100 selection:bg-yellow-500 selection:text-black">
@@ -139,7 +143,7 @@
     <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center space-x-3">
         <span class="inline-block w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span>
-        <span class="font-mono text-xs uppercase tracking-widest text-yellow-500 font-semibold">Project Trial // PRL-2AB</span>
+        <span class="font-mono text-xs uppercase tracking-widest text-yellow-500 font-semibold" data-shell-copy data-classical="Reversal">Project Trial // PRL-2AB</span>
         <span id="hud-phase-badge" class="px-2 py-0.5 text-xs font-mono rounded bg-slate-800 text-slate-300 border border-slate-700">
           STANDBY
         </span>
@@ -150,7 +154,7 @@
           <span class="text-slate-400">TRIAL:</span>
           <span id="hud-trial" class="text-slate-100 font-bold ml-1">0 / 0</span>
         </div>
-        <div>
+        <div data-shell-arcade>
           <span class="text-slate-400">SCORE:</span>
           <span id="hud-score" class="text-yellow-500 font-bold ml-1">0 PTS</span>
         </div>
@@ -162,10 +166,11 @@
   <main class="flex-1 flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden">
 
     <!-- SCREEN 1: WELCOME & CONFIGURATION -->
-    <section id="screen-welcome" class="w-full max-w-2xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6">
+    <section id="screen-welcome" class="shell-screen w-full max-w-2xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6">
+      <div data-shell-toggle></div>
       <div class="border-b border-[#1e2536] pb-4">
         <p class="font-mono text-xs uppercase tracking-widest text-yellow-500 mb-1">Cognitive Paradigm // Reinforcement Learning</p>
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100">Probabilistic Reversal Learning</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100" data-shell-copy data-classical="Reversal learning">Probabilistic Reversal Learning</h1>
         <p class="text-sm text-slate-400 mt-2">
           Two-Armed Bandit Task assessing adaptive decision-making, reward sensitivity, and cognitive flexibility under shifting reward contingencies.
         </p>
@@ -214,7 +219,7 @@
         <div class="text-xs font-mono text-slate-400">
           Structure: <span class="text-slate-200">Practice (6 trials)</span> → <span class="text-slate-200">Main Block (48 trials)</span>
         </div>
-        <button id="btn-start-practice" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-600 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
+        <button id="btn-start-practice" class="shell-primary w-full sm:w-auto px-6 py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-600 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
           Start Practice Block →
         </button>
       </div>
@@ -233,12 +238,12 @@
         <p class="font-mono text-xs uppercase tracking-widest text-yellow-500">Calibration Complete</p>
         <h2 class="text-2xl font-bold text-slate-100">Practice Block Finished</h2>
         <p class="text-sm text-slate-400 max-w-md mx-auto">
-          You scored <span id="transition-prac-score" class="text-yellow-500 font-mono font-bold">0 PTS</span> during practice.
+          <span data-shell-arcade>You scored <span id="transition-prac-score" class="text-yellow-500 font-mono font-bold">0 PTS</span> during practice.</span>
           The main experimental block consists of <strong>48 trials</strong>. Remember that reward probabilities (80% vs. 20%) will silently reverse multiple times during the block.
         </p>
       </div>
       <div class="pt-2">
-        <button id="btn-start-main" class="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
+        <button id="btn-start-main" class="shell-primary w-full sm:w-auto px-8 py-3.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black font-mono font-bold text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
           Launch Main Block (48 Trials) →
         </button>
       </div>
@@ -346,11 +351,12 @@
     </section>
 
     <!-- SCREEN 4: END SUMMARY & TELEMETRY EXPORT -->
-    <section id="screen-results" class="hidden w-full max-w-4xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6 my-4">
+    <section id="screen-results" class="shell-screen hidden w-full max-w-4xl bg-[#11151f] border border-[#1e2536] rounded-xl p-6 sm:p-8 shadow-2xl space-y-6 my-4">
+      <div data-shell-toggle></div>
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1e2536] pb-4">
         <div>
           <p class="font-mono text-xs uppercase tracking-widest text-yellow-500">Session Complete // Behavioral Summary</p>
-          <h2 class="text-2xl font-bold text-slate-100">Probabilistic Reversal Learning Report</h2>
+          <h2 class="text-2xl font-bold text-slate-100" data-shell-copy data-classical="Session complete">Probabilistic Reversal Learning Report</h2>
         </div>
         <div class="flex items-center space-x-2">
           <span id="storage-status" class="px-2.5 py-1 rounded text-xs font-mono bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
@@ -362,8 +368,8 @@
       <!-- Primary KPI Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         <div class="bg-[#090b10] p-4 rounded-xl border border-[#1e2536]">
-          <p class="font-mono text-[11px] uppercase text-slate-400">Total Score</p>
-          <p id="res-total-score" class="font-mono text-2xl font-bold text-yellow-500 mt-1">0 PTS</p>
+          <p class="font-mono text-[11px] uppercase text-slate-400" data-shell-arcade>Total Score</p>
+          <p id="res-total-score" class="font-mono text-2xl font-bold text-yellow-500 mt-1" data-shell-arcade>0 PTS</p>
           <p id="res-reward-rate" class="font-mono text-[11px] text-slate-400 mt-0.5">0% Rewarded</p>
         </div>
 
@@ -437,7 +443,7 @@
 
       <!-- Actions: Download CSV & Restart -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-        <button id="btn-restart" type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#090b10] hover:bg-slate-800 text-slate-300 border border-[#1e2536] font-mono text-xs uppercase tracking-wider transition">
+        <button id="btn-restart" type="button" class="shell-primary w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#090b10] hover:bg-slate-800 text-slate-300 border border-[#1e2536] font-mono text-xs uppercase tracking-wider transition" data-shell-copy data-classical="Run again">
           ↻ New Session
         </button>
 
@@ -495,6 +501,7 @@
       /* =========================================================================
          2. TASK CONFIGURATION & STATE
          ========================================================================= */
+      const trialClassical = TrialShell.readMode() === "classical";
       const CONFIG = {
         practiceTrials: 6,
         mainTrials: 48,
@@ -845,17 +852,17 @@
         void dom.feedbackBox.offsetWidth;
 
         if (rewardPts > 0) {
-          dom.arenaPrompt.textContent = 'Outcome // Reward Delivered';
+          dom.arenaPrompt.textContent = trialClassical ? 'Reward' : 'Outcome // Reward Delivered';
           dom.feedbackBox.className = 'px-4 py-3 sm:px-5 sm:py-3.5 rounded-xl border-2 border-yellow-400 bg-[#11151f] text-yellow-400 flex flex-col items-center justify-center shadow-2xl min-w-[125px] sm:min-w-[148px] feedback-win';
-          dom.feedbackIcon.textContent = '★ WIN';
-          dom.feedbackPts.textContent = '+10 PTS';
-          dom.feedbackSub.textContent = 'REWARDED';
+          dom.feedbackIcon.textContent = trialClassical ? '' : '★ WIN';
+          dom.feedbackPts.textContent = trialClassical ? '+10' : '+10 PTS';
+          dom.feedbackSub.textContent = trialClassical ? '' : 'REWARDED';
         } else {
-          dom.arenaPrompt.textContent = 'Outcome // No Reward';
+          dom.arenaPrompt.textContent = trialClassical ? 'No reward' : 'Outcome // No Reward';
           dom.feedbackBox.className = 'px-4 py-3 sm:px-5 sm:py-3.5 rounded-xl border-2 border-slate-600 border-dashed bg-[#090b10] text-slate-300 flex flex-col items-center justify-center shadow-2xl min-w-[125px] sm:min-w-[148px] feedback-null';
-          dom.feedbackIcon.textContent = 'Ø NULL';
-          dom.feedbackPts.textContent = '+0 PTS';
-          dom.feedbackSub.textContent = 'NO PAYOUT';
+          dom.feedbackIcon.textContent = trialClassical ? '' : 'Ø NULL';
+          dom.feedbackPts.textContent = trialClassical ? '+0' : '+0 PTS';
+          dom.feedbackSub.textContent = trialClassical ? '' : 'NO PAYOUT';
         }
       }
 

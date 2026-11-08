@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Project Trial — Digital Corsi Block-Tapping Task</title>
+  <title data-shell-copy data-classical="Corsi span">Project Trial — Digital Corsi Block-Tapping Task</title>
+  <script src="assets/shells/shell.js"></script>
+  <script>TrialShell.apply(TrialShell.readMode());</script>
 
   <!-- Project Trial Shared Stylesheet with Inline Fallback -->
   <link rel="stylesheet" href="assets/trial-theme.css" />
@@ -196,6 +198,8 @@
       border-radius: 3px;
     }
   </style>
+  <link rel="stylesheet" href="assets/shells/gamified.css">
+  <link rel="stylesheet" href="assets/shells/classical.css">
 </head>
 
 <body class="bg-experimental-grid min-h-screen flex flex-col justify-between text-slate-100 antialiased">
@@ -207,7 +211,7 @@
         <span class="inline-block w-2.5 h-2.5 rounded-full bg-fuchsia-500 shadow-[0_0_10px_#d946ef]"></span>
         <div>
           <h1 class="text-sm sm:text-base font-semibold tracking-wider uppercase text-slate-100">
-            Project Trial <span class="text-fuchsia-400 font-mono">// CORSI-SPAN</span>
+            Project Trial <span class="text-fuchsia-400 font-mono" data-shell-copy data-classical="Corsi">// CORSI-SPAN</span>
           </h1>
           <p class="text-[11px] text-slate-400 font-mono hidden sm:block">
             Visuospatial Working Memory Assessment (v1.0)
@@ -234,17 +238,21 @@
   <main class="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl w-full mx-auto">
 
     <!-- ==================== VIEW 1: WELCOME / INSTRUCTIONS ==================== -->
-    <section id="view-welcome" class="w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+    <section id="view-welcome" class="shell-screen w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div data-shell-toggle></div>
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-300 text-xs font-mono mb-4">
         TASK MODULE: VISUOSPATIAL SPAN
       </div>
 
-      <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3" data-shell-copy data-classical="Corsi blocks">
         Digital Corsi Block-Tapping Task
       </h2>
 
-      <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+      <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6" data-shell-arcade>
         You will see <strong>9 blocks</strong> arranged on the board. On each trial, a sequence of blocks will flash in <span class="text-fuchsia-400 font-semibold">neon violet</span> one at a time.
+      </p>
+      <p class="text-sm leading-relaxed mb-6" data-shell-summary hidden>
+        Nine identical blocks light one at a time. When the sequence ends, tap the blocks back in the same order.
       </p>
 
       <div class="space-y-3 bg-slate-950/70 border border-slate-800/90 rounded-xl p-4 mb-6 text-sm text-slate-300">
@@ -275,7 +283,7 @@
             <option value="fixed">Fixed Full Protocol (Spans 3 to 9)</option>
           </select>
         </div>
-        <div>
+        <div data-shell-arcade>
           <label for="toggle-sound" class="block text-slate-400 font-mono mb-1">AUDIO CUES</label>
           <select id="toggle-sound" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono focus:outline-none focus:border-fuchsia-500">
             <option value="on" selected>Enabled (Synthesized Tone Cues)</option>
@@ -285,7 +293,7 @@
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-start-practice" class="btn-neon flex-1 py-3.5 px-6 rounded-xl font-semibold text-sm sm:text-base tracking-wide uppercase cursor-pointer">
+        <button id="btn-start-practice" class="shell-primary btn-neon flex-1 py-3.5 px-6 rounded-xl font-semibold text-sm sm:text-base tracking-wide uppercase cursor-pointer">
           Start Practice Warmup (2 Trials)
         </button>
       </div>
@@ -349,7 +357,8 @@
     </section>
 
     <!-- ==================== VIEW 3: END / SUMMARY SCREEN ==================== -->
-    <section id="view-results" class="hidden w-full max-w-2xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+    <section id="view-results" class="shell-screen hidden w-full max-w-2xl bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div data-shell-toggle></div>
       <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-300 text-xs font-mono">
           ASSESSMENT COMPLETE
@@ -359,7 +368,7 @@
         </span>
       </div>
 
-      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-6">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-6" data-shell-copy data-classical="Session complete">
         Visuospatial Span Summary
       </h2>
 
@@ -416,7 +425,7 @@
         <button id="btn-download-csv" class="btn-neon w-full sm:w-auto flex-1 py-3 px-5 rounded-xl font-semibold text-sm uppercase tracking-wider cursor-pointer">
           Download CSV Log
         </button>
-        <button id="btn-restart" class="w-full sm:w-auto py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm uppercase tracking-wider transition cursor-pointer">
+        <button id="btn-restart" class="shell-primary w-full sm:w-auto py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm uppercase tracking-wider transition cursor-pointer" data-shell-copy data-classical="Run again">
           Run New Session
         </button>
       </div>
@@ -533,9 +542,11 @@
      * shared project-trial:sfx mute key. The AUDIO CUES select still
      * chooses on/off before the run starts.
      */
+    const trialClassical = TrialShell.readMode() === "classical";
     const audio = TrialAudio.create();
 
     function playTone(freq = 440, durationMs = 90, type = 'sine', gainVal = 0.08) {
+      if (trialClassical) return;
       audio.playTone(freq, durationMs / 1000, type, gainVal);
     }
 
@@ -885,9 +896,11 @@
       // The setup select is the source of truth for this run. Write the
       // shared key only when it disagrees, so an untouched default does
       // not store "on" by itself.
-      const wantSound = DOM.toggleSound.value !== 'off';
-      if (wantSound !== audio.isEnabled()) audio.setEnabled(wantSound);
-      audio.ensureContext();
+      if (!trialClassical) {
+        const wantSound = DOM.toggleSound.value !== 'off';
+        if (wantSound !== audio.isEnabled()) audio.setEnabled(wantSound);
+        audio.ensureContext();
+      }
       CONFIG.progressionMode = DOM.selectMode.value;
 
       STATE.phase = 'PRACTICE';

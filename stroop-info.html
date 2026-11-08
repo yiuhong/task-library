@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <dt>Ready screen</dt>
-                    <dd>400 ms. The word READY? in white.</dd>
+                    <dd>400 ms. Gamified shows READY?. Classical shows a plus sign for the same 400 ms.</dd>
                 </div>
                 <div>
                     <dt>Response window</dt>
@@ -73,7 +73,8 @@
 
         <section>
             <h2>Shells</h2>
-            <p>The same Stroop core runs in two shells. <a href="stroop_game.html">Stroop Dash</a> is the gamified shell. <a href="stroop_game.html?mode=classical">Classical Stroop</a> is the quiet lab shell on a mid-gray canvas. It uses the same main block: 20 trials, the same colors, keys, and timings, without score, combo, shake, or reward sounds. During a trial it does not show accuracy or response time.</p>
+            <p>The same Stroop core runs in two shells. The welcome and results screens have a Gamified | Classical control. The last choice is stored in this browser as <code>project-trial:mode</code>. A visit with no <code>mode</code> in the address uses that choice, or gamified if nothing is stored. <a href="stroop_game.html?mode=classical">?mode=classical</a> still opens the lab shell and stores that choice.</p>
+            <p>Classical Stroop follows Stroop (1935), <a href="https://doi.org/10.1037/h0054651">doi:10.1037/h0054651</a>: a colored color-word, centered, name the ink, ignore the word. The field is mid-gray. Response keys are plain R G B Y. It uses the same main block: 20 trials, the same colors, keys, and timings, without score, combo, shake, or reward sounds. During a trial it does not show accuracy or response time. Fixation is a plus sign for the same 400 ms the gamified shell uses for READY?.</p>
             <p>Classical starts with 8 practice trials, 4 congruent and 4 incongruent, built the same way as the main list (one of each color, then the four word/ink pairs). Practice shows Correct, Incorrect, or No response for the 400 ms hold. The main block shows no words after a trial. The 400 ms hold and 300 ms blank still run. Practice is saved with <code>block</code> = <code>practice</code> and is left out of the end screen. That screen reports accuracy and mean response time for the 20 main trials, plus the congruent and incongruent means. The scoring row above describes the gamified shell only.</p>
         </section>
 
@@ -97,7 +98,6 @@
 
         <div class="trial-actions">
             <a class="trial-btn" href="stroop_game.html">Play Stroop Dash</a>
-            <a class="trial-btn trial-btn-ghost" href="stroop_game.html?mode=classical">Classical Stroop</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>

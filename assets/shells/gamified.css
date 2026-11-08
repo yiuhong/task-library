@@ -4,10 +4,59 @@
   Optional chrome the task core may apply. Stroop's arcade policy uses
   these classes. The classical policy does not add them. Layout and the
   neon tokens stay in trial-theme.css and the task page.
+
+  The presentation control is shared. Classical colors live in
+  classical.css. These rules only draw the control on the dark shell.
 */
 
 html[data-trial-mode="gamified"] [data-shell-summary] {
     display: none !important;
+}
+
+.shell-mode {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 1rem;
+    padding: 3px;
+    gap: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.shell-mode-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    min-height: 44px;
+    padding: 0 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.shell-mode-btn[aria-checked="true"] {
+    background: #ffffff;
+    color: #111111;
+}
+
+.shell-mode-btn:focus {
+    outline: none;
+}
+
+.shell-mode-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
 }
 
 html[data-trial-mode="gamified"] .stimulus-text {

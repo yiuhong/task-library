@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Project Trial | Speeded Go/No-Go Response Inhibition</title>
+  <title data-shell-copy data-classical="Go / No-Go">Project Trial | Speeded Go/No-Go Response Inhibition</title>
+  <script src="assets/shells/shell.js"></script>
+  <script>TrialShell.apply(TrialShell.readMode());</script>
   <!-- External Theme CSS with Inline Fallback -->
   <link rel="stylesheet" href="assets/trial-theme.css" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -80,6 +82,8 @@
       transform-origin: left center;
     }
   </style>
+  <link rel="stylesheet" href="assets/shells/gamified.css">
+  <link rel="stylesheet" href="assets/shells/classical.css">
 </head>
 <body class="flex flex-col justify-between bg-bgBase text-slate-100 select-none">
 
@@ -87,7 +91,7 @@
   <header class="w-full px-4 py-3 border-b border-slate-800/80 bg-bgCard/70 backdrop-blur-md flex items-center justify-between z-10">
     <div class="flex items-center space-x-3">
       <span class="inline-block w-2.5 h-2.5 rounded-full bg-goLime animate-pulse"></span>
-      <span class="font-mono text-xs uppercase tracking-widest text-slate-300 font-semibold">Project Trial // Go-NoGo v1</span>
+      <span class="font-mono text-xs uppercase tracking-widest text-slate-300 font-semibold" data-shell-copy data-classical="Go / No-Go">Project Trial // Go-NoGo v1</span>
     </div>
     <div id="hud-metrics" class="hidden items-center space-x-4 font-mono text-xs">
       <div class="px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800">
@@ -105,12 +109,13 @@
   <main class="relative flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4 overflow-hidden">
 
     <!-- 1. Welcome / Instructions Screen -->
-    <section id="screen-intro" class="w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+    <section id="screen-intro" class="shell-screen w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+      <div data-shell-toggle></div>
       <div class="space-y-2">
         <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono uppercase tracking-wider bg-lime-500/10 text-goLime border border-lime-500/30">
           Response Inhibition Paradigm
         </div>
-        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">Speeded Go / No-Go Task</h1>
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white" data-shell-copy data-classical="Go / No-Go">Speeded Go / No-Go Task</h1>
         <p class="text-sm text-slate-400 leading-relaxed">
           Respond as fast as possible to directional <strong class="text-goLime">GO</strong> targets before the deadline expires, but completely withhold your motor response when a <strong class="text-nogoCoral">NO-GO</strong> stop signal appears.
         </p>
@@ -119,7 +124,7 @@
       <!-- Visual Rule Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="p-4 rounded-xl bg-slate-900/80 border border-lime-500/30 flex items-center space-x-4">
-          <div class="w-14 h-14 rounded-xl border-2 border-goLime bg-lime-500/10 flex items-center justify-center shrink-0">
+          <div class="w-14 h-14 rounded-xl border-2 border-goLime bg-lime-500/10 flex items-center justify-center shrink-0" data-shell-stimulus>
             <svg class="w-8 h-8 text-goLime" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h15" />
             </svg>
@@ -131,7 +136,7 @@
         </div>
 
         <div class="p-4 rounded-xl bg-slate-900/80 border border-rose-500/30 flex items-center space-x-4">
-          <div class="w-14 h-14 rounded-xl border-2 border-nogoCoral bg-rose-500/10 flex items-center justify-center shrink-0">
+          <div class="w-14 h-14 rounded-xl border-2 border-nogoCoral bg-rose-500/10 flex items-center justify-center shrink-0" data-shell-stimulus>
             <svg class="w-8 h-8 text-nogoCoral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -151,7 +156,7 @@
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 pt-2">
-        <button id="btn-start-practice" class="flex-1 py-3.5 px-6 rounded-xl bg-goLime hover:bg-lime-400 active:scale-[0.99] text-slate-950 font-bold text-sm tracking-wide uppercase transition shadow-lg shadow-lime-500/10">
+        <button id="btn-start-practice" class="shell-primary flex-1 py-3.5 px-6 rounded-xl bg-goLime hover:bg-lime-400 active:scale-[0.99] text-slate-950 font-bold text-sm tracking-wide uppercase transition shadow-lg shadow-lime-500/10">
           Start Practice Block (8 Trials)
         </button>
       </div>
@@ -172,7 +177,7 @@
         <div>MAIN BLOCK LENGTH: <strong class="text-white">40 High-Tempo Trials</strong></div>
         <div>Keep your fingers poised over the Left and Right response zones.</div>
       </div>
-      <button id="btn-start-main" class="w-full sm:w-auto min-w-[240px] py-3.5 px-8 rounded-xl bg-goLime hover:bg-lime-400 text-slate-950 font-bold text-sm uppercase tracking-wider transition">
+      <button id="btn-start-main" class="shell-primary w-full sm:w-auto min-w-[240px] py-3.5 px-8 rounded-xl bg-goLime hover:bg-lime-400 text-slate-950 font-bold text-sm uppercase tracking-wider transition">
         Launch Main Block (40 Trials)
       </button>
       <div class="mt-3 flex justify-center gap-2">
@@ -197,7 +202,7 @@
         <!-- Dynamic SVG Target (Go Arrow or No-Go Stop Signal) -->
         <div id="stim-target" class="hidden flex-col items-center justify-center w-full h-full">
           <div id="stim-badge" class="mb-2 px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-widest"></div>
-          <div id="stim-icon" class="w-28 h-28 flex items-center justify-center"></div>
+          <div id="stim-icon" class="w-28 h-28 flex items-center justify-center" data-shell-stimulus></div>
         </div>
 
         <!-- Immediate Trial Feedback Overlay -->
@@ -230,7 +235,8 @@
     </section>
 
     <!-- 4. End Summary & Data Export Screen -->
-    <section id="screen-results" class="hidden w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6 max-h-[86dvh] overflow-y-auto">
+    <section id="screen-results" class="shell-screen hidden w-full bg-bgCard border border-slate-800/90 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6 max-h-[86dvh] overflow-y-auto">
+      <div data-shell-toggle></div>
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
         <div>
           <span class="text-xs font-mono uppercase tracking-widest text-goLime">Session Complete</span>
@@ -276,7 +282,7 @@
           </svg>
           <span>Download CSV Log</span>
         </button>
-        <button id="btn-restart" class="py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs uppercase tracking-wider transition border border-slate-700">
+        <button id="btn-restart" class="shell-primary py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs uppercase tracking-wider transition border border-slate-700" data-shell-copy data-classical="Run again">
           Run New Session
         </button>
       </div>
@@ -293,6 +299,7 @@
      * TOP-LEVEL EXPERIMENT CONFIGURATION
      * Matches Project Trial specification
      */
+    const trialClassical = TrialShell.readMode() === "classical";
     const CONFIG = {
       storageKey: "projectTrial_gonogo_v1",
       practiceTrials: 8,
@@ -393,10 +400,13 @@
      */
     function renderTargetGraphic(trialType, targetSide) {
       const arrowRotation = targetSide === "LEFT" ? "rotate(180 12 12)" : "";
+      const plainFrame = "relative flex flex-col items-center justify-center my-auto w-64 h-64 sm:w-72 sm:h-72 rounded-sm border border-neutral-600 stimulus-box";
       if (trialType === "GO") {
-        el.stimulusFrame.className = "relative flex flex-col items-center justify-center my-auto w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-bgCard border-4 border-goLime shadow-[0_0_35px_rgba(132,204,22,0.22)] stimulus-box";
+        el.stimulusFrame.className = trialClassical
+          ? plainFrame
+          : "relative flex flex-col items-center justify-center my-auto w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-bgCard border-4 border-goLime shadow-[0_0_35px_rgba(132,204,22,0.22)] stimulus-box";
         el.stimBadge.className = "mb-2 px-3 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest bg-lime-500/20 text-goLime border border-lime-500/40";
-        el.stimBadge.textContent = `GO ${targetSide}`;
+        el.stimBadge.textContent = trialClassical ? "Go" : `GO ${targetSide}`;
         el.stimIcon.innerHTML = `
           <svg class="w-28 h-28 text-goLime" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8">
             <g transform="${arrowRotation}">
@@ -406,10 +416,18 @@
         `;
       } else {
         // NO-GO Stop Trial: Red border + prominent X stop symbol overlaid with directional hint
-        el.stimulusFrame.className = "relative flex flex-col items-center justify-center my-auto w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-bgCard border-4 border-nogoCoral shadow-[0_0_35px_rgba(251,113,133,0.25)] stimulus-box";
+        el.stimulusFrame.className = trialClassical
+          ? plainFrame
+          : "relative flex flex-col items-center justify-center my-auto w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-bgCard border-4 border-nogoCoral shadow-[0_0_35px_rgba(251,113,133,0.25)] stimulus-box";
         el.stimBadge.className = "mb-2 px-3 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest bg-rose-500/20 text-nogoCoral border border-rose-500/40";
-        el.stimBadge.textContent = "NO-GO // STOP";
-        el.stimIcon.innerHTML = `
+        el.stimBadge.textContent = trialClassical ? "No-go" : "NO-GO // STOP";
+        el.stimIcon.innerHTML = trialClassical
+          ? `
+          <svg class="w-28 h-28 text-nogoCoral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5l9 9M16.5 7.5l-9 9" />
+          </svg>
+        `
+          : `
           <svg class="w-28 h-28 text-nogoCoral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8">
             <circle cx="12" cy="12" r="9" stroke-opacity="0.35" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5l9 9M16.5 7.5l-9 9" />
@@ -525,17 +543,17 @@
       if (currentTrial.trial_type === "GO") {
         if (chosenSide === currentTrial.target_side) {
           isCorrect = 1;
-          feedbackTitle = "HIT";
+          feedbackTitle = trialClassical ? "Correct" : "HIT";
           feedbackColor = "text-goLime";
         } else {
           isCorrect = 0;
-          feedbackTitle = "WRONG SIDE";
+          feedbackTitle = trialClassical ? "Incorrect" : "WRONG SIDE";
           feedbackColor = "text-nogoCoral";
         }
       } else {
         // Responded on a NO-GO trial -> Commission Error (False Alarm)
         isCorrect = 0;
-        feedbackTitle = "FALSE ALARM!";
+        feedbackTitle = trialClassical ? "Responded" : "FALSE ALARM!";
         feedbackDetail = `Commission Error (${rtMs} ms)`;
         feedbackColor = "text-nogoCoral";
       }
@@ -559,13 +577,13 @@
       if (currentTrial.trial_type === "GO") {
         // Failed to respond before Go deadline -> Omission Error
         isCorrect = 0;
-        feedbackTitle = "TOO SLOW!";
+        feedbackTitle = trialClassical ? "No response" : "TOO SLOW!";
         feedbackDetail = `Omission (> ${CONFIG.goWindowMs} ms)`;
         feedbackColor = "text-amber-400";
       } else {
         // Successfully withheld response on No-Go trial
         isCorrect = 1;
-        feedbackTitle = "WITHHELD";
+        feedbackTitle = trialClassical ? "Withheld" : "WITHHELD";
         feedbackDetail = "Successful Inhibition";
         feedbackColor = "text-goLime";
       }
