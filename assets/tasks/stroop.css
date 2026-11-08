@@ -1,0 +1,89 @@
+/*
+  Stroop stimulus layout shared by both shells.
+  Neon glow, shake, and fire live in assets/shells/gamified.css.
+*/
+
+body {
+    --trial-accent: #818cf8;
+    --trial-pad-size: 4rem;
+    --trial-pad-size-compact: 4.15rem;
+    --trial-pad-key-size: 1.35rem;
+    --trial-pad-caption-size: 9px;
+    --trial-pad-caption-gap: 2px;
+    --trial-pad-caption-opacity: 0.8;
+    --trial-task-pad-top-compact: 3.6rem;
+    --trial-task-pad-bottom-compact: 6.2rem;
+}
+
+.stimulus-text {
+    font-size: 6rem;
+    line-height: 1;
+    min-height: 8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--trial-display);
+}
+
+#feedback-container {
+    height: 4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#response-bar {
+    gap: 1.5rem;
+}
+
+#screen-welcome {
+    max-height: 100dvh;
+    overflow-y: auto;
+}
+
+@media (max-width: 560px), (max-height: 500px) and (max-width: 900px) {
+    #screen-welcome {
+        max-width: calc(100vw - 1rem);
+        max-height: 100dvh;
+        overflow-y: auto;
+        margin: 0.5rem;
+        padding: 1.15rem;
+    }
+
+    #screen-welcome h1 {
+        font-size: 2.4rem;
+    }
+
+    #legend-grid {
+        gap: 0.4rem;
+    }
+
+    #legend-grid .trial-pad {
+        width: 3.25rem;
+        height: 3.25rem;
+    }
+
+    .stimulus-text {
+        font-size: clamp(2.3rem, 13vw, 3.3rem);
+        min-height: 3.4rem;
+    }
+
+    #feedback-container {
+        height: 2.4rem;
+    }
+
+    #response-bar {
+        left: 0;
+        right: 0;
+        width: 100%;
+        padding: 0 0.45rem calc(0.3rem + env(safe-area-inset-bottom));
+        justify-content: space-evenly;
+        gap: 0.35rem;
+    }
+
+    #screen-results {
+        max-height: 100dvh;
+        overflow-y: auto;
+        padding: 1.15rem;
+    }
+}

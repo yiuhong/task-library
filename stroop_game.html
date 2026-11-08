@@ -3,131 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Stroop Dash: Neon Edition</title>
+    <title data-shell-copy data-classical="Stroop">Stroop Dash: Neon Edition</title>
+    <script src="assets/shells/shell.js"></script>
+    <script>
+        TrialShell.apply(TrialShell.readMode());
+    </script>
     <link rel="stylesheet" href="assets/trial-theme.css">
+    <link rel="stylesheet" href="assets/tasks/stroop.css">
+    <link rel="stylesheet" href="assets/shells/gamified.css">
+    <link rel="stylesheet" href="assets/shells/classical.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            --trial-accent: #818cf8;
-            --trial-pad-size: 4rem;
-            --trial-pad-size-compact: 4.15rem;
-            --trial-pad-key-size: 1.35rem;
-            --trial-pad-caption-size: 9px;
-            --trial-pad-caption-gap: 2px;
-            --trial-pad-caption-opacity: 0.8;
-            --trial-task-pad-top-compact: 3.6rem;
-            --trial-task-pad-bottom-compact: 6.2rem;
-        }
-
-        .stimulus-text {
-            font-size: 6rem;
-            line-height: 1;
-            min-height: 8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-shadow: 0 0 20px rgba(255,255,255,0.2);
-            font-family: var(--trial-display);
-        }
-
-        .combo-text {
-            font-family: var(--trial-display);
-            animation: bounce 0.3s ease-out;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-        }
-
-        .shake {
-            animation: shake 0.2s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        #feedback-container {
-            height: 4rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .fire-effect {
-            text-shadow: 0 0 10px #fff, 0 0 20px #ff0, 0 0 30px #f0f, 0 0 40px #0ff;
-        }
-
-        #response-bar {
-            gap: 1.5rem;
-        }
-
-        #screen-welcome {
-            max-height: 100dvh;
-            overflow-y: auto;
-        }
-
-        @media (max-width: 560px), (max-height: 500px) and (max-width: 900px) {
-            #screen-welcome {
-                max-width: calc(100vw - 1rem);
-                max-height: 100dvh;
-                overflow-y: auto;
-                margin: 0.5rem;
-                padding: 1.15rem;
-            }
-
-            #screen-welcome h1 {
-                font-size: 2.4rem;
-            }
-
-            #legend-grid {
-                gap: 0.4rem;
-            }
-
-            #legend-grid .trial-pad {
-                width: 3.25rem;
-                height: 3.25rem;
-            }
-
-            .stimulus-text {
-                font-size: clamp(2.3rem, 13vw, 3.3rem);
-                min-height: 3.4rem;
-            }
-
-            #feedback-container {
-                height: 2.4rem;
-            }
-
-            #response-bar {
-                left: 0;
-                right: 0;
-                width: 100%;
-                padding: 0 0.45rem calc(0.3rem + env(safe-area-inset-bottom));
-                justify-content: space-evenly;
-                gap: 0.35rem;
-            }
-
-            #screen-results {
-                max-height: 100dvh;
-                overflow-y: auto;
-                padding: 1.15rem;
-            }
-        }
-    </style>
 </head>
-<body class="trial-app trial-play h-screen w-screen flex flex-col items-center justify-center">
+<body class="trial-app trial-play h-screen w-screen flex flex-col items-center justify-center" data-trial-task="stroop">
 
     <!-- Screen A: Welcome/Instructions -->
-    <div id="screen-welcome" class="max-w-2xl bg-slate-900 p-10 rounded-3xl border-4 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.3)] text-center animate-in fade-in zoom-in duration-300">
-        <h1 class="game-title text-6xl text-indigo-400 mb-2 tracking-tighter">STROOP DASH</h1>
-        <p class="text-indigo-200/60 mb-8 uppercase tracking-widest text-xs font-bold">The Ultimate Brain Reflex Challenge</p>
-        
-        <div class="text-left bg-slate-800/50 p-6 rounded-2xl border border-indigo-500/30 mb-8">
-            <p class="text-white mb-4">Match the <span class="text-yellow-400 font-bold underline">INK COLOR</span>. Tap a pad or press its key. Ignore the word.</p>
-            
+    <div id="screen-welcome" class="max-w-2xl bg-slate-900 p-10 rounded-3xl border-4 border-indigo-500 shadow-[0_0_50px_rgba(99,102,241,0.3)] text-center animate-in fade-in zoom-in duration-300" data-trial-screen="welcome">
+        <h1 class="game-title text-6xl text-indigo-400 mb-2 tracking-tighter" data-shell-copy data-classical="Stroop">STROOP DASH</h1>
+        <p class="shell-kicker text-indigo-200/60 mb-8 uppercase tracking-widest text-xs font-bold" data-shell-copy data-classical="Name the ink color. Ignore the word.">The Ultimate Brain Reflex Challenge</p>
+
+        <div class="shell-panel text-left bg-slate-800/50 p-6 rounded-2xl border border-indigo-500/30 mb-8">
+            <p class="text-white mb-4">Match the <span class="shell-ink text-yellow-400 font-bold underline">INK COLOR</span>. Tap a pad or press its key. Ignore the word.</p>
+
             <div id="legend-grid" class="grid grid-cols-4 gap-4">
                 <div class="flex flex-col items-center">
                     <div class="trial-pad mb-2 text-red-500">R</div>
@@ -148,12 +44,14 @@
             </div>
         </div>
 
-        <button id="btn-start" class="group relative bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
-            <span class="game-title text-2xl">INSERT COIN (START)</span>
+        <button id="btn-start" class="group relative bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-12 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.5)]" data-trial-start>
+            <span class="game-title text-2xl" data-shell-copy data-classical="Start">INSERT COIN (START)</span>
         </button>
         <div class="mt-4 flex justify-center gap-2">
             <a class="trial-more" href="index.html">Hub</a>
             <a class="trial-more" href="stroop-info.html">Task info</a>
+            <a class="trial-more" data-shell-arcade href="stroop_game.html?mode=classical">Classical</a>
+            <a class="trial-more" data-shell-summary hidden href="stroop_game.html">Gamified</a>
         </div>
         <div class="trial-data">
             <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
@@ -165,41 +63,41 @@
     </div>
 
     <!-- Screen B: Active Task -->
-    <div id="screen-task" class="trial-task hidden flex flex-col items-center justify-center w-full h-full relative">
-        
+    <div id="screen-task" class="trial-task hidden flex flex-col items-center justify-center w-full h-full relative" data-trial-screen="task">
+
         <!-- DASHBOARD -->
         <div id="hud" class="trial-hud absolute top-0 w-full flex justify-between z-10">
-            <div class="flex flex-col">
+            <div class="flex flex-col" data-shell-arcade>
                 <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Score</span>
-                <span id="stat-score" class="score-readout trial-readout font-bold">00000</span>
+                <span id="stat-score" class="score-readout trial-readout font-bold" data-trial-stat="score">00000</span>
             </div>
 
             <div id="hud-stats" class="trial-stats flex bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
                 <div class="text-center">
                     <span class="block text-[10px] text-slate-500 font-bold uppercase">Accuracy</span>
-                    <span id="stat-acc" class="trial-stat font-bold text-green-400">0%</span>
+                    <span id="stat-acc" class="trial-stat font-bold text-green-400" data-trial-stat="accuracy">0%</span>
                 </div>
                 <div class="text-center">
-                    <span class="block text-[10px] text-slate-500 font-bold uppercase">Avg Speed</span>
-                    <span id="stat-rt" class="trial-stat font-bold text-blue-400">0ms</span>
+                    <span class="block text-[10px] text-slate-500 font-bold uppercase" data-shell-copy data-classical="Mean RT">Avg Speed</span>
+                    <span id="stat-rt" class="trial-stat font-bold text-blue-400" data-trial-stat="rt">0ms</span>
                 </div>
                 <div class="text-center trial-stat-split">
-                    <span class="block text-[10px] text-indigo-400 font-bold uppercase">Stage</span>
-                    <span id="trial-counter" class="trial-stat font-bold">1 / 20</span>
+                    <span class="block text-[10px] text-indigo-400 font-bold uppercase" data-shell-copy data-classical="Trial">Stage</span>
+                    <span id="trial-counter" class="trial-stat font-bold" data-trial-stat="trial">1 / 20</span>
                 </div>
             </div>
 
-            <div class="flex flex-col items-end">
+            <div class="flex flex-col items-end" data-shell-arcade>
                 <span class="text-[10px] text-orange-400 font-bold uppercase tracking-widest">Combo</span>
-                <span id="stat-combo" class="combo-readout trial-readout font-bold combo-text text-orange-500">x0</span>
+                <span id="stat-combo" class="combo-readout trial-readout font-bold combo-text text-orange-500" data-trial-stat="combo">x0</span>
             </div>
         </div>
 
         <!-- Stimulus Display -->
         <div id="stimulus-container" class="flex flex-col items-center justify-center w-full">
-            <div id="display-area" class="stimulus-text text-center"></div>
+            <div id="display-area" class="stimulus-text text-center" data-trial-stimulus></div>
             <div id="feedback-container">
-                <div id="feedback-area" class="game-title text-2xl opacity-0 transition-all duration-75"></div>
+                <div id="feedback-area" class="game-title text-2xl opacity-0 transition-all duration-75" data-trial-feedback></div>
             </div>
         </div>
 
@@ -225,26 +123,34 @@
     </div>
 
     <!-- Screen C: Results -->
-    <div id="screen-results" class="trial-results hidden w-[min(56rem,calc(100%-1rem))] bg-slate-900 p-6 sm:p-10 rounded-3xl border-4 border-indigo-500 shadow-2xl fade-in">
-        <h2 class="text-5xl font-bold text-indigo-400 mb-8 text-center game-title">GAME OVER</h2>
-        
+    <div id="screen-results" class="trial-results hidden w-[min(56rem,calc(100%-1rem))] bg-slate-900 p-6 sm:p-10 rounded-3xl border-4 border-indigo-500 shadow-2xl fade-in" data-trial-screen="results">
+        <h2 class="text-5xl font-bold text-indigo-400 mb-8 text-center game-title" data-shell-copy data-classical="Session complete">GAME OVER</h2>
+
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center" data-shell-arcade>
                 <span class="text-xs text-slate-500 uppercase font-bold">Final Score</span>
                 <div id="final-score" class="text-4xl font-bold text-white game-title mt-2">0</div>
             </div>
+            <div id="result-accuracy" class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center" data-shell-summary hidden>
+                <span class="text-xs text-slate-500 uppercase font-bold">Accuracy</span>
+                <div class="text-2xl font-bold mt-2"><span id="final-acc">0</span>%</div>
+            </div>
+            <div id="result-mean" class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center" data-shell-summary hidden>
+                <span class="text-xs text-slate-500 uppercase font-bold">Mean RT</span>
+                <div class="text-2xl font-bold mt-2"><span id="final-mean">0</span>ms</div>
+            </div>
             <div id="result-congruent" class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center">
-                <span class="text-xs text-slate-500 uppercase font-bold">Congruent Speed</span>
+                <span class="text-xs text-slate-500 uppercase font-bold" data-shell-copy data-classical="Congruent mean">Congruent Speed</span>
                 <div class="text-2xl font-bold text-green-400 mt-2"><span class="rt-val">0</span>ms</div>
             </div>
             <div id="result-incongruent" class="bg-slate-800 p-6 rounded-2xl border border-white/10 text-center border-orange-500/50">
-                <span class="text-xs text-slate-500 uppercase font-bold">Incongruent Speed</span>
+                <span class="text-xs text-slate-500 uppercase font-bold" data-shell-copy data-classical="Incongruent mean">Incongruent Speed</span>
                 <div class="text-2xl font-bold text-orange-400 mt-2"><span class="rt-val">0</span>ms</div>
             </div>
         </div>
 
-        <div class="bg-indigo-950/50 p-8 rounded-2xl border border-indigo-500/30 mb-10">
-            <h3 class="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-sm italic">Brain Performance Log:</h3>
+        <div class="shell-note bg-indigo-950/50 p-8 rounded-2xl border border-indigo-500/30 mb-10">
+            <h3 class="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-sm italic" data-shell-copy data-classical="Summary">Brain Performance Log:</h3>
             <p id="interpretation-text" class="text-indigo-100/80 leading-relaxed"></p>
         </div>
 
@@ -258,7 +164,7 @@
         </div>
 
         <div class="flex flex-col items-center gap-2">
-            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-12 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl">
+            <button id="btn-restart" class="bg-white text-slate-900 font-bold py-4 px-12 rounded-2xl transition-all shadow-xl hover:bg-indigo-400 active:scale-95 game-title text-xl" data-shell-copy data-classical="Run again">
                 PLAY AGAIN
             </button>
             <div class="flex justify-center gap-2">
@@ -271,294 +177,16 @@
     <script src="assets/trial-orientation.js"></script>
     <script src="assets/trial-store.js"></script>
     <script src="assets/trial-audio.js"></script>
+    <script src="assets/tasks/stroop.js"></script>
     <script>
-        const orientation = TrialOrientation.createSession({ nudge: true });
-        const store = TrialStore.create({
-            taskId: 'stroop',
-            fileStem: 'stroop_dash_data',
-            headers: ['trialNum', 'type', 'responseKey', 'rt', 'isCorrect', 'orientationType', 'orientationAngle', 'orientationAt', 'orientationTMs', 'orientationReason', 'record', 'sessionId', 'startedAt', 'endedAt', 'complete']
-        });
-
-        // Task cues. Oscillators and mute live in assets/trial-audio.js.
-        // This wrapper keeps the old (freq, type, duration, volume, slideTo) order.
-        const audio = TrialAudio.create();
-        const AudioEngine = {
-            playTone(freq, type, duration, volume, slideTo = null) {
-                audio.playTone(freq, duration, type, volume, slideTo);
-            },
-            correct(combo) {
-                // Pitch increases with combo
-                const baseFreq = 440 + (combo * 40);
-                this.playTone(baseFreq, 'sine', 0.2, 0.2, baseFreq * 1.5);
-            },
-            incorrect() {
-                this.playTone(150, 'square', 0.4, 0.2, 50);
-            },
-            tick() {
-                this.playTone(880, 'sine', 0.05, 0.05);
-            },
-            start() {
-                this.playTone(523.25, 'sine', 0.1, 0.1);
-                setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.1), 100);
-                setTimeout(() => this.playTone(783.99, 'sine', 0.3, 0.1), 200);
-            },
-            complete() {
-                const notes = [523.25, 659.25, 783.99, 1046.50];
-                notes.forEach((f, i) => {
-                    setTimeout(() => this.playTone(f, 'square', 0.4, 0.05), i * 150);
-                });
-            }
-        };
-
-        const CONFIG = {
-            colors: [
-                { name: 'RED', hex: '#ff4b4b', key: 'r' },
-                { name: 'GREEN', hex: '#44ff44', key: 'g' },
-                { name: 'BLUE', hex: '#4444ff', key: 'b' },
-                { name: 'YELLOW', hex: '#ffff44', key: 'y' }
-            ],
-            trials: 20,
-            timing: { fixation: 400, timeout: 2000, isi: 300 }
-        };
-
-        let state = {
-            currentTrialIndex: 0,
-            trials: [],
-            results: [],
-            startTime: null,
-            isAcceptingInput: false,
-            score: 0,
-            combo: 0,
-            maxCombo: 0
-        };
-
-        const screens = {
-            welcome: document.getElementById('screen-welcome'),
-            task: document.getElementById('screen-task'),
-            results: document.getElementById('screen-results')
-        };
-        
-        function shuffleInPlace(list) {
-            for (let i = list.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                const tmp = list[i];
-                list[i] = list[j];
-                list[j] = tmp;
-            }
-            return list;
-        }
-
-        function generateTrials() {
-            let trials = [];
-            const half = CONFIG.trials / 2;
-            for(let i = 0; i < half; i++) {
-                const c = CONFIG.colors[i % 4];
-                trials.push({ type: 'congruent', text: c.name, inkColor: c.hex, correctKey: c.key });
-            }
-            for(let i = 0; i < half; i++) {
-                const textIdx = i % 4;
-                const inkIdx = (i + 1) % 4;
-                trials.push({ type: 'incongruent', text: CONFIG.colors[textIdx].name, inkColor: CONFIG.colors[inkIdx].hex, correctKey: CONFIG.colors[inkIdx].key });
-            }
-            return shuffleInPlace(trials);
-        }
-
-        function updateUI() {
-            document.getElementById('stat-score').innerText = state.score.toString().padStart(5, '0');
-            document.getElementById('stat-combo').innerText = `x${state.combo}`;
-            
-            const total = state.results.length;
-            const correct = state.results.filter(r => r.isCorrect).length;
-            const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
-            const avgRt = correct > 0 ? Math.round(state.results.filter(r => r.isCorrect).reduce((a,b) => a+b.rt, 0) / correct) : 0;
-            
-            document.getElementById('stat-acc').innerText = `${acc}%`;
-            document.getElementById('stat-rt').innerText = `${avgRt}ms`;
-            
-            const hue = 220 + (state.combo * 10);
-            document.body.style.backgroundColor = `hsl(${hue}, 45%, 8%)`;
-        }
-
-        async function nextTrial() {
-            if (state.currentTrialIndex >= state.trials.length) {
-                finishGame();
-                return;
-            }
-
-            const trial = state.trials[state.currentTrialIndex];
-            document.getElementById('trial-counter').innerText = `${state.currentTrialIndex + 1} / ${state.trials.length}`;
-            
-            document.getElementById('feedback-area').classList.add('opacity-0');
-            document.getElementById('display-area').innerText = 'READY?';
-            document.getElementById('display-area').style.color = 'white';
-            document.getElementById('display-area').classList.remove('fire-effect');
-
-            AudioEngine.tick();
-            await new Promise(r => setTimeout(r, CONFIG.timing.fixation));
-
-            document.getElementById('display-area').innerText = trial.text;
-            document.getElementById('display-area').style.color = trial.inkColor;
-            if (state.combo > 5) document.getElementById('display-area').classList.add('fire-effect');
-
-            state.startTime = performance.now();
-            state.isAcceptingInput = true;
-
-            state.timeoutId = setTimeout(() => {
-                if (state.isAcceptingInput) handleInput(null);
-            }, CONFIG.timing.timeout);
-        }
-
-        function handleInput(key) {
-            if (!state.isAcceptingInput) return;
-            clearTimeout(state.timeoutId);
-            state.isAcceptingInput = false;
-
-            const rt = performance.now() - state.startTime;
-            const trial = state.trials[state.currentTrialIndex];
-            const isCorrect = key === trial.correctKey;
-
-            if (isCorrect) {
-                AudioEngine.correct(state.combo);
-                state.combo++;
-                state.maxCombo = Math.max(state.combo, state.maxCombo);
-                const speedBonus = Math.max(0, 1000 - Math.round(rt));
-                state.score += (speedBonus + (state.combo * 100));
-                
-                showFeedback("PERFECT!", "text-cyan-400");
-            } else {
-                AudioEngine.incorrect();
-                state.combo = 0;
-                showFeedback(key === null ? "TOO SLOW!" : "OOF!", "text-red-500");
-                document.getElementById('stimulus-container').classList.add('shake');
-                setTimeout(() => document.getElementById('stimulus-container').classList.remove('shake'), 200);
-            }
-
-            state.results.push(Object.assign({
-                record: 'trial',
-                trialNum: state.currentTrialIndex + 1,
-                type: trial.type,
-                responseKey: key || 'timeout',
-                rt: rt,
-                isCorrect: isCorrect
-            }, orientation.fields('response')));
-            store.commitTrial(state.results[state.results.length - 1], orientation.events);
-            updateUI();
-
-            setTimeout(() => {
-                document.getElementById('display-area').innerText = '';
-                setTimeout(() => {
-                    state.currentTrialIndex++;
-                    nextTrial();
-                }, CONFIG.timing.isi);
-            }, 400);
-        }
-
-        function showFeedback(text, colorClass) {
-            const el = document.getElementById('feedback-area');
-            el.innerText = text;
-            el.className = `game-title text-2xl opacity-100 transition-all ${colorClass}`;
-        }
-
-        function finishGame() {
-            orientation.stop();
-            store.finish(orientation.events);
-            document.getElementById('orientation-note').textContent = orientation.summarize();
-            AudioEngine.complete();
-            screens.task.classList.add('hidden');
-            screens.results.classList.remove('hidden');
-            
-            document.getElementById('final-score').innerText = state.score.toLocaleString();
-            
-            const buckets = {};
-            ['congruent', 'incongruent'].forEach(type => {
-                const r = state.results.filter(x => x.type === type && x.isCorrect);
-                const avg = r.length ? Math.round(r.reduce((a,b) => a+b.rt, 0) / r.length) : 0;
-                buckets[type] = { avg, n: r.length };
-                document.querySelector(`#result-${type} .rt-val`).innerText = avg;
+        (function () {
+            var mode = TrialShell.apply(TrialShell.readMode());
+            var policy = TrialTasks.stroop.feedback[mode];
+            TrialTasks.stroop.mount({
+                mode: mode,
+                audio: policy.audio ? TrialAudio.create() : null
             });
-
-            let message;
-            if (buckets.congruent.n === 0 || buckets.incongruent.n === 0) {
-                message = `Not enough correct trials to compare conditions (congruent ${buckets.congruent.n}, incongruent ${buckets.incongruent.n}). A 0 ms readout means that condition had no correct responses.`;
-            } else {
-                const diff = buckets.incongruent.avg - buckets.congruent.avg;
-                if (diff < 0) {
-                    message = `On correct trials, incongruent ink was ${Math.abs(diff)} ms faster than congruent ink. With 10 trials a side, that swing can be noise.`;
-                } else if (diff > 60) {
-                    message = `WHOA! Your brain felt the "Stroop Interference" hard! You were ${diff} ms slower when colors didn't match.`;
-                } else {
-                    message = `INSANE FOCUS! You only had a ${diff} ms delay between conditions. You're a visual filtering machine!`;
-                }
-            }
-            
-            document.getElementById('interpretation-text').innerText = `${message} Max Combo: ${state.maxCombo}.`;
-        }
-
-        function flashPad(el) {
-            if (!el) return;
-            el.classList.add('active-key');
-            setTimeout(() => el.classList.remove('active-key'), 100);
-        }
-
-        function bindResponsePad(el) {
-            const key = el.dataset.key;
-            let lastPointerAt = 0;
-            const respond = () => {
-                flashPad(el);
-                handleInput(key);
-            };
-            el.addEventListener('pointerdown', (e) => {
-                if (e.isPrimary === false) return;
-                if (typeof e.button === 'number' && e.button !== 0) return;
-                lastPointerAt = e.timeStamp || performance.now();
-                if (e.cancelable) e.preventDefault();
-                respond();
-            });
-            el.addEventListener('click', (e) => {
-                const stamp = e.timeStamp || performance.now();
-                if (stamp - lastPointerAt < 750) {
-                    e.preventDefault();
-                    return;
-                }
-                respond();
-            });
-        }
-
-        document.querySelectorAll('#response-bar button.trial-pad[data-key]').forEach(bindResponsePad);
-
-        window.addEventListener('keydown', (e) => {
-            if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
-            const key = e.key.toLowerCase();
-            if (['r', 'g', 'b', 'y'].includes(key)) {
-                e.preventDefault();
-                flashPad(document.getElementById(`key-${key}`));
-                handleInput(key);
-            }
-        });
-
-        document.getElementById('btn-start').addEventListener('click', () => {
-            AudioEngine.start();
-            state.score = 0;
-            state.combo = 0;
-            state.maxCombo = 0;
-            state.currentTrialIndex = 0;
-            state.results = [];
-            state.trials = generateTrials();
-            state.orientationEvents = orientation.events;
-            orientation.start();
-            store.begin(orientation.events);
-            screens.welcome.classList.add('hidden');
-            screens.task.classList.remove('hidden');
-            updateUI();
-            nextTrial();
-        });
-
-        document.getElementById('btn-restart').addEventListener('click', () => {
-            document.body.style.backgroundColor = '';
-            screens.results.classList.add('hidden');
-            screens.welcome.classList.remove('hidden');
-        });
-
+        })();
     </script>
 </body>
 </html>

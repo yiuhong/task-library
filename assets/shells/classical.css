@@ -1,0 +1,143 @@
+/*
+  Classical shell. Quiet lab chrome for a task that also has a gamified shell.
+
+  Scoped to html[data-trial-mode="classical"]. Gamified pages link this file
+  and stay neon, because every rule requires that attribute. Token overrides
+  sit on body so they beat the task page's body variables. Arcade slots are
+  forced off: a Tailwind display utility must not bring Score or Combo back.
+*/
+
+html[data-trial-mode="classical"] body {
+    --trial-bg: #f3f0e8;
+    --trial-surface: #fffcf7;
+    --trial-text: #1c1917;
+    --trial-muted: #57534e;
+    --trial-faint: #78716c;
+    --trial-line: rgba(28, 25, 23, 0.14);
+    --trial-pad-border: rgba(28, 25, 23, 0.28);
+    --trial-pad-bg: #fffcf7;
+    --trial-pad-bg-active: #e7e5e4;
+    --trial-pad-active-shadow: none;
+    --trial-font: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+    --trial-display: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+    --trial-accent: #44403c;
+    background-color: var(--trial-bg);
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] [data-shell-arcade] {
+    display: none !important;
+}
+
+html[data-trial-mode="classical"] .stimulus-text,
+html[data-trial-mode="classical"] .shake,
+html[data-trial-mode="classical"] .fire-effect,
+html[data-trial-mode="classical"] .combo-text {
+    text-shadow: none;
+    animation: none;
+}
+
+html[data-trial-mode="classical"] #screen-welcome,
+html[data-trial-mode="classical"] #screen-results {
+    background-color: var(--trial-surface);
+    border-color: #d6d3d1;
+    box-shadow: none;
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #screen-welcome h1,
+html[data-trial-mode="classical"] #screen-results h2,
+html[data-trial-mode="classical"] .game-title {
+    color: var(--trial-text);
+    letter-spacing: 0.01em;
+}
+
+html[data-trial-mode="classical"] .shell-kicker {
+    color: var(--trial-faint);
+}
+
+html[data-trial-mode="classical"] .shell-panel {
+    background-color: #faf7f2;
+    border-color: #e7e5e4;
+}
+
+html[data-trial-mode="classical"] .shell-panel p,
+html[data-trial-mode="classical"] .shell-ink {
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] .shell-ink {
+    text-decoration: underline;
+    font-weight: 700;
+}
+
+html[data-trial-mode="classical"] #btn-start,
+html[data-trial-mode="classical"] #btn-restart {
+    background-color: #292524;
+    color: #fafaf9;
+    box-shadow: none;
+}
+
+html[data-trial-mode="classical"] #btn-start:hover,
+html[data-trial-mode="classical"] #btn-restart:hover {
+    background-color: #1c1917;
+    transform: none;
+}
+
+html[data-trial-mode="classical"] #hud {
+    justify-content: center;
+}
+
+html[data-trial-mode="classical"] #hud-stats {
+    background-color: rgba(255, 252, 247, 0.94);
+    border-color: rgba(28, 25, 23, 0.12);
+    box-shadow: none;
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #hud-stats .text-green-400,
+html[data-trial-mode="classical"] #hud-stats .text-blue-400,
+html[data-trial-mode="classical"] #hud-stats .text-indigo-400,
+html[data-trial-mode="classical"] #stat-acc,
+html[data-trial-mode="classical"] #stat-rt,
+html[data-trial-mode="classical"] #trial-counter {
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #screen-results .bg-slate-800,
+html[data-trial-mode="classical"] .shell-note {
+    background-color: #faf7f2;
+    border-color: #e7e5e4;
+    color: var(--trial-text);
+}
+
+html[data-trial-mode="classical"] #screen-results h3,
+html[data-trial-mode="classical"] #interpretation-text,
+html[data-trial-mode="classical"] #result-congruent,
+html[data-trial-mode="classical"] #result-incongruent,
+html[data-trial-mode="classical"] #result-accuracy,
+html[data-trial-mode="classical"] #result-mean,
+html[data-trial-mode="classical"] #result-congruent .text-green-400,
+html[data-trial-mode="classical"] #result-incongruent .text-orange-400 {
+    color: var(--trial-text);
+    font-style: normal;
+}
+
+html[data-trial-mode="classical"] #result-incongruent {
+    border-color: #e7e5e4;
+}
+
+html[data-trial-mode="classical"] #screen-results .grid {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    html[data-trial-mode="classical"] #screen-results .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+html[data-trial-mode="classical"] .trial-orient-nudge {
+    background: var(--trial-surface);
+    color: var(--trial-text);
+}
