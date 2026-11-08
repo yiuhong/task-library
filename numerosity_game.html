@@ -418,6 +418,7 @@
   <!-- ===================================================================== -->
   <!-- TASK ENGINE & BEHAVIORAL LOGIC                                        -->
   <!-- ===================================================================== -->
+  <script src="assets/trial-audio.js"></script>
   <script>
     (function () {
       'use strict';
@@ -467,9 +468,7 @@
         stimOnsetTime: 0,
         responseOpenTime: 0,
         activeTimers: [],
-        allResults: [],
-        audioEnabled: true,
-        audioCtx: null
+        allResults: []
       };
 
       // DOM Elements Cache
@@ -524,34 +523,12 @@
       el.lblMainCount.textContent = `${CONFIG.mainTrials} Trials`;
 
       /**
-       * Minimal Procedural Web Audio Synthesizer (Zero External Dependencies)
+       * Feedback tones. Duration stays in milliseconds at the call sites.
+       * assets/trial-audio.js owns the context, the oscillator, and mute.
        */
+      const audio = TrialAudio.create();
       function playTone(freq, durationMs, type = 'sine', gainVal = 0.06) {
-        if (!state.audioEnabled) return;
-        try {
-          if (!state.audioCtx) {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (AudioContextClass) state.audioCtx = new AudioContextClass();
-          }
-          if (!state.audioCtx) return;
-          if (state.audioCtx.state === 'suspended') {
-            state.audioCtx.resume();
-          }
-          const osc = state.audioCtx.createOscillator();
-          const gain = state.audioCtx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, state.audioCtx.currentTime);
-
-          gain.gain.setValueAtTime(gainVal, state.audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, state.audioCtx.currentTime + durationMs / 1000);
-
-          osc.connect(gain);
-          gain.connect(state.audioCtx.destination);
-          osc.start();
-          osc.stop(state.audioCtx.currentTime + durationMs / 1000);
-        } catch (_) {
-          // Ignore audio errors on restricted devices
-        }
+        audio.playTone(freq, durationMs / 1000, type, gainVal);
       }
 
       /**
@@ -1177,10 +1154,12 @@
         startBlock('practice');
       });
 
-      el.btnAudioToggle.addEventListener('click', () => {
-        state.audioEnabled = !state.audioEnabled;
-        el.btnAudioToggle.textContent = state.audioEnabled ? 'SFX: ON' : 'SFX: OFF';
-        el.btnAudioToggle.classList.toggle('text-emerald-400', state.audioEnabled);
+      audio.bindToggle(el.btnAudioToggle, {
+        sync(btn, on) {
+          btn.textContent = on ? 'SFX: ON' : 'SFX: OFF';
+          btn.classList.toggle('text-emerald-400', on);
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
       });
 
     })();

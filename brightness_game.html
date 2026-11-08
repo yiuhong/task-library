@@ -303,6 +303,7 @@
 
     <script src="assets/trial-orientation.js"></script>
     <script src="assets/trial-store.js"></script>
+    <script src="assets/trial-audio.js"></script>
     <script>
         const orientation = TrialOrientation.createSession({ nudge: true });
         const store = TrialStore.create({
@@ -311,28 +312,12 @@
             headers: ['trialNum', 'condId', 'leftColor', 'rightColor', 'correctKey', 'responseKey', 'rt', 'isCorrect', 'confidence', 'confidenceKey', 'confidenceRT', 'orientationType', 'orientationAngle', 'orientationAt', 'orientationTMs', 'orientationReason', 'record', 'sessionId', 'startedAt', 'endedAt', 'complete']
         });
 
-        // --- Sound Engine (Web Audio API) ---
+        // Task cues. Oscillators and mute live in assets/trial-audio.js.
+        // This wrapper keeps the old (freq, type, duration, volume) order.
+        const audio = TrialAudio.create();
         const AudioEngine = {
-            ctx: null,
-            init() {
-                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            },
-            playTone(freq, type, duration, volume) {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                
-                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-                
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start();
-                osc.stop(this.ctx.currentTime + duration);
+            playTone(freq, type, duration, volume, slideTo = null) {
+                audio.playTone(freq, duration, type, volume, slideTo);
             },
             tick() {
                 this.playTone(800, 'sine', 0.02, 0.02);
