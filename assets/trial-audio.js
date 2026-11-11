@@ -26,9 +26,14 @@
   start by themselves. A stored "on" or "off" from any task, including
   Noematachograph, wins on every page.
 
-  Stroop Dash, Oddball, Brightness Detection, and vr.html have no mute
+  Stroop Dash, Oddball, and Brightness Detection have no mute
   control. They still honor project-trial:sfx and stay audible when the
   key is missing.
+
+  orbital_gonogo.html (Spatial Go/No-Go) binds an SFX: ON / SFX: OFF
+  control with bindToggle and uses the shared default, so sound is on
+  when the key is missing. It does not pass defaultEnabled: false.
+  vr.html only redirects to orbital_gonogo.html.
 
   Load this file with a plain script tag before the inline task script.
   Do not use defer, async, or type="module", or TrialAudio will be missing

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Spatial Go/No-Go · Project Trial</title>
+  <!--
+    WebXR special case. Not a TrialShell page and not trial-theme.css.
+    Flat-screen play (phone, tablet, desktop) and headset play share one
+    frontal field, one trial list, and one score.
+  -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <style>
+    :root {
+      --ink: #e7eef6;
+      --muted: #93a4b8;
+      --cyan: #00f5d4;
+      --magenta: #ff2a85;
+      --panel: rgba(9, 19, 38, 0.94);
+      --line: rgba(0, 245, 212, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #050814;
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    body {
+      overflow: hidden;
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+
+    #chrome {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+      padding:
+        max(0.35rem, env(safe-area-inset-top))
+        max(0.45rem, env(safe-area-inset-right))
+        0
+        max(0.45rem, env(safe-area-inset-left));
+    }
+
+    .bar, .sheet a, .sheet button, .bar a, .bar button {
+      pointer-events: auto;
+    }
+
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem 0.7rem;
+      padding: 0.35rem 0.55rem;
+      background: rgba(5, 8, 20, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.8rem;
+    }
+
+    .bar a, .sfx-btn, .text-link {
+      color: var(--cyan);
+      text-decoration: none;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 0.15rem;
+    }
+
+    .wordmark {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .wordmark span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .html-hud, .device-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.68rem;
+      line-height: 1.35;
+    }
+
+    .html-hud { color: var(--ink); }
+
+    .sfx-btn {
+      margin-left: auto;
+      border: 1px solid var(--line);
+      background: rgba(0, 245, 212, 0.08);
+      color: var(--cyan);
+      border-radius: 0.65rem;
+      padding: 0 0.75rem;
+      cursor: pointer;
+    }
+
+    .sfx-btn[aria-pressed="false"] {
+      color: var(--muted);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .sheet-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0.45rem 0 4.4rem;
+    }
+
+    .sheet {
+      width: min(34rem, 100%);
+      max-height: 100%;
+      overflow: auto;
+      touch-action: pan-y;
+      background: #091326;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      padding: 0.9rem 0.95rem 0.85rem;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .sheet[hidden] { display: none !important; }
+
+    .kicker {
+      margin: 0;
+      color: var(--cyan);
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .sheet h1, .sheet h2 {
+      margin: 0.2rem 0 0.35rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .sheet h2 { font-size: 1.05rem; }
+
+    .sheet p { margin: 0.35rem 0; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
+
+    .legend { list-style: none; margin: 0.5rem 0; padding: 0; }
+    .legend li {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin: 0.35rem 0;
+      color: var(--ink);
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .swatch {
+      width: 0.9rem;
+      height: 0.9rem;
+      flex: none;
+    }
+    .swatch.go { background: var(--cyan); border-radius: 50%; }
+    .swatch.nogo { background: var(--magenta); transform: rotate(45deg); border-radius: 2px; }
+
+    .turn-hint { display: none; color: #ffd166; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      position: sticky;
+      bottom: 0;
+      padding-top: 0.55rem;
+      background: linear-gradient(to top, rgba(9, 19, 38, 1) 70%, rgba(9, 19, 38, 0));
+    }
+
+    .actions button, .primary, .ghost {
+      flex: 1 1 8.5rem;
+      min-height: 48px;
+      border-radius: 0.75rem;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .primary {
+      border: 0;
+      background: var(--cyan);
+      color: #041018;
+    }
+
+    .primary:disabled { opacity: 0.55; cursor: wait; }
+
+    .ghost {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: transparent;
+      color: var(--ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      margin: 0.55rem 0;
+    }
+
+    .stat {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.7rem;
+      padding: 0.4rem 0.5rem;
+    }
+
+    .stat b { display: block; color: var(--ink); font-size: 0.95rem; }
+    .stat span { color: var(--muted); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.4rem 0 0.2rem;
+      font-size: 0.75rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.35rem 0.3rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    th { color: var(--muted); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+
+    .links { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; }
+
+    button:focus-visible, a:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    @media (orientation: portrait) and (max-width: 800px) {
+      .turn-hint { display: block; }
+    }
+
+    @media (max-height: 520px) {
+      .sheet-wrap { padding-bottom: 0.4rem; }
+      .sheet { padding: 0.45rem 0.65rem 0.45rem; }
+      .sheet h1 { font-size: 1rem; margin-bottom: 0.15rem; }
+      .legend { margin: 0.15rem 0; }
+      .legend li, .sheet p { font-size: 0.7rem; margin: 0.18rem 0; }
+      .device-note { display: none; }
+      .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .actions { padding-top: 0.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <a-scene
+    id="mainScene"
+    renderer="antialias: true; colorManagement: true; highRefreshRate: true"
+    background="color: #050814"
+    fog="type: exponential; color: #050814; density: 0.03"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-sky color="#050814"></a-sky>
+    <a-entity
+      geometry="primitive: icosahedron; radius: 18; detail: 2"
+      material="color: #0e294b; wireframe: true; transparent: true; opacity: 0.35; side: double">
+    </a-entity>
+    <a-entity
+      geometry="primitive: icosahedron; radius: 18.2; detail: 1"
+      material="color: #00F5D4; wireframe: true; transparent: true; opacity: 0.12; side: double">
+    </a-entity>
+
+    <a-cylinder
+      position="0 -0.05 0"
+      radius="16"
+      height="0.1"
+      color="#070d1f"
+      material="roughness: 0.8; metalness: 0.2">
+    </a-cylinder>
+
+    <a-entity id="spatialRefs"></a-entity>
+
+    <a-light type="ambient" color="#88aaff" intensity="0.65"></a-light>
+    <a-light type="point" position="0 6 -2" color="#00F5D4" intensity="0.8" distance="20"></a-light>
+    <a-light type="point" position="0 3 -5" color="#FF2A85" intensity="0.35" distance="15"></a-light>
+
+    <a-entity id="rig" position="0 0 0">
+      <a-camera
+        id="mainCamera"
+        position="0 1.6 0"
+        look-controls="pointerLockEnabled: false; touchEnabled: false; magicWindowTrackingEnabled: false"
+        wasd-controls="enabled: false">
+        <a-entity
+          id="mouseCursor"
+          cursor="rayOrigin: mouse; fuse: false"
+          raycaster="objects: .clickable; far: 12">
+        </a-entity>
+      </a-camera>
+
+      <a-entity
+        id="rightHand"
+        laser-controls="hand: right; model: false"
+        raycaster="objects: .clickable; far: 12; showLine: true; lineColor: #00F5D4; lineOpacity: 0.85">
+        <a-sphere radius="0.018" position="0 0 -0.02" material="shader: flat; color: #00F5D4"></a-sphere>
+        <a-cylinder radius="0.012" height="0.12" rotation="90 0 0" position="0 0 0.04" material="color: #1c2d4a; metalness: 0.6; roughness: 0.3"></a-cylinder>
+      </a-entity>
+      <a-entity
+        id="leftHand"
+        laser-controls="hand: left; model: false"
+        raycaster="objects: .clickable; far: 12; showLine: true; lineColor: #00F5D4; lineOpacity: 0.85">
+        <a-sphere radius="0.018" position="0 0 -0.02" material="shader: flat; color: #00F5D4"></a-sphere>
+        <a-cylinder radius="0.012" height="0.12" rotation="90 0 0" position="0 0 0.04" material="color: #1c2d4a; metalness: 0.6; roughness: 0.3"></a-cylinder>
+      </a-entity>
+    </a-entity>
+
+    <a-entity id="hudCluster" position="0 2.55 -3.6">
+      <a-plane width="3.26" height="0.56" color="#00F5D4" material="shader: flat; opacity: 0.35; transparent: true" position="0 0 -0.01"></a-plane>
+      <a-plane width="3.2" height="0.5" color="#091326" material="shader: flat; opacity: 0.92; transparent: true">
+        <a-text value="ORBITAL ENERGY SORTER" color="#72efdd" align="center" position="0 0.14 0.01" width="2.8"></a-text>
+        <a-text id="hudTrialText" value="Trial: 0 / 30" color="#FFFFFF" align="left" position="-1.45 -0.06 0.01" width="3.4"></a-text>
+        <a-text id="hudScoreText" value="Score: 0000" color="#00F5D4" align="center" position="0 -0.06 0.01" width="3.6"></a-text>
+        <a-text id="hudStreakText" value="Streak: 0" color="#FFD166" align="right" position="1.45 -0.06 0.01" width="3.4"></a-text>
+      </a-plane>
+      <a-plane id="worldSfxBtn" position="1.15 -0.4 0.02" width="0.86" height="0.24" color="#0e3a4a" material="shader: flat" visible="false"></a-plane>
+      <a-text id="worldSfxText" value="SFX: ON" color="#00F5D4" align="center" position="1.15 -0.4 0.03" width="2.5" visible="false"></a-text>
+    </a-entity>
+
+    <a-entity id="startPanel" position="0 -999 -2.6" visible="false">
+      <a-plane width="2.96" height="2.28" color="#00F5D4" material="shader: flat; opacity: 0.3; transparent: true" position="0 0 -0.01"></a-plane>
+      <a-plane width="2.9" height="2.22" color="#091326" material="shader: flat; opacity: 0.94; transparent: true">
+        <a-text value="ORBITAL ENERGY SORTER" color="#00F5D4" align="center" position="0 0.86 0.01" width="4"></a-text>
+        <a-text value="Spatial Go/No-Go  ·  30 trials" color="#A9BCD0" align="center" position="0 0.66 0.01" width="2.6"></a-text>
+        <a-text value="WebXR, tested on VIVE Focus 3" color="#E0FBFC" align="center" position="0 0.48 0.01" width="2.5"></a-text>
+        <a-sphere radius="0.09" position="-1.15 0.16 0.08" material="shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.65"></a-sphere>
+        <a-text value="CYAN SPHERE (GO 70%)\nTrigger within 1200 ms" color="#E0FBFC" align="left" position="-0.95 0.16 0.01" width="2.15"></a-text>
+        <a-octahedron radius="0.1" position="-1.15 -0.22 0.08" material="shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.65"></a-octahedron>
+        <a-text value="MAGENTA OCTAHEDRON (NO-GO 30%)\nDo not trigger" color="#FFD6E8" align="left" position="-0.95 -0.22 0.01" width="2.15"></a-text>
+        <a-text value="Near, mid, or far — always in front.\nCloser targets look larger." color="#A9BCD0" align="center" position="0 -0.58 0.01" width="2.3"></a-text>
+        <a-plane id="startBtn" position="0 -0.88 0.03" width="1.5" height="0.32" color="#00F5D4" material="shader: flat"></a-plane>
+        <a-text value="START EXPERIMENT" color="#04101E" align="center" position="0 -0.88 0.04" width="3.2"></a-text>
+      </a-plane>
+    </a-entity>
+
+    <a-entity id="resultsPanel" position="0 -999 -2.6" visible="false">
+      <a-plane width="3.36" height="2.72" color="#00F5D4" material="shader: flat; opacity: 0.35; transparent: true" position="0 0 -0.01"></a-plane>
+      <a-plane width="3.3" height="2.66" color="#091326" material="shader: flat; opacity: 0.95; transparent: true">
+        <a-text value="SESSION COMPLETE" color="#00F5D4" align="center" position="0 1.12 0.01" width="3.2"></a-text>
+        <a-text id="resultsSummaryText" value="Loading metrics..." color="#FFFFFF" align="center" position="0 0.28 0.01" width="3.05" line-height="52"></a-text>
+        <a-text id="storageConfirmText" value="Responses stay on this device." color="#72efdd" align="center" position="0 -0.62 0.01" width="2.8"></a-text>
+        <a-plane id="downloadCsvBtn" position="-0.78 -1.05 0.03" width="1.35" height="0.3" color="#FFD166" material="shader: flat"></a-plane>
+        <a-text value="DOWNLOAD CSV" color="#050814" align="center" position="-0.78 -1.05 0.04" width="2.6"></a-text>
+        <a-plane id="playAgainBtn" position="0.78 -1.05 0.03" width="1.35" height="0.3" color="#00F5D4" material="shader: flat"></a-plane>
+        <a-text value="PLAY AGAIN" color="#050814" align="center" position="0.78 -1.05 0.04" width="2.6"></a-text>
+      </a-plane>
+    </a-entity>
+
+    <a-entity id="fixationCross" position="0 1.6 -3" visible="false">
+      <a-box width="0.18" height="0.03" depth="0.01" material="shader: flat; color: #FFFFFF"></a-box>
+      <a-box width="0.03" height="0.18" depth="0.01" material="shader: flat; color: #FFFFFF"></a-box>
+    </a-entity>
+
+    <a-entity id="stimulusContainer"></a-entity>
+    <a-entity id="feedbackContainer"></a-entity>
+  </a-scene>
+
+  <div id="chrome">
+    <header class="bar">
+      <a href="index.html">Hub</a>
+      <a href="orbital_gonogo-info.html">Parameters</a>
+      <p class="wordmark">Spatial Go/No-Go<span>Orbital Energy Sorter</span></p>
+      <p class="html-hud" id="htmlHud" aria-live="polite">Trial 0 / 30 · Score 0000 · Streak 0</p>
+      <button id="sfxToggle" class="sfx-btn" type="button" aria-label="Toggle sound effects" aria-pressed="true">SFX: ON</button>
+      <p class="device-note">Responses stay on this device. WebXR, tested on VIVE Focus 3. A headset is optional.</p>
+    </header>
+
+    <div class="sheet-wrap">
+      <section class="sheet" id="startSheet" aria-labelledby="startTitle">
+        <p class="kicker">Project Trial · Attention</p>
+        <h1 id="startTitle">Spatial Go/No-Go</h1>
+        <p>Orbital Energy Sorter. Thirty trials, always in front of you. WebXR, tested on VIVE Focus 3. No headset required.</p>
+        <p class="turn-hint">On a phone, turn sideways. Landscape keeps the frontal field on screen.</p>
+        <ul class="legend">
+          <li><span class="swatch go" aria-hidden="true"></span><span>Cyan sphere — GO, 70%. Tap, click, or trigger it within 1200 ms.</span></li>
+          <li><span class="swatch nogo" aria-hidden="true"></span><span>Magenta octahedron — NO-GO, 30%. Do not respond.</span></li>
+        </ul>
+        <p>Near, mid, and far use the same physical size, so closer targets look bigger. Tap the object. Empty space does not count. Responses stay on this device.</p>
+        <div class="actions">
+          <button id="htmlStart" class="primary" type="button" disabled>Loading scene…</button>
+        </div>
+        <div class="links">
+          <a class="text-link" href="index.html">Back to hub</a>
+          <a class="text-link" href="orbital_gonogo-info.html">Parameters</a>
+        </div>
+      </section>
+
+      <section class="sheet" id="resultsSheet" hidden aria-labelledby="resultsTitle">
+        <p class="kicker">Session complete</p>
+        <h2 id="resultsTitle">Spatial Go/No-Go</h2>
+        <div class="stats" id="overallStats"></div>
+        <table>
+          <caption class="kicker">Hits and go RT by depth</caption>
+          <thead>
+            <tr>
+              <th>Plane</th>
+              <th>Go hits</th>
+              <th>Mean go RT</th>
+              <th>No-go false alarms</th>
+            </tr>
+          </thead>
+          <tbody id="depthTable"></tbody>
+        </table>
+        <p id="storageNote">Responses stay on this device.</p>
+        <div class="actions">
+          <button id="htmlCsv" class="ghost" type="button">Download CSV</button>
+          <button id="htmlAgain" class="primary" type="button">Play again</button>
+        </div>
+        <div class="links">
+          <a class="text-link" href="index.html">Back to hub</a>
+          <a class="text-link" href="orbital_gonogo-info.html">Parameters</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="assets/trial-audio.js"></script>
+  <script src="assets/orbital-gonogo.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var plan = window.OrbitalGonogo;
+      var audio = TrialAudio.create();
+
+      var TOTAL = plan.TOTAL_TRIALS;
+      var TIMEOUT = plan.STIMULUS_TIMEOUT_MS;
+      var RADIUS = plan.TARGET_RADIUS_M;
+
+      var baseY = 1.6;
+      var sessionEye = { x: 0, y: 1.6, z: 0 };
+      var sessionFixation = { x: 0, y: 1.6, z: -3 };
+      var phase = 'start';
+      var immersive = false;
+      var sceneReady = false;
+
+      var trialSchedule = [];
+      var currentTrialIndex = 0;
+      var scoreTotal = 0;
+      var currentStreak = 0;
+      var sessionLogs = [];
+
+      var activeStimulusEl = null;
+      var trialTimerId = null;
+      var itiTimerId = null;
+      var trialActive = false;
+      var triggerDebounce = false;
+      var currentTrialMeta = null;
+      var uiButtonLock = false;
+      var screenRaycaster = new THREE.Raycaster();
+
+      var sceneEl = document.getElementById('mainScene');
+      var mainCameraEl = document.getElementById('mainCamera');
+      var hudClusterEl = document.getElementById('hudCluster');
+      var hudTrialText = document.getElementById('hudTrialText');
+      var hudScoreText = document.getElementById('hudScoreText');
+      var hudStreakText = document.getElementById('hudStreakText');
+      var worldSfxBtn = document.getElementById('worldSfxBtn');
+      var worldSfxText = document.getElementById('worldSfxText');
+      var startPanelEl = document.getElementById('startPanel');
+      var startBtnEl = document.getElementById('startBtn');
+      var resultsPanelEl = document.getElementById('resultsPanel');
+      var resultsSummaryText = document.getElementById('resultsSummaryText');
+      var storageConfirmText = document.getElementById('storageConfirmText');
+      var downloadCsvBtnEl = document.getElementById('downloadCsvBtn');
+      var playAgainBtnEl = document.getElementById('playAgainBtn');
+      var fixationCrossEl = document.getElementById('fixationCross');
+      var stimulusContainerEl = document.getElementById('stimulusContainer');
+      var feedbackContainerEl = document.getElementById('feedbackContainer');
+      var spatialRefsEl = document.getElementById('spatialRefs');
+
+      var htmlHud = document.getElementById('htmlHud');
+      var htmlStart = document.getElementById('htmlStart');
+      var htmlAgain = document.getElementById('htmlAgain');
+      var htmlCsv = document.getElementById('htmlCsv');
+      var sfxToggle = document.getElementById('sfxToggle');
+      var startSheet = document.getElementById('startSheet');
+      var resultsSheet = document.getElementById('resultsSheet');
+      var overallStats = document.getElementById('overallStats');
+      var depthTable = document.getElementById('depthTable');
+      var storageNote = document.getElementById('storageNote');
+
+      function round3(n) {
+        return Math.round(n * 1000) / 1000;
+      }
+
+      function refreshAllRaycasters() {
+        var raycasterEls = document.querySelectorAll('[raycaster]');
+        Array.prototype.forEach.call(raycasterEls, function (el) {
+          if (el.components && el.components.raycaster) {
+            el.components.raycaster.refreshObjects();
+          }
+        });
+      }
+
+      function paintSfx(on) {
+        sfxToggle.textContent = on ? 'SFX: ON' : 'SFX: OFF';
+        sfxToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        worldSfxText.setAttribute('value', on ? 'SFX: ON' : 'SFX: OFF');
+      }
+
+      audio.bindToggle(sfxToggle, {
+        onLabel: 'SFX: ON',
+        offLabel: 'SFX: OFF',
+        sync: function (el, on) {
+          el.textContent = on ? 'SFX: ON' : 'SFX: OFF';
+          el.setAttribute('aria-pressed', on ? 'true' : 'false');
+          worldSfxText.setAttribute('value', on ? 'SFX: ON' : 'SFX: OFF');
+        }
+      });
+
+      function playSound(type) {
+        if (type === 'hit') {
+          audio.playTone({
+            freq: 523.25,
+            duration: 0.23,
+            type: 'sine',
+            gain: 0.22,
+            stepTo: 783.99,
+            stepAt: 0.075
+          });
+        } else if (type === 'cr') {
+          audio.playTone(440, 0.045, 'sine', 0.12);
+        } else if (type === 'error') {
+          audio.playTone(150, 0.25, 'sawtooth', 0.24);
+        }
+      }
+
+      function formatScore(score) {
+        var sign = score < 0 ? '-' : '';
+        return sign + String(Math.abs(score)).padStart(4, '0');
+      }
+
+      function formatMs(value) {
+        return value === null || value === undefined ? 'N/A' : value.toFixed(1) + ' ms';
+      }
+
+      function detectBaseHeadHeight() {
+        var detectedY = 1.6;
+        var eyeX = 0;
+        var eyeZ = 0;
+        if (mainCameraEl && mainCameraEl.object3D) {
+          mainCameraEl.object3D.updateMatrixWorld(true);
+          var worldPos = new THREE.Vector3();
+          mainCameraEl.object3D.getWorldPosition(worldPos);
+          eyeX = worldPos.x;
+          eyeZ = worldPos.z;
+          if (worldPos.y > 0.4 && worldPos.y < 2.6) detectedY = worldPos.y;
+        }
+        baseY = round3(detectedY);
+        sessionEye = { x: round3(eyeX), y: baseY, z: round3(eyeZ) };
+        sessionFixation = plan.fixationAt(sessionEye, baseY);
+        fixationCrossEl.setAttribute('position', sessionFixation.x + ' ' + sessionFixation.y + ' ' + sessionFixation.z);
+        hudClusterEl.setAttribute('position', sessionEye.x + ' ' + (baseY + 1.12).toFixed(2) + ' ' + (sessionEye.z - 3.35).toFixed(2));
+      }
+
+      function readEye() {
+        if (!mainCameraEl || !mainCameraEl.object3D) {
+          return { x: sessionEye.x, y: baseY, z: sessionEye.z };
+        }
+        mainCameraEl.object3D.updateMatrixWorld(true);
+        var worldPos = new THREE.Vector3();
+        mainCameraEl.object3D.getWorldPosition(worldPos);
+        if (!(worldPos.y > 0.2)) {
+          return { x: sessionEye.x, y: baseY, z: sessionEye.z };
+        }
+        return { x: worldPos.x, y: worldPos.y, z: worldPos.z };
+      }
+
+      function addBar(x, y, z, w, h, d, color, opacity) {
+        var el = document.createElement('a-box');
+        el.setAttribute('position', x + ' ' + y + ' ' + z);
+        el.setAttribute('width', w);
+        el.setAttribute('height', h);
+        el.setAttribute('depth', d);
+        var transparent = opacity < 1;
+        el.setAttribute('material', 'shader: flat; color: ' + color + '; opacity: ' + opacity + (transparent ? '; transparent: true' : ''));
+        spatialRefsEl.appendChild(el);
+      }
+
+      function buildSpace(eye, height) {
+        while (spatialRefsEl.firstChild) spatialRefsEl.removeChild(spatialRefsEl.firstChild);
+
+        var floor = document.createElement('a-plane');
+        floor.setAttribute('position', eye.x + ' 0.012 ' + (eye.z - 3.7));
+        floor.setAttribute('rotation', '-90 0 0');
+        floor.setAttribute('width', '8');
+        floor.setAttribute('height', '4.6');
+        floor.setAttribute('material', 'shader: flat; color: #3d6eaa; side: double');
+        spatialRefsEl.appendChild(floor);
+
+        [-2.2, -1.1, 0, 1.1, 2.2].forEach(function (offset) {
+          addBar(eye.x + offset, 0.03, eye.z - 3.7, 0.04, 0.02, 4.4, '#d6f4ff', 1);
+        });
+        [-1.4, -2.7, -3.35, -4.05, -5.2].forEach(function (offset) {
+          var planeLine = offset === -2.7 || offset === -3.35 || offset === -4.05;
+          addBar(eye.x, 0.034, eye.z + offset, 5.2, 0.014, planeLine ? 0.06 : 0.03, planeLine ? '#e0f2fe' : '#7dd3fc', planeLine ? 0.95 : 0.7);
+        });
+
+        var styles = {
+          near: { color: '#f8fbff', opacity: 0.95 },
+          mid: { color: '#7dd3fc', opacity: 0.9 },
+          far: { color: '#94a3b8', opacity: 0.85 }
+        };
+        var halfW = 1.45;
+        var halfH = 0.52;
+        var t = 0.025;
+
+        plan.DEPTH_PLANES.forEach(function (plane) {
+          var style = styles[plane.id];
+          var cz = eye.z - plane.distance_m;
+          var cx = eye.x;
+          var cy = height;
+          var legH = cy - halfH - 0.12;
+          var legY = 0.12 + legH / 2;
+          var post = 0.06;
+          addBar(cx, cy + halfH, cz, halfW * 2, t, t, style.color, style.opacity);
+          addBar(cx, cy - halfH, cz, halfW * 2, t, t, style.color, style.opacity);
+          addBar(cx - halfW, cy, cz, t, halfH * 2, t, style.color, style.opacity);
+          addBar(cx + halfW, cy, cz, t, halfH * 2, t, style.color, style.opacity);
+          addBar(cx - halfW, legY, cz, post, legH, post, style.color, 1);
+          addBar(cx + halfW, legY, cz, post, legH, post, style.color, 1);
+
+          var hoop = document.createElement('a-torus');
+          hoop.setAttribute('position', cx + ' 0.05 ' + cz);
+          hoop.setAttribute('rotation', '90 0 0');
+          hoop.setAttribute('radius', '1.15');
+          hoop.setAttribute('radius-tubular', '0.045');
+          hoop.setAttribute('segments-tubular', '48');
+          hoop.setAttribute('segments-radial', '8');
+          hoop.setAttribute('material', 'shader: flat; color: ' + style.color + '; opacity: ' + style.opacity + '; transparent: true; side: double');
+          spatialRefsEl.appendChild(hoop);
+
+          var label = document.createElement('a-text');
+          label.setAttribute('value', plane.id.toUpperCase());
+          label.setAttribute('position', cx + ' ' + (0.55) + ' ' + (cz + 1.2));
+          label.setAttribute('align', 'center');
+          label.setAttribute('color', style.color);
+          label.setAttribute('width', '1.05');
+          spatialRefsEl.appendChild(label);
+        });
+      }
+
+      function setPanel(el, buttons, show) {
+        if (show) {
+          el.setAttribute('visible', 'true');
+          el.setAttribute('position', sessionEye.x + ' ' + baseY + ' ' + (sessionEye.z - 2.55).toFixed(2));
+          buttons.forEach(function (btn) { btn.classList.add('clickable'); });
+        } else {
+          el.setAttribute('visible', 'false');
+          el.setAttribute('position', '0 -999 -3');
+          buttons.forEach(function (btn) { btn.classList.remove('clickable'); });
+        }
+      }
+
+      function syncChrome() {
+        var showStart = immersive && phase === 'start' && sceneReady;
+        var showResults = immersive && phase === 'results';
+        setPanel(startPanelEl, [startBtnEl], showStart);
+        setPanel(resultsPanelEl, [downloadCsvBtnEl, playAgainBtnEl], showResults);
+        worldSfxBtn.setAttribute('visible', immersive ? 'true' : 'false');
+        worldSfxText.setAttribute('visible', immersive ? 'true' : 'false');
+        if (immersive) worldSfxBtn.classList.add('clickable');
+        else worldSfxBtn.classList.remove('clickable');
+        startSheet.hidden = phase !== 'start';
+        resultsSheet.hidden = phase !== 'results';
+        refreshAllRaycasters();
+      }
+
+      function updateDashboardHUD() {
+        var displayTrial = Math.min(currentTrialIndex, TOTAL);
+        hudTrialText.setAttribute('value', 'Trial: ' + displayTrial + ' / ' + TOTAL);
+        hudScoreText.setAttribute('value', 'Score: ' + formatScore(scoreTotal));
+        hudStreakText.setAttribute('value', 'Streak: ' + currentStreak);
+        htmlHud.textContent = 'Trial ' + displayTrial + ' / ' + TOTAL + ' · Score ' + formatScore(scoreTotal) + ' · Streak ' + currentStreak;
+      }
+
+      function spawnFloatingFeedback(text, color, positionObj) {
+        var entity = document.createElement('a-entity');
+        entity.setAttribute('position', positionObj.x + ' ' + (positionObj.y + 0.35) + ' ' + positionObj.z);
+        var textEl = document.createElement('a-text');
+        textEl.setAttribute('value', text);
+        textEl.setAttribute('color', color);
+        textEl.setAttribute('align', 'center');
+        textEl.setAttribute('width', '4.2');
+        entity.appendChild(textEl);
+        entity.setAttribute('animation__rise', {
+          property: 'position',
+          to: positionObj.x + ' ' + (positionObj.y + 0.85) + ' ' + positionObj.z,
+          dur: 650,
+          easing: 'easeOutQuad'
+        });
+        feedbackContainerEl.appendChild(entity);
+        setTimeout(function () {
+          if (entity.parentNode) entity.parentNode.removeChild(entity);
+        }, 680);
+      }
+
+      function clearActiveStimulus() {
+        if (!activeStimulusEl) return;
+        activeStimulusEl.removeEventListener('mousedown', onStimulusTriggerDown);
+        activeStimulusEl.removeEventListener('click', onStimulusTriggerDown);
+        activeStimulusEl.classList.remove('clickable');
+        if (activeStimulusEl.parentNode) activeStimulusEl.parentNode.removeChild(activeStimulusEl);
+        activeStimulusEl = null;
+        refreshAllRaycasters();
+      }
+
+      function recordTrialOutcome(fields) {
+        var row = {
+          trial_num: currentTrialMeta.trial_num,
+          trial_type: currentTrialMeta.trial_type,
+          depth_plane: currentTrialMeta.depth_plane,
+          plane_distance_m: currentTrialMeta.plane_distance_m,
+          distance_m: currentTrialMeta.distance_m,
+          visual_angle_deg: currentTrialMeta.visual_angle_deg,
+          angle_h_deg: currentTrialMeta.angle_h_deg,
+          angle_v_deg: currentTrialMeta.angle_v_deg,
+          iti_ms: currentTrialMeta.iti_ms,
+          x_pos: currentTrialMeta.x_pos,
+          y_pos: currentTrialMeta.y_pos,
+          z_pos: currentTrialMeta.z_pos,
+          eccentricity_deg: currentTrialMeta.eccentricity_deg,
+          stimulus_radius_m: RADIUS,
+          response_made: fields.response_made,
+          outcome: fields.outcome,
+          rt_ms: fields.rt_ms,
+          score_total: scoreTotal,
+          streak: currentStreak
+        };
+        sessionLogs.push(row);
+      }
+
+      function startExperiment() {
+        if (!sceneReady || phase === 'run') return;
+        audio.ensureContext();
+        detectBaseHeadHeight();
+        buildSpace(sessionEye, baseY);
+
+        trialSchedule = plan.createSchedule();
+        currentTrialIndex = 0;
+        scoreTotal = 0;
+        currentStreak = 0;
+        sessionLogs = [];
+        phase = 'run';
+        updateDashboardHUD();
+        syncChrome();
+        runNextTrial();
+      }
+
+      function runNextTrial() {
+        clearTimeout(trialTimerId);
+        clearTimeout(itiTimerId);
+        clearActiveStimulus();
+
+        if (currentTrialIndex >= TOTAL) {
+          finishExperiment();
+          return;
+        }
+
+        var trialNum = currentTrialIndex + 1;
+        var trial = trialSchedule[currentTrialIndex];
+        var itiMs = Math.round(plan.ITI_MIN_MS + Math.random() * (plan.ITI_MAX_MS - plan.ITI_MIN_MS));
+        hudTrialText.setAttribute('value', 'Trial: ' + trialNum + ' / ' + TOTAL);
+        htmlHud.textContent = 'Trial ' + trialNum + ' / ' + TOTAL + ' · Score ' + formatScore(scoreTotal) + ' · Streak ' + currentStreak;
+
+        fixationCrossEl.setAttribute('position', sessionFixation.x + ' ' + sessionFixation.y + ' ' + sessionFixation.z);
+        fixationCrossEl.setAttribute('visible', 'true');
+
+        itiTimerId = setTimeout(function () {
+          fixationCrossEl.setAttribute('visible', 'false');
+          spawnStimulus(trialNum, trial, itiMs);
+        }, itiMs);
+      }
+
+      function spawnStimulus(trialNum, trial, itiMs) {
+        triggerDebounce = false;
+        trialActive = true;
+
+        var placed = plan.placeOnPlane(trial.plane_distance_m, sessionEye, baseY);
+        var eyeNow = readEye();
+        var distance = plan.distanceM(placed.x, placed.y, placed.z, eyeNow);
+        var eccentricity = plan.eccentricityDeg(placed.x, placed.y, placed.z, eyeNow, sessionFixation);
+        var visualAngle = plan.visualAngleDeg(RADIUS, distance);
+
+        var stimEl = document.createElement('a-entity');
+        stimEl.setAttribute('position', placed.x + ' ' + placed.y + ' ' + placed.z);
+
+        if (trial.trial_type === 'GO') {
+          stimEl.setAttribute('geometry', 'primitive: sphere; radius: ' + RADIUS + '; segmentsWidth: 24; segmentsHeight: 18');
+          stimEl.setAttribute('material', 'shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.3');
+          var ringEl = document.createElement('a-ring');
+          ringEl.setAttribute('radius-inner', '0.44');
+          ringEl.setAttribute('radius-outer', '0.48');
+          ringEl.setAttribute('material', 'shader: flat; color: #00F5D4; side: double; opacity: 0.65; transparent: true');
+          stimEl.appendChild(ringEl);
+        } else {
+          stimEl.setAttribute('geometry', 'primitive: octahedron; radius: ' + RADIUS);
+          stimEl.setAttribute('material', 'shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.4');
+          stimEl.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur: 2400; loop: true; easing: linear');
+        }
+
+        stimEl.classList.add('clickable');
+        stimEl.addEventListener('mousedown', onStimulusTriggerDown);
+        stimEl.addEventListener('click', onStimulusTriggerDown);
+        stimulusContainerEl.appendChild(stimEl);
+        activeStimulusEl = stimEl;
+        refreshAllRaycasters();
+
+        currentTrialMeta = {
+          trial_num: trialNum,
+          trial_type: trial.trial_type,
+          depth_plane: trial.depth_plane,
+          plane_distance_m: trial.plane_distance_m,
+          distance_m: distance,
+          visual_angle_deg: visualAngle,
+          angle_h_deg: placed.angle_h_deg,
+          angle_v_deg: placed.angle_v_deg,
+          iti_ms: itiMs,
+          x_pos: placed.x,
+          y_pos: placed.y,
+          z_pos: placed.z,
+          eccentricity_deg: eccentricity,
+          spawnTime: performance.now()
+        };
+
+        trialTimerId = setTimeout(function () {
+          if (!trialActive) return;
+          handleTrialTimeout();
+        }, TIMEOUT);
+      }
+
+      function onStimulusTriggerDown() {
+        if (!trialActive || triggerDebounce) return;
+        triggerDebounce = true;
+        trialActive = false;
+        clearTimeout(trialTimerId);
+        audio.ensureContext();
+
+        var rtMs = Math.max(1, Math.round(performance.now() - currentTrialMeta.spawnTime));
+        var pos = {
+          x: currentTrialMeta.x_pos,
+          y: currentTrialMeta.y_pos,
+          z: currentTrialMeta.z_pos
+        };
+        clearActiveStimulus();
+
+        if (currentTrialMeta.trial_type === 'GO') {
+          var speedBonus = Math.round((TIMEOUT - rtMs) / 10);
+          var pointsEarned = 100 + Math.max(0, speedBonus);
+          scoreTotal += pointsEarned;
+          currentStreak += 1;
+          playSound('hit');
+          spawnFloatingFeedback('+' + pointsEarned + ' (' + rtMs + 'ms)', '#00F5D4', pos);
+          recordTrialOutcome({ response_made: 1, outcome: 'HIT', rt_ms: rtMs });
+        } else {
+          scoreTotal -= 150;
+          currentStreak = 0;
+          playSound('error');
+          spawnFloatingFeedback('FALSE ALARM! -150', '#FF2A85', pos);
+          recordTrialOutcome({ response_made: 1, outcome: 'FALSE_ALARM', rt_ms: rtMs });
+        }
+
+        currentTrialIndex += 1;
+        updateDashboardHUD();
+        runNextTrial();
+      }
+
+      function handleTrialTimeout() {
+        if (!trialActive) return;
+        trialActive = false;
+        triggerDebounce = true;
+        var pos = {
+          x: currentTrialMeta.x_pos,
+          y: currentTrialMeta.y_pos,
+          z: currentTrialMeta.z_pos
+        };
+        clearActiveStimulus();
+
+        if (currentTrialMeta.trial_type === 'GO') {
+          currentStreak = 0;
+          playSound('error');
+          spawnFloatingFeedback('TOO SLOW!', '#FFD166', pos);
+          recordTrialOutcome({ response_made: 0, outcome: 'MISS', rt_ms: '' });
+        } else {
+          scoreTotal += 50;
+          playSound('cr');
+          spawnFloatingFeedback('HOLD OK +50', '#72EFDD', pos);
+          recordTrialOutcome({ response_made: 0, outcome: 'CORRECT_REJECTION', rt_ms: '' });
+        }
+
+        currentTrialIndex += 1;
+        updateDashboardHUD();
+        runNextTrial();
+      }
+
+      function fillResults(summary, savedText) {
+        var mean = formatMs(summary.mean_go_rt_ms);
+        var sd = formatMs(summary.sd_go_rt_ms);
+        var lines = [
+          'Final Score: ' + scoreTotal + ' pts',
+          'Go Hit Rate: ' + summary.go_hit_rate_pct.toFixed(1) + '% (' + summary.go_hits + '/' + summary.go_n + ')',
+          'No-Go False Alarm: ' + summary.nogo_fa_rate_pct.toFixed(1) + '% (' + summary.nogo_false_alarms + '/' + summary.nogo_n + ')',
+          'Mean Go RT: ' + mean + ' (SD ' + sd + ')'
+        ];
+        ['near', 'mid', 'far'].forEach(function (id) {
+          var row = summary.by_depth[id];
+          lines.push(id.toUpperCase() + '  Go ' + row.go_hits + '/' + row.go_n + '  RT ' + formatMs(row.mean_go_rt_ms) + '  FA ' + row.nogo_false_alarms + '/' + row.nogo_n);
+        });
+        resultsSummaryText.setAttribute('value', lines.join('\n'));
+        storageConfirmText.setAttribute('value', savedText);
+
+        overallStats.textContent = '';
+        [
+          ['Go hits', summary.go_hits + '/' + summary.go_n + ' · ' + summary.go_hit_rate_pct.toFixed(1) + '%'],
+          ['No-go false alarms', summary.nogo_false_alarms + '/' + summary.nogo_n + ' · ' + summary.nogo_fa_rate_pct.toFixed(1) + '%'],
+          ['Mean go RT', mean],
+          ['Score', String(scoreTotal)]
+        ].forEach(function (pair) {
+          var cell = document.createElement('div');
+          cell.className = 'stat';
+          var label = document.createElement('span');
+          label.textContent = pair[0];
+          var value = document.createElement('b');
+          value.textContent = pair[1];
+          cell.appendChild(label);
+          cell.appendChild(value);
+          overallStats.appendChild(cell);
+        });
+
+        depthTable.textContent = '';
+        ['near', 'mid', 'far'].forEach(function (id) {
+          var row = summary.by_depth[id];
+          var tr = document.createElement('tr');
+          [id, row.go_hits + '/' + row.go_n, formatMs(row.mean_go_rt_ms), row.nogo_false_alarms + '/' + row.nogo_n].forEach(function (text) {
+            var td = document.createElement('td');
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+          depthTable.appendChild(tr);
+        });
+        storageNote.textContent = savedText;
+      }
+
+      function finishExperiment() {
+        fixationCrossEl.setAttribute('visible', 'false');
+        clearActiveStimulus();
+        var summary = plan.summarize(sessionLogs);
+        var savedText = 'Saved on this device as ' + plan.STORAGE_KEY + '. Responses stay on this device.';
+        try {
+          var payload = plan.buildPayload({
+            completedAt: new Date().toISOString(),
+            baseY: baseY,
+            eye: sessionEye,
+            fixation: sessionFixation,
+            finalScore: scoreTotal,
+            summary: summary,
+            trials: sessionLogs
+          });
+          localStorage.setItem(plan.STORAGE_KEY, JSON.stringify(payload));
+        } catch (err) {
+          savedText = 'Could not save on this device. Responses stay on this device.';
+        }
+        fillResults(summary, savedText);
+        phase = 'results';
+        updateDashboardHUD();
+        syncChrome();
+      }
+
+      function downloadSessionCsv() {
+        if (!sessionLogs.length) return;
+        if (sceneEl && sceneEl.is && sceneEl.is('vr-mode')) sceneEl.exitVR();
+        var blob = new Blob([plan.toCsv(sessionLogs)], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        var stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'projectTrial_orbital_gonogo_' + stamp + '.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      }
+
+      function hitStimulus(clientX, clientY) {
+        if (!activeStimulusEl || !activeStimulusEl.object3D) return false;
+        var canvas = sceneEl.canvas;
+        var camera = mainCameraEl.getObject3D('camera');
+        if (!canvas || !camera) return false;
+        var rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return false;
+        var ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
+        var ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
+        screenRaycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+        activeStimulusEl.object3D.updateMatrixWorld(true);
+        return screenRaycaster.intersectObject(activeStimulusEl.object3D, true).length > 0;
+      }
+
+      function onCanvasPointerDown(evt) {
+        if (!trialActive || evt.button > 0) return;
+        if (!hitStimulus(evt.clientX, evt.clientY)) return;
+        evt.preventDefault();
+        onStimulusTriggerDown();
+      }
+
+      function withUiDebounce(callback) {
+        if (uiButtonLock) return;
+        uiButtonLock = true;
+        setTimeout(function () { uiButtonLock = false; }, 350);
+        callback();
+      }
+
+      function bindUiButton(btnEl, handler) {
+        function triggerHandler() {
+          if (!btnEl.classList.contains('clickable')) return;
+          withUiDebounce(handler);
+        }
+        btnEl.addEventListener('mousedown', triggerHandler);
+        btnEl.addEventListener('click', triggerHandler);
+      }
+
+      bindUiButton(startBtnEl, startExperiment);
+      bindUiButton(downloadCsvBtnEl, function () {
+        audio.ensureContext();
+        playSound('cr');
+        downloadSessionCsv();
+      });
+      bindUiButton(playAgainBtnEl, startExperiment);
+      bindUiButton(worldSfxBtn, function () {
+        var next = !audio.isEnabled();
+        audio.setEnabled(next);
+        paintSfx(audio.isEnabled());
+        if (next) audio.ensureContext();
+      });
+
+      htmlStart.addEventListener('click', startExperiment);
+      htmlAgain.addEventListener('click', startExperiment);
+      htmlCsv.addEventListener('click', function () {
+        audio.ensureContext();
+        playSound('cr');
+        downloadSessionCsv();
+      });
+
+      sceneEl.addEventListener('enter-vr', function () {
+        immersive = true;
+        syncChrome();
+      });
+      sceneEl.addEventListener('exit-vr', function () {
+        immersive = false;
+        syncChrome();
+      });
+
+      function onSceneReady() {
+        if (sceneReady) return;
+        sceneReady = true;
+        immersive = !!(sceneEl.is && sceneEl.is('vr-mode'));
+        detectBaseHeadHeight();
+        buildSpace(sessionEye, baseY);
+        htmlStart.disabled = false;
+        htmlStart.textContent = 'Start experiment';
+        if (sceneEl.canvas) {
+          sceneEl.canvas.addEventListener('pointerdown', onCanvasPointerDown);
+        }
+        syncChrome();
+      }
+
+      if (sceneEl.hasLoaded) onSceneReady();
+      else sceneEl.addEventListener('loaded', onSceneReady);
+    })();
+  </script>
+</body>
+</html>

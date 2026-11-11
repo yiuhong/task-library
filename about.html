@@ -52,6 +52,10 @@
                     <dd>Respond to the green arrow. Withhold on the red X. <a href="gonogo_game.html">Play</a> · <a href="gonogo-info.html">Parameters</a></dd>
                 </div>
                 <div>
+                    <dt>Spatial Go/No-Go</dt>
+                    <dd>WebXR go/no-go in a frontal field, with near, mid, and far targets. The in-scene title is Orbital Energy Sorter. No headset required. <a href="orbital_gonogo.html">Play</a> · <a href="orbital_gonogo-info.html">Parameters</a>. <a href="vr.html">vr.html</a> redirects here.</dd>
+                </div>
+                <div>
                     <dt>Corsi Span</dt>
                     <dd>Watch a sequence of blocks, then tap it back in order. <a href="corsi_game.html">Play</a> · <a href="corsi-info.html">Parameters</a></dd>
                 </div>
@@ -64,13 +68,13 @@
 
         <section>
             <h2>How to respond</h2>
-            <p>Each demo has large pads and a matching key. A tap and a keypress call the same response path. One response counts per trial. Holding a key does not fire the next trial.</p>
-            <p>Each task welcome and results screen has a Gamified | Classical control. The last choice is kept in this browser and used the next time a task opens without <code>mode</code> in the address.</p>
+            <p>The 2D demos have large pads and a matching key. A tap and a keypress call the same response path. One response counts per trial. Holding a key does not fire the next trial.</p>
+            <p>Each task welcome and results screen has a Gamified | Classical control. The last choice is kept in this browser and used the next time a task opens without <code>mode</code> in the address. Spatial Go/No-Go is the WebXR exception: tap, click, or trigger the object in front of you. It has no Gamified | Classical control.</p>
         </section>
 
         <section>
             <h2>Data</h2>
-            <p>Nothing is uploaded. Stroop Dash, Oddball Dash, and Brightness Detection each keep their runs in <code>localStorage</code> on this browser and can download a CSV of those trials, including orientation start and turn rows. Clear saved removes that browser copy. Refresh does not. Numerosity Comparison, RDK Motion Coherence, Eriksen Flanker, Visual Working Memory, Go / No-Go, and Reversal Learning each keep the latest finished run under their own key (<code>projectTrial_numerosity_v1</code>, <code>projectTrial_rdk_v1</code>, <code>projectTrial_flanker_v1</code>, <code>projectTrial_vwm_v1</code>, <code>projectTrial_gonogo_v1</code>, <code>projectTrial_bandit_v1</code>) and can download a CSV of that run. A later finished run replaces it. Corsi Span appends each finished run to a list under <code>projectTrial_corsi_v1</code>. Those tasks have no Clear saved control and do not log orientation turns.</p>
+            <p>Nothing is uploaded. Stroop Dash, Oddball Dash, and Brightness Detection each keep their runs in <code>localStorage</code> on this browser and can download a CSV of those trials, including orientation start and turn rows. Clear saved removes that browser copy. Refresh does not. Numerosity Comparison, RDK Motion Coherence, Eriksen Flanker, Visual Working Memory, Go / No-Go, and Reversal Learning each keep the latest finished run under their own key (<code>projectTrial_numerosity_v1</code>, <code>projectTrial_rdk_v1</code>, <code>projectTrial_flanker_v1</code>, <code>projectTrial_vwm_v1</code>, <code>projectTrial_gonogo_v1</code>, <code>projectTrial_bandit_v1</code>) and can download a CSV of that run. A later finished run replaces it. Corsi Span appends each finished run to a list under <code>projectTrial_corsi_v1</code>. Those tasks have no Clear saved control and do not log orientation turns. Spatial Go/No-Go keeps the latest finished run under <code>projectTrial_orbital_gonogo_v1</code> and can download a CSV of that run. A later finished run replaces it.</p>
             <p>Portrait and landscape both run. Hub demos do not lock orientation. On Stroop, Oddball, and Brightness, each saved trial includes the orientation at that moment, and turns during the run are timestamped on the session log. See each task’s parameters page for where that log lives.</p>
             <p>Scores are for teaching. They are not a clinical assessment.</p>
         </section>

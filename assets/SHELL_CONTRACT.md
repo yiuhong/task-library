@@ -1,6 +1,6 @@
 # Shell contract
 
-Project Trial. Architecture C: shared presentation shells, science in task cores. Every hub task is on this contract and loads `assets/tasks/<id>.js`. `noematachograph.html` and `vr.html` are not.
+Project Trial. Architecture C: shared presentation shells, science in task cores. Every hub task except Spatial Go/No-Go is on this contract and loads `assets/tasks/<id>.js` through a shell. `noematachograph.html` and `orbital_gonogo.html` are not on this contract. `orbital_gonogo.html` is the WebXR spatial go/no-go (hub title Spatial Go/No-Go). It does not use TrialShell or `trial-theme.css`. `vr.html` redirects to it.
 
 ## Roles
 
@@ -24,7 +24,7 @@ One page loads one task. The shell reads the query string, then one site-wide pr
 
 `TrialShell.readMode()` returns `classical` only for an explicit classical mode, ignoring case, or for a stored `classical` when the URL has no `mode` parameter. A missing parameter with no stored choice stays gamified, which is the previous default. An explicit `?mode=classical` or `?mode=gamified` is written back to `localStorage` key `project-trial:mode`. Opening a task with no `mode` parameter does not write the key.
 
-Hub tasks on this contract: Stroop, Oddball, Flanker, Go / No-Go, Brightness, Numerosity, RDK, Visual Working Memory, Corsi, and Reversal Learning (`bandit_game.html`). Each page loads `assets/tasks/<id>.js`. The trial list is not copied into a second file.
+Hub tasks on this contract: Stroop, Oddball, Flanker, Go / No-Go, Brightness, Numerosity, RDK, Visual Working Memory, Corsi, and Reversal Learning (`bandit_game.html`). Each page loads `assets/tasks/<id>.js`. The trial list is not copied into a second file. Spatial Go/No-Go (`orbital_gonogo.html`) is on the hub and is not on this contract. Its hub card has no Classical link.
 
 The welcome screen and the results screen each have a Gamified | Classical control (`[data-shell-toggle]`). Choosing a segment stores the mode and reloads the page with `?mode=` so the task remounts in that shell. The hub cards do not carry a Classical link. Deep links such as `stroop_game.html?mode=classical` still open the lab shell.
 
