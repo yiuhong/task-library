@@ -10,21 +10,26 @@
   counts. Targets keep one physical radius, so a nearer target subtends
   a larger visual angle. Nothing is placed beside or behind the viewer.
 
-  Planes (metres along the fixation axis, eye at the origin => negative z):
-    near  2.70
-    mid   3.35
-    far   4.05
-  All three are inside the previous frontal depth range, about 2.5–4.2 m.
-  Fixation stays at 3.00 m, between near and mid.
+  Planes (metres along the straight-ahead depth axis from the
+  start-of-run eye; eye at the origin => negative z):
+    near  1.80
+    mid   3.30
+    far   5.50
+  Fixation stays at 3.00 m, slightly in front of the mid plane.
+  Physical radius stays 0.40 m, so on-axis visual angles are about
+  25.1° / 13.8° / 8.3°. Visual angle is logged, not held constant.
 
   Each plane: 7 GO + 3 NOGO = 10 trials. Three planes = 30 trials
   (21 GO / 9 NOGO, 70% / 30%). Order is a Fisher–Yates shuffle.
+  The shuffle changes order only. It does not move the target.
 
-  Placement is a visual angle from fixation, then a point on that plane:
-    horizontal  -18° to +18°
-    vertical     -5° to +6°
-  At the far plane those angles stay inside x about ±2.5 m and y within
-  about -0.5 to +0.6 m of eye height.
+  Every trial uses one fixed visual direction, the same azimuth and
+  elevation on every plane:
+    azimuth    +4°  (right of straight ahead)
+    elevation  +2°  (above straight ahead)
+  Only distance changes, so the target stays at one screen position
+  and a nearer target looks larger. The offset keeps the target off
+  the fixation mark.
 */
 (function (global) {
   'use strict';
@@ -37,15 +42,14 @@
   var ITI_MIN_MS = 800;
   var ITI_MAX_MS = 1400;
   var TARGET_RADIUS_M = 0.4;
-  var H_LIMIT_DEG = 18;
-  var V_MIN_DEG = -5;
-  var V_MAX_DEG = 6;
+  var AZIMUTH_DEG = 4;
+  var ELEVATION_DEG = 2;
   var FIXATION_DISTANCE_M = 3;
 
   var DEPTH_PLANES = [
-    { id: 'near', distance_m: 2.7 },
-    { id: 'mid', distance_m: 3.35 },
-    { id: 'far', distance_m: 4.05 }
+    { id: 'near', distance_m: 1.8 },
+    { id: 'mid', distance_m: 3.3 },
+    { id: 'far', distance_m: 5.5 }
   ];
 
   var CSV_COLUMNS = [
@@ -116,10 +120,9 @@
     return Math.round(n * 1000) / 1000;
   }
 
-  function placeOnPlane(planeDistance, eye, baseY, rng) {
-    var random = rng || Math.random;
-    var hDeg = (random() * 2 - 1) * H_LIMIT_DEG;
-    var vDeg = V_MIN_DEG + random() * (V_MAX_DEG - V_MIN_DEG);
+  function placeOnPlane(planeDistance, eye, baseY) {
+    var hDeg = AZIMUTH_DEG;
+    var vDeg = ELEVATION_DEG;
     var x = eye.x + planeDistance * Math.tan(degToRad(hDeg));
     var y = baseY + planeDistance * Math.tan(degToRad(vDeg));
     var z = eye.z - planeDistance;
@@ -279,8 +282,8 @@
       fixation: meta.fixation,
       depth_planes: planes,
       placement: {
-        horizontal_deg: [-H_LIMIT_DEG, H_LIMIT_DEG],
-        vertical_deg: [V_MIN_DEG, V_MAX_DEG],
+        azimuth_deg: AZIMUTH_DEG,
+        elevation_deg: ELEVATION_DEG,
         stimulus_radius_m: TARGET_RADIUS_M,
         size_rule: 'constant_physical_size'
       },
@@ -300,9 +303,8 @@
     ITI_MIN_MS: ITI_MIN_MS,
     ITI_MAX_MS: ITI_MAX_MS,
     TARGET_RADIUS_M: TARGET_RADIUS_M,
-    H_LIMIT_DEG: H_LIMIT_DEG,
-    V_MIN_DEG: V_MIN_DEG,
-    V_MAX_DEG: V_MAX_DEG,
+    AZIMUTH_DEG: AZIMUTH_DEG,
+    ELEVATION_DEG: ELEVATION_DEG,
     FIXATION_DISTANCE_M: FIXATION_DISTANCE_M,
     DEPTH_PLANES: DEPTH_PLANES,
     CSV_COLUMNS: CSV_COLUMNS,
