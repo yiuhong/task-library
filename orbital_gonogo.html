@@ -303,8 +303,6 @@
       material="roughness: 0.8; metalness: 0.2">
     </a-cylinder>
 
-    <a-entity id="spatialRefs"></a-entity>
-
     <a-light type="ambient" color="#88aaff" intensity="0.65"></a-light>
     <a-light type="point" position="0 6 -2" color="#00F5D4" intensity="0.8" distance="20"></a-light>
     <a-light type="point" position="0 3 -5" color="#FF2A85" intensity="0.35" distance="15"></a-light>
@@ -500,7 +498,6 @@
       var fixationCrossEl = document.getElementById('fixationCross');
       var stimulusContainerEl = document.getElementById('stimulusContainer');
       var feedbackContainerEl = document.getElementById('feedbackContainer');
-      var spatialRefsEl = document.getElementById('spatialRefs');
 
       var htmlHud = document.getElementById('htmlHud');
       var htmlStart = document.getElementById('htmlStart');
@@ -600,80 +597,6 @@
         return { x: worldPos.x, y: worldPos.y, z: worldPos.z };
       }
 
-      function addBar(x, y, z, w, h, d, color, opacity) {
-        var el = document.createElement('a-box');
-        el.setAttribute('position', x + ' ' + y + ' ' + z);
-        el.setAttribute('width', w);
-        el.setAttribute('height', h);
-        el.setAttribute('depth', d);
-        var transparent = opacity < 1;
-        el.setAttribute('material', 'shader: flat; color: ' + color + '; opacity: ' + opacity + (transparent ? '; transparent: true' : ''));
-        spatialRefsEl.appendChild(el);
-      }
-
-      function buildSpace(eye, height) {
-        while (spatialRefsEl.firstChild) spatialRefsEl.removeChild(spatialRefsEl.firstChild);
-
-        var floor = document.createElement('a-plane');
-        floor.setAttribute('position', eye.x + ' 0.012 ' + (eye.z - 3.7));
-        floor.setAttribute('rotation', '-90 0 0');
-        floor.setAttribute('width', '8');
-        floor.setAttribute('height', '4.6');
-        floor.setAttribute('material', 'shader: flat; color: #3d6eaa; side: double');
-        spatialRefsEl.appendChild(floor);
-
-        [-2.2, -1.1, 0, 1.1, 2.2].forEach(function (offset) {
-          addBar(eye.x + offset, 0.03, eye.z - 3.7, 0.04, 0.02, 4.4, '#d6f4ff', 1);
-        });
-        [-1.4, -2.7, -3.35, -4.05, -5.2].forEach(function (offset) {
-          var planeLine = offset === -2.7 || offset === -3.35 || offset === -4.05;
-          addBar(eye.x, 0.034, eye.z + offset, 5.2, 0.014, planeLine ? 0.06 : 0.03, planeLine ? '#e0f2fe' : '#7dd3fc', planeLine ? 0.95 : 0.7);
-        });
-
-        var styles = {
-          near: { color: '#f8fbff', opacity: 0.95 },
-          mid: { color: '#7dd3fc', opacity: 0.9 },
-          far: { color: '#94a3b8', opacity: 0.85 }
-        };
-        var halfW = 1.45;
-        var halfH = 0.52;
-        var t = 0.025;
-
-        plan.DEPTH_PLANES.forEach(function (plane) {
-          var style = styles[plane.id];
-          var cz = eye.z - plane.distance_m;
-          var cx = eye.x;
-          var cy = height;
-          var legH = cy - halfH - 0.12;
-          var legY = 0.12 + legH / 2;
-          var post = 0.06;
-          addBar(cx, cy + halfH, cz, halfW * 2, t, t, style.color, style.opacity);
-          addBar(cx, cy - halfH, cz, halfW * 2, t, t, style.color, style.opacity);
-          addBar(cx - halfW, cy, cz, t, halfH * 2, t, style.color, style.opacity);
-          addBar(cx + halfW, cy, cz, t, halfH * 2, t, style.color, style.opacity);
-          addBar(cx - halfW, legY, cz, post, legH, post, style.color, 1);
-          addBar(cx + halfW, legY, cz, post, legH, post, style.color, 1);
-
-          var hoop = document.createElement('a-torus');
-          hoop.setAttribute('position', cx + ' 0.05 ' + cz);
-          hoop.setAttribute('rotation', '90 0 0');
-          hoop.setAttribute('radius', '1.15');
-          hoop.setAttribute('radius-tubular', '0.045');
-          hoop.setAttribute('segments-tubular', '48');
-          hoop.setAttribute('segments-radial', '8');
-          hoop.setAttribute('material', 'shader: flat; color: ' + style.color + '; opacity: ' + style.opacity + '; transparent: true; side: double');
-          spatialRefsEl.appendChild(hoop);
-
-          var label = document.createElement('a-text');
-          label.setAttribute('value', plane.id.toUpperCase());
-          label.setAttribute('position', cx + ' ' + (0.55) + ' ' + (cz + 1.2));
-          label.setAttribute('align', 'center');
-          label.setAttribute('color', style.color);
-          label.setAttribute('width', '1.05');
-          spatialRefsEl.appendChild(label);
-        });
-      }
-
       function setPanel(el, buttons, show) {
         if (show) {
           el.setAttribute('visible', 'true');
@@ -768,7 +691,6 @@
         if (!sceneReady || phase === 'run') return;
         audio.ensureContext();
         detectBaseHeadHeight();
-        buildSpace(sessionEye, baseY);
 
         trialSchedule = plan.createSchedule();
         currentTrialIndex = 0;
@@ -1088,7 +1010,6 @@
         sceneReady = true;
         immersive = !!(sceneEl.is && sceneEl.is('vr-mode'));
         detectBaseHeadHeight();
-        buildSpace(sessionEye, baseY);
         htmlStart.disabled = false;
         htmlStart.textContent = 'Start experiment';
         if (sceneEl.canvas) {
