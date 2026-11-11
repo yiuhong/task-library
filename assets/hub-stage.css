@@ -1,0 +1,993 @@
+/*
+  Project Trial hub — stage select.
+  Linked from index.html only. Task pages keep assets/trial-theme.css.
+
+  Sections in #task-hub-source are the area data. hub-stage.js builds one
+  tile per section, so another area is another section — the ring, the
+  tablet sandwich, and the phone grid all follow that count.
+
+  Landing:
+    wide   (>= 1080px)  centre wordmark, area tiles on an ellipse
+    tablet (700–1079)   two tiles, centre, remaining tiles
+    phone  (< 700)      centre first, then a two-column stage grid
+*/
+
+html.js #task-hub-source {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+/* Author display rules are more specific than the hidden attribute. */
+.stage-map[hidden],
+.stage-board[hidden],
+#task-hub-source[hidden] {
+    display: none !important;
+}
+
+.trial-hub {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    margin: 0;
+    padding:
+        max(0.85rem, env(safe-area-inset-top))
+        max(1rem, env(safe-area-inset-right))
+        max(0.65rem, env(safe-area-inset-bottom))
+        max(1rem, env(safe-area-inset-left));
+    color: var(--trial-text);
+    color-scheme: dark;
+    background-color: var(--trial-bg);
+    background-image:
+        radial-gradient(ellipse 70% 55% at 50% 42%, rgba(34, 211, 238, 0.07), transparent 62%),
+        radial-gradient(1px 1px at 14% 20%, rgba(255, 255, 255, 0.55) 50%, transparent 52%),
+        radial-gradient(1px 1px at 82% 16%, rgba(255, 255, 255, 0.4) 50%, transparent 52%),
+        radial-gradient(1.4px 1.4px at 90% 74%, rgba(255, 255, 255, 0.32) 50%, transparent 52%),
+        radial-gradient(1px 1px at 24% 82%, rgba(255, 255, 255, 0.28) 50%, transparent 52%),
+        radial-gradient(1px 1px at 64% 10%, rgba(34, 211, 238, 0.75) 50%, transparent 52%),
+        radial-gradient(1px 1px at 38% 90%, rgba(244, 114, 182, 0.5) 50%, transparent 52%);
+}
+
+.trial-hub-main {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+}
+
+.stage-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ----- landing map ----- */
+
+.stage-map {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    width: min(100%, 40rem);
+    margin: 0 auto;
+}
+
+.stage-center {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.stage-halo {
+    position: absolute;
+    left: 50%;
+    top: 4.6rem;
+    width: 7.5rem;
+    height: 7.5rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 1px dashed rgba(34, 211, 238, 0.45);
+    box-shadow:
+        0 0 0 12px rgba(34, 211, 238, 0.04),
+        inset 0 0 20px rgba(34, 211, 238, 0.08);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.stage-kicker {
+    margin: 0;
+    color: var(--trial-faint);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+}
+
+.stage-title {
+    margin: 0.45rem 0 0.75rem;
+}
+
+.stage-title img {
+    width: min(100%, 21.5rem);
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.stage-lede {
+    margin: 0 auto;
+    max-width: 34rem;
+    color: var(--trial-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+.stage-ring {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
+.stage-tile {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1.02;
+    min-height: 168px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--area-accent, #22d3ee) 62%, transparent);
+    border-radius: 0.95rem;
+    background:
+        radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--area-accent, #22d3ee) 26%, transparent), transparent 58%),
+        linear-gradient(180deg, #141c33 0%, #0b1020 100%);
+    color: #fff;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.28),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.stage-tile:focus {
+    outline: none;
+}
+
+.stage-tile:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-color: var(--area-accent, #fff);
+    box-shadow:
+        0 0 0 1px var(--area-accent, #fff),
+        0 0 26px color-mix(in srgb, var(--area-accent, #22d3ee) 55%, transparent);
+}
+
+.stage-tile:active {
+    filter: brightness(1.08);
+}
+
+.stage-tile-art,
+.stage-tile .trial-area-art {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+}
+
+.art-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.stage-tile-index {
+    position: absolute;
+    z-index: 2;
+    top: 0.45rem;
+    left: 0.6rem;
+    color: var(--area-accent, #22d3ee);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.stage-tile-meta {
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    padding: 1.5rem 0.7rem 0.6rem;
+    background: linear-gradient(to top, rgba(6, 10, 22, 0.94) 28%, rgba(6, 10, 22, 0.55) 68%, transparent);
+}
+
+.stage-tile-name {
+    font-family: var(--trial-display);
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    line-height: 1.05;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.stage-tile-count {
+    color: var(--area-accent, #22d3ee);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.stage-frame {
+    position: absolute;
+    z-index: 2;
+    inset: 7px;
+    pointer-events: none;
+    background:
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) left top / 14px 2px no-repeat,
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) left top / 2px 14px no-repeat,
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) right top / 14px 2px no-repeat,
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) right top / 2px 14px no-repeat,
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) left bottom / 14px 2px no-repeat,
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) left bottom / 2px 14px no-repeat,
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) right bottom / 14px 2px no-repeat,
+        linear-gradient(var(--area-accent, #22d3ee), var(--area-accent, #22d3ee)) right bottom / 2px 14px no-repeat;
+    opacity: 0.85;
+}
+
+/* ----- area stage ----- */
+
+.stage-board {
+    width: min(60rem, 100%);
+    margin: 0 auto;
+}
+
+.stage-board-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+}
+
+.stage-back {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 0.9rem 0 0.75rem;
+    border: 1px solid var(--trial-line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--trial-text);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.stage-back::before {
+    content: "←";
+    font-size: 1rem;
+    letter-spacing: 0;
+    line-height: 1;
+}
+
+.stage-back:hover {
+    border-color: var(--trial-muted);
+}
+
+.stage-back:focus {
+    outline: none;
+}
+
+.stage-back:focus-visible {
+    outline: 2px solid var(--trial-text);
+    outline-offset: 3px;
+}
+
+.stage-board-count {
+    margin: 0;
+    color: var(--area-accent, var(--trial-muted));
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.stage-board .trial-hub-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.stage-board .trial-area-art {
+    position: relative;
+    height: 132px;
+    border: 1px solid color-mix(in srgb, var(--area-accent, #22d3ee) 45%, transparent);
+    border-radius: 0.9rem;
+    background:
+        radial-gradient(90% 80% at 50% 0%, color-mix(in srgb, var(--area-accent, #22d3ee) 22%, transparent), transparent 60%),
+        #10182c;
+    overflow: hidden;
+}
+
+.stage-board .trial-hub-heading {
+    margin: 0;
+    color: var(--area-accent, var(--trial-text));
+    font-family: var(--trial-display);
+    font-size: clamp(1.7rem, 6vw, 2.7rem);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.stage-board .trial-hub-heading::after {
+    content: none;
+}
+
+.trial-area-blurb {
+    margin: 0;
+    max-width: 40rem;
+    color: var(--trial-muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.trial-area-tasks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
+    gap: 0.85rem;
+    margin-top: 0.35rem;
+}
+
+.trial-hub-section.is-empty .trial-area-tasks::before {
+    content: "No tasks in this area yet.";
+    color: var(--trial-muted);
+    font-size: 0.9rem;
+}
+
+.trial-task-face {
+    height: 100%;
+    border-radius: 0.9rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.trial-task-name {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.trial-task-name a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.trial-task-name a:hover {
+    color: #fff;
+}
+
+.trial-task-face p {
+    margin: 0.45rem 0 0;
+}
+
+.trial-task-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.15rem 0.35rem;
+    margin-top: 0.55rem;
+}
+
+.trial-task-actions .trial-more {
+    min-height: 44px;
+    padding: 0 0.7rem;
+}
+
+a.trial-task-play {
+    border: 1px solid color-mix(in srgb, var(--trial-accent) 70%, transparent);
+    border-radius: 999px;
+    padding: 0 0.9rem;
+}
+
+.trial-hub-badge {
+    flex: none;
+}
+
+/* ----- footer ----- */
+
+.stage-foot {
+    margin-top: 1.15rem;
+    padding-top: 0.35rem;
+    text-align: center;
+}
+
+.stage-foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.stage-foot-dot {
+    color: #475569;
+    font-size: 11px;
+}
+
+.stage-foot-note {
+    margin: 0.1rem 0 0;
+    color: #475569;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+/* No-JS fallback: the sections stay in the document as a list. */
+#task-hub-source .trial-hub-section {
+    margin-top: 1.6rem;
+}
+
+#task-hub-source .trial-area-art {
+    width: min(100%, 20rem);
+    height: 9rem;
+    margin: 0.4rem auto 0.8rem;
+}
+
+#task-hub-source .trial-hub-heading {
+    margin: 0 0 0.4rem;
+    color: var(--area-accent, var(--trial-text));
+    font-family: var(--trial-display);
+    font-size: 1.4rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+#task-hub-source .trial-area-tasks {
+    margin-top: 0.8rem;
+}
+
+/* ----- tablet: tiles above and below a full-width centre ----- */
+
+@media (min-width: 700px) and (max-width: 1079px) {
+    .stage-map {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.9rem 1rem;
+        width: min(46rem, 100%);
+        align-items: stretch;
+    }
+
+    .stage-ring {
+        display: contents;
+    }
+
+    .stage-center {
+        grid-column: 1 / -1;
+        order: var(--split, 2);
+        padding: 0.35rem 0.5rem 0.55rem;
+    }
+
+    .stage-title img {
+        width: min(100%, 26rem);
+    }
+
+    .stage-tile {
+        order: var(--tile-order, 0);
+        aspect-ratio: 16 / 10.5;
+        min-height: 196px;
+    }
+
+    .stage-tile-name {
+        font-size: 1.15rem;
+    }
+
+}
+
+/* Very narrow phones: one stage per row so the art stays large. */
+@media (max-width: 359px) {
+    .stage-ring {
+        grid-template-columns: 1fr;
+    }
+
+    .stage-tile {
+        aspect-ratio: 16 / 9;
+        min-height: 148px;
+    }
+}
+
+/* Area stage header from tablet upward. Phone keeps the stacked header. */
+@media (min-width: 700px) {
+    .stage-board .trial-hub-section {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        grid-template-areas:
+            "art head"
+            "art blurb"
+            "tasks tasks";
+        column-gap: 1.15rem;
+        row-gap: 0.35rem;
+        align-items: center;
+    }
+
+    .stage-board .trial-area-art {
+        grid-area: art;
+        height: 148px;
+        align-self: stretch;
+    }
+
+    .stage-board .trial-hub-heading {
+        grid-area: head;
+        align-self: end;
+    }
+
+    .stage-board .trial-area-blurb {
+        grid-area: blurb;
+        align-self: start;
+    }
+
+    .stage-board .trial-area-tasks {
+        grid-area: tasks;
+        margin-top: 0.85rem;
+    }
+}
+
+/* ----- desktop orbit -----
+   cqh is 0 unless the map's block size is definite, so height is set
+   explicitly (not left to flex). Tiles then sit on an ellipse around
+   the wordmark. --n comes from the section count. */
+
+@media (min-width: 1080px) {
+    html.js .trial-hub-main {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+    }
+
+    html.js .stage-map {
+        display: block;
+        position: relative;
+        container-type: size;
+        container-name: stage;
+        flex: 1 1 auto;
+        width: 100%;
+        height: max(40rem, calc(100dvh - 8.25rem));
+        min-height: 0;
+        margin: 0;
+    }
+
+    html.js .stage-ring {
+        display: block;
+        position: absolute;
+        inset: 0;
+        --tile-w: clamp(148px, calc(268px - (var(--n) - 4) * 24px), 248px);
+        --tile-h: calc(var(--tile-w) * 0.72);
+        --rx: calc(50cqw - var(--tile-w) / 2 - 28px);
+        --ry: calc(50cqh - var(--tile-h) / 2 - 18px);
+    }
+
+    html.js .stage-center {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        top: 50%;
+        width: min(24rem, 42%);
+        translate: -50% -50%;
+        order: 0;
+        grid-column: auto;
+        padding: 0;
+    }
+
+    html.js .stage-title img {
+        width: min(100%, 21rem);
+    }
+
+    html.js .stage-tile {
+        position: absolute;
+        z-index: 1;
+        left: calc(50% + cos(var(--angle)) * var(--rx));
+        top: calc(50% + sin(var(--angle)) * var(--ry));
+        width: var(--tile-w);
+        height: var(--tile-h);
+        min-height: 0;
+        aspect-ratio: auto;
+        translate: -50% -50%;
+        --angle: calc((360deg / var(--n)) * var(--i) - 90deg);
+    }
+
+    html.js .stage-tile.is-hot,
+    html.js .stage-tile:focus-visible {
+        z-index: 3;
+        scale: 1.045;
+    }
+
+    .stage-tile-name {
+        font-size: 1.05rem;
+    }
+}
+
+@media (min-width: 1px) {
+    .stage-tile.is-hot,
+    .stage-tile:focus-visible {
+        border-color: var(--area-accent, #fff);
+        box-shadow:
+            0 0 0 1px var(--area-accent, #fff),
+            0 0 28px color-mix(in srgb, var(--area-accent, #22d3ee) 50%, transparent),
+            0 16px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    .stage-tile.is-hot .stage-frame,
+    .stage-tile:focus-visible .stage-frame {
+        opacity: 1;
+    }
+}
+
+/* ----- illustrations ----- */
+
+.art-svg .movable {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.attn-scan {
+    opacity: 0;
+}
+
+.perc-trails {
+    opacity: 0;
+}
+
+.perc-ring {
+    opacity: 0.28;
+}
+
+.mem-probe-new {
+    opacity: 0;
+}
+
+.mem-step {
+    opacity: 0.35;
+}
+
+.mem-step.s1 {
+    opacity: 1;
+}
+
+.learn-right {
+    opacity: 0.4;
+}
+
+.learn-swap {
+    opacity: 0.28;
+}
+
+/* Pose is driven by .is-hot (mouse or pen) and :focus-visible, not by
+   (hover: hover), so a tap on a phone can open the area instead of sticking. */
+@media (min-width: 1px) {
+    .stage-tile.is-hot .attn-flank-l,
+    .stage-tile:focus-visible .attn-flank-l,
+    .stage-board .trial-area-art:hover .attn-flank-l {
+        transform: translateX(-22px);
+        opacity: 0.38;
+    }
+
+    .stage-tile.is-hot .attn-flank-r,
+    .stage-tile:focus-visible .attn-flank-r,
+    .stage-board .trial-area-art:hover .attn-flank-r {
+        transform: translateX(22px);
+        opacity: 0.38;
+    }
+
+    .stage-tile.is-hot .attn-center,
+    .stage-tile:focus-visible .attn-center,
+    .stage-board .trial-area-art:hover .attn-center {
+        stroke: #fff;
+        filter: drop-shadow(0 0 8px #f9a8d4);
+    }
+
+    .stage-tile.is-hot .attn-odd-ring,
+    .stage-tile:focus-visible .attn-odd-ring,
+    .stage-board .trial-area-art:hover .attn-odd-ring {
+        opacity: 1;
+    }
+
+    .stage-tile.is-hot .attn-reticle,
+    .stage-tile:focus-visible .attn-reticle,
+    .stage-board .trial-area-art:hover .attn-reticle {
+        filter: drop-shadow(0 0 6px #22d3ee);
+    }
+
+    .stage-tile.is-hot .attn-odd,
+    .stage-tile:focus-visible .attn-odd,
+    .stage-board .trial-area-art:hover .attn-odd {
+        transform: scale(1.4);
+    }
+
+    .stage-tile.is-hot .perc-bright,
+    .stage-tile:focus-visible .perc-bright,
+    .stage-board .trial-area-art:hover .perc-bright {
+        fill: #fff;
+        filter: drop-shadow(0 0 8px #fff);
+    }
+
+    .stage-tile.is-hot .perc-ring,
+    .stage-tile:focus-visible .perc-ring,
+    .stage-board .trial-area-art:hover .perc-ring {
+        opacity: 1;
+        stroke-width: 2.5px;
+    }
+
+    .stage-tile.is-hot .perc-trails,
+    .stage-tile:focus-visible .perc-trails,
+    .stage-board .trial-area-art:hover .perc-trails {
+        opacity: 0.95;
+    }
+
+    .stage-tile.is-hot .perc-many,
+    .stage-tile:focus-visible .perc-many,
+    .stage-board .trial-area-art:hover .perc-many {
+        transform: scale(1.08);
+    }
+
+    .stage-tile.is-hot .mem-cell,
+    .stage-tile:focus-visible .mem-cell,
+    .stage-board .trial-area-art:hover .mem-cell {
+        opacity: 0.22;
+    }
+
+    .stage-tile.is-hot .mem-probe-new,
+    .stage-tile:focus-visible .mem-probe-new,
+    .stage-board .trial-area-art:hover .mem-probe-new {
+        opacity: 1;
+    }
+
+    .stage-tile.is-hot .mem-bracket,
+    .stage-tile:focus-visible .mem-bracket,
+    .stage-board .trial-area-art:hover .mem-bracket {
+        stroke: #fb7185;
+    }
+
+    .stage-tile.is-hot .learn-left,
+    .stage-tile:focus-visible .learn-left,
+    .stage-board .trial-area-art:hover .learn-left {
+        opacity: 0.38;
+    }
+
+    .stage-tile.is-hot .learn-right,
+    .stage-tile:focus-visible .learn-right,
+    .stage-board .trial-area-art:hover .learn-right {
+        opacity: 1;
+    }
+
+    .stage-tile.is-hot .learn-left .learn-bar,
+    .stage-tile:focus-visible .learn-left .learn-bar,
+    .stage-board .trial-area-art:hover .learn-left .learn-bar {
+        transform: scaleX(0.38);
+    }
+
+    .stage-tile.is-hot .learn-right .learn-bar,
+    .stage-tile:focus-visible .learn-right .learn-bar,
+    .stage-board .trial-area-art:hover .learn-right .learn-bar {
+        transform: scaleX(2.5);
+    }
+
+    .stage-tile.is-hot .learn-token,
+    .stage-tile:focus-visible .learn-token,
+    .stage-board .trial-area-art:hover .learn-token {
+        transform: translate(152px, 70px);
+    }
+
+    .stage-tile.is-hot .learn-swap,
+    .stage-tile:focus-visible .learn-swap,
+    .stage-board .trial-area-art:hover .learn-swap {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .stage-halo {
+        animation: hub-halo 28s linear infinite;
+    }
+
+    .stage-tile.is-hot .attn-scan,
+    .stage-tile:focus-visible .attn-scan,
+    .stage-board .trial-area-art:hover .attn-scan {
+        animation: hub-scan 1.25s linear infinite;
+    }
+
+    .stage-tile.is-hot .attn-reticle,
+    .stage-tile:focus-visible .attn-reticle,
+    .stage-board .trial-area-art:hover .attn-reticle {
+        animation: hub-lock 1.25s ease-in-out infinite;
+    }
+
+    .stage-tile.is-hot .drift,
+    .stage-tile:focus-visible .drift,
+    .stage-board .trial-area-art:hover .drift {
+        animation: hub-drift 1.15s linear infinite;
+    }
+
+    .stage-tile.is-hot .noise,
+    .stage-tile:focus-visible .noise,
+    .stage-board .trial-area-art:hover .noise {
+        animation: hub-noise 1.35s linear infinite;
+    }
+
+    .stage-tile.is-hot .mem-step,
+    .stage-tile:focus-visible .mem-step,
+    .stage-board .trial-area-art:hover .mem-step {
+        animation: hub-step 1.8s linear infinite;
+    }
+
+    .stage-tile.is-hot .learn-token,
+    .stage-tile:focus-visible .learn-token,
+    .stage-board .trial-area-art:hover .learn-token {
+        animation: hub-token 1.15s ease-in-out infinite;
+    }
+
+    .drift.d2, .noise.n2, .mem-step.s2 { animation-delay: -0.2s; }
+    .drift.d3, .noise.n3, .mem-step.s3 { animation-delay: -0.45s; }
+    .drift.d4, .mem-step.s4 { animation-delay: -0.7s; }
+    .drift.d5, .mem-step.s5 { animation-delay: -0.95s; }
+    .drift.d6 { animation-delay: -0.3s; }
+    .drift.d7 { animation-delay: -0.85s; }
+    .drift.d8 { animation-delay: -0.55s; }
+}
+
+/* Touch: a slow idle so the art moves without a hover. */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+    .stage-tile .attn-reticle {
+        animation: hub-lock 3.4s ease-in-out infinite;
+    }
+
+    .stage-tile .attn-scan {
+        animation: hub-scan 3.6s linear infinite;
+    }
+
+    .stage-tile .drift {
+        animation: hub-drift 2.8s linear infinite;
+    }
+
+    .stage-tile .mem-step {
+        animation: hub-step 3.6s linear infinite;
+    }
+
+    .stage-tile .learn-token {
+        animation: hub-bob 2.4s ease-in-out infinite;
+    }
+
+    .stage-tile .drift.d2, .stage-tile .mem-step.s2 { animation-delay: -0.4s; }
+    .stage-tile .drift.d3, .stage-tile .mem-step.s3 { animation-delay: -0.8s; }
+    .stage-tile .drift.d4, .stage-tile .mem-step.s4 { animation-delay: -1.2s; }
+    .stage-tile .drift.d5, .stage-tile .mem-step.s5 { animation-delay: -1.6s; }
+    .stage-tile .drift.d6 { animation-delay: -0.6s; }
+    .stage-tile .drift.d7 { animation-delay: -1.5s; }
+    .stage-tile .drift.d8 { animation-delay: -2s; }
+}
+
+@keyframes hub-halo {
+    to { rotate: 360deg; }
+}
+
+@keyframes hub-scan {
+    0% { transform: translateX(0); opacity: 0; }
+    14% { opacity: 0.85; }
+    86% { opacity: 0.8; }
+    100% { transform: translateX(250px); opacity: 0; }
+}
+
+@keyframes hub-lock {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.07); }
+}
+
+@keyframes hub-drift {
+    0% { transform: translateX(-10px); opacity: 0; }
+    18% { opacity: 1; }
+    100% { transform: translateX(28px); opacity: 0; }
+}
+
+@keyframes hub-noise {
+    0% { transform: translateX(8px); opacity: 0; }
+    20% { opacity: 0.8; }
+    100% { transform: translateX(-20px); opacity: 0; }
+}
+
+@keyframes hub-step {
+    0%, 12% { opacity: 0.3; fill: #4a1848; }
+    16%, 32% { opacity: 1; fill: #e879f9; }
+    40%, 100% { opacity: 0.3; fill: #4a1848; }
+}
+
+@keyframes hub-token {
+    0%, 100% { transform: translate(152px, 64px); }
+    50% { transform: translate(152px, 78px); }
+}
+
+@keyframes hub-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+}
+
+.learn-bar,
+.learn-token,
+.attn-flank-l,
+.attn-flank-r,
+.attn-odd,
+.attn-reticle,
+.attn-center,
+.perc-many,
+.perc-bright,
+.mem-cell,
+.mem-probe-new {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.35s ease, opacity 0.35s ease, fill 0.35s ease;
+}
+
+.learn-bar {
+    transform-origin: left center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stage-halo,
+    .trial-area-art *,
+    .stage-tile .trial-area-art *,
+    .art-svg * {
+        animation: none !important;
+    }
+
+    .stage-tile,
+    .learn-bar,
+    .learn-token,
+    .attn-flank-l,
+    .attn-flank-r,
+    .attn-odd,
+    .attn-reticle,
+    .mem-cell,
+    .mem-probe-new {
+        transition: none;
+    }
+}

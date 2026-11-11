@@ -5,437 +5,361 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Trial</title>
     <meta name="description" content="Project Trial — gamified cognitive and behavioral tasks you can run in the browser.">
+    <script>document.documentElement.classList.add("js");</script>
     <link rel="stylesheet" href="assets/trial-theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        html {
-            scroll-padding-top: 8rem;
-        }
-
-        .trial-hub-filters {
-            position: sticky;
-            top: 0;
-            z-index: 30;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.4rem;
-            margin: 0 0 0.15rem;
-            padding: max(0.75rem, env(safe-area-inset-top)) 0 0.55rem;
-            background: var(--trial-bg);
-        }
-
-        .trial-hub-filters::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 100%;
-            height: 0.85rem;
-            background: linear-gradient(to bottom, var(--trial-bg), transparent);
-            pointer-events: none;
-        }
-
-        .trial-hub-chip {
-            appearance: none;
-            -webkit-appearance: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            box-sizing: border-box;
-            min-height: 44px;
-            margin: 0;
-            padding: 0.35rem 0.7rem;
-            border: 1px solid var(--trial-line);
-            border-radius: 999px;
-            background: transparent;
-            color: var(--trial-muted);
-            font-family: inherit;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            line-height: 1;
-            text-transform: uppercase;
-            cursor: pointer;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .trial-hub-chip:hover {
-            border-color: var(--trial-muted);
-            color: var(--trial-text);
-        }
-
-        .trial-hub-chip[aria-pressed="true"] {
-            background: var(--trial-accent);
-            border-color: var(--trial-accent);
-            color: var(--trial-bg);
-        }
-
-        .trial-hub-chip[aria-pressed="true"]:hover {
-            filter: brightness(1.08);
-            color: var(--trial-bg);
-        }
-
-        .trial-hub-chip:active {
-            transform: scale(0.98);
-        }
-
-        .trial-hub-chip:focus {
-            outline: none;
-        }
-
-        .trial-hub-chip:focus-visible {
-            outline: 2px solid var(--trial-text);
-            outline-offset: 3px;
-        }
-
-        .trial-hub-count {
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 0;
-            opacity: 0.72;
-        }
-
-        .trial-hub-chip[aria-pressed="true"] .trial-hub-count {
-            opacity: 0.88;
-        }
-
-        .trial-hub-section {
-            margin-top: 1.35rem;
-        }
-
-        .trial-hub-heading {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin: 0 0 0.85rem;
-            color: var(--trial-faint);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.22em;
-            line-height: 1;
-            text-transform: uppercase;
-        }
-
-        .trial-hub-heading::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--trial-line);
-        }
-
-        .trial-hub-empty {
-            margin: 1.25rem 0 0.5rem;
-            color: var(--trial-muted);
-            font-size: 0.85rem;
-            line-height: 1.45;
-            text-align: center;
-        }
-
-        .trial-hub-empty:empty {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/hub-stage.css">
+    <noscript>
+        <style>
+            #task-hub-source {
+                position: static !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+                clip: auto !important;
+            }
+        </style>
+    </noscript>
 </head>
-<body class="trial-app text-white min-h-screen flex flex-col justify-start items-center p-6 select-none">
+<body class="trial-app trial-hub select-none">
 
-    <div class="text-center max-w-xl mb-12">
-        <p class="text-[11px] text-slate-500 tracking-[0.35em] uppercase mb-4">Experimental task dashboard</p>
-        <h1 class="mb-5">
-            <img src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" class="w-full h-auto" width="1098" height="309">
-        </h1>
-        <p class="text-gray-400 text-sm md:text-base leading-relaxed">
-            Teaching demos for attention, perception, and reaction time. Play a task in the browser, or read its parameters first. Responses stay on this device.
-        </p>
-    </div>
+    <p class="stage-live" id="stage-live" aria-live="polite"></p>
 
-    <!--
-      Cards carry data-domain. Chips count those cards and show one domain at a time.
-      To add a task, place a card in its domain section with the same data-domain.
-      A new domain also needs a section and a chip whose data-filter matches that token.
-    -->
-    <div class="w-full max-w-lg" id="task-hub">
-        <div class="trial-hub-filters" role="toolbar" aria-label="Filter tasks by domain" aria-controls="task-hub-list">
-            <button type="button" class="trial-hub-chip" data-filter="all" aria-pressed="true">
-                <span class="trial-hub-chip-label">All</span>
-                <span class="trial-hub-count">10</span>
-            </button>
-            <button type="button" class="trial-hub-chip" data-filter="attention" aria-pressed="false">
-                <span class="trial-hub-chip-label">Attention</span>
-                <span class="trial-hub-count">4</span>
-            </button>
-            <button type="button" class="trial-hub-chip" data-filter="perception" aria-pressed="false">
-                <span class="trial-hub-chip-label">Perception</span>
-                <span class="trial-hub-count">3</span>
-            </button>
-            <button type="button" class="trial-hub-chip" data-filter="memory" aria-pressed="false">
-                <span class="trial-hub-chip-label">Memory</span>
-                <span class="trial-hub-count">2</span>
-            </button>
-            <button type="button" class="trial-hub-chip" data-filter="learning" aria-pressed="false">
-                <span class="trial-hub-chip-label">Learning</span>
-                <span class="trial-hub-count">1</span>
-            </button>
+    <main class="trial-hub-main" id="task-hub">
+        <div class="stage-map" id="stage-map">
+            <header class="stage-center">
+                <div class="stage-halo" aria-hidden="true"></div>
+                <p class="stage-kicker">Experimental task dashboard</p>
+                <h1 class="stage-title">
+                    <img src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309">
+                </h1>
+                <p class="stage-lede">
+                    Teaching demos for attention, perception, and reaction time. Play a task in the browser, or read its parameters first. Responses stay on this device.
+                </p>
+            </header>
+            <div class="stage-ring" id="stage-ring" role="group" aria-label="Areas"></div>
         </div>
 
-        <p class="trial-hub-empty" id="task-hub-empty" role="status" aria-live="polite"></p>
+        <div class="stage-board" id="stage-board" hidden role="region" aria-label="Area">
+            <div class="stage-board-bar">
+                <button type="button" class="stage-back" id="stage-back">All stages</button>
+                <p class="stage-board-count" id="stage-board-count"></p>
+            </div>
+            <div id="stage-board-slot"></div>
+        </div>
 
-        <div id="task-hub-list">
-            <section class="trial-hub-section" data-domain="attention" aria-labelledby="domain-attention">
+        <!--
+          Area sections are the stage-select data. hub-stage.js reads them
+          and places one tile per section (desktop ellipse, tablet sandwich,
+          phone grid). To add a task, put a .trial-hub-card in its area.
+          To add an area, add another .trial-hub-section with data-domain,
+          --area-accent, a heading, a blurb, optional .trial-area-art, and
+          .trial-area-tasks. A missing illustration gets a generated mark.
+        -->
+        <div id="task-hub-source">
+            <section class="trial-hub-section" data-domain="attention" style="--area-accent: #818cf8" aria-labelledby="domain-attention">
+                <div class="trial-area-art" aria-hidden="true">
+                    <svg class="art-svg art-attention" viewBox="0 0 320 190">
+                        <ellipse cx="160" cy="96" rx="120" ry="58" fill="#818cf8" opacity="0.14"/>
+                        <g fill="#312e81">
+                            <circle cx="28" cy="32" r="6"/>
+                            <circle cx="52" cy="32" r="6"/>
+                            <circle cx="76" cy="32" r="6"/>
+                            <circle cx="124" cy="32" r="6"/>
+                            <circle cx="148" cy="32" r="6"/>
+                            <circle cx="172" cy="32" r="6"/>
+                            <circle cx="196" cy="32" r="6"/>
+                        </g>
+                        <circle class="attn-odd movable" cx="100" cy="32" r="9" fill="#fb7185"/>
+                        <circle class="attn-odd-ring" cx="100" cy="32" r="16" fill="none" stroke="#fb7185" stroke-width="2" opacity="0"/>
+                        <g class="attn-flank-l movable" stroke="#818cf8" stroke-width="8" stroke-linejoin="miter" stroke-linecap="square" fill="none">
+                            <path d="M86 104 H36 M36 104 L58 82 M36 104 L58 126"/>
+                        </g>
+                        <g class="attn-center movable" stroke="#f9a8d4" stroke-width="9" stroke-linejoin="miter" stroke-linecap="square" fill="none">
+                            <path d="M118 104 H202 M202 104 L178 80 M202 104 L178 128"/>
+                        </g>
+                        <g class="attn-flank-r movable" stroke="#818cf8" stroke-width="8" stroke-linejoin="miter" stroke-linecap="square" fill="none">
+                            <path d="M234 104 H284 M284 104 L262 82 M284 104 L262 126"/>
+                        </g>
+                        <g class="attn-reticle movable" stroke="#22d3ee" stroke-width="2.5" fill="none">
+                            <rect x="128" y="68" width="64" height="72"/>
+                            <path d="M160 68 V52 M160 140 V156 M128 104 H112 M192 104 H208"/>
+                            <rect x="154" y="98" width="12" height="12" fill="#22d3ee" stroke="none"/>
+                        </g>
+                        <rect class="attn-scan" x="24" y="52" width="3" height="100" fill="#22d3ee"/>
+                    </svg>
+                </div>
                 <h2 class="trial-hub-heading" id="domain-attention">Attention</h2>
-                <div class="space-y-4">
-                    <div class="trial-hub-card" data-domain="attention">
-                        <a href="stroop_game.html" class="group block border-2 border-indigo-500/50 bg-indigo-950/30 hover:bg-indigo-900/50 hover:border-indigo-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-indigo-300 group-hover:text-indigo-200">01. STROOP DASH</span>
-                                <span class="text-xs bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/50">ACTIVE</span>
+                <p class="trial-area-blurb">Conflict, rare signals, and when to hold a response.</p>
+                <div class="trial-area-tasks">
+                    <article class="trial-hub-card" data-domain="attention">
+                        <div class="trial-task-face border-2 border-indigo-500/50 bg-indigo-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-indigo-300"><a href="stroop_game.html">01. STROOP DASH</a></h3>
+                                <span class="trial-hub-badge text-xs bg-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/50">ACTIVE</span>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Measures selective attention, processing speed, and executive interference using incongruent semantic stimuli.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #a5b4fc" href="stroop-info.html">Parameters</a>
-                        </div>
-                    </div>
-
-                    <div class="trial-hub-card" data-domain="attention">
-                        <a href="oddball_game.html" class="group block border-2 border-purple-500/50 bg-purple-950/30 hover:bg-purple-900/50 hover:border-purple-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-purple-300 group-hover:text-purple-200">02. ODDBALL TASK</span>
-                                <span class="text-xs bg-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/50">ACTIVE</span>
+                            <p class="text-xs text-gray-400 leading-normal">Measures selective attention, processing speed, and executive interference using incongruent semantic stimuli.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #a5b4fc" href="stroop_game.html">Play <span class="sr-only">Stroop Dash</span></a>
+                                <a class="trial-more" style="--trial-accent: #a5b4fc" href="stroop-info.html">Parameters <span class="sr-only">for Stroop Dash</span></a>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Evaluates attention and discrimination ability by detecting rare stimuli among frequent standard stimuli.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #d8b4fe" href="oddball-info.html">Parameters</a>
                         </div>
-                    </div>
-
-                    <div class="trial-hub-card" data-domain="attention">
-                        <a href="flanker_game.html" class="group block border-2 border-rose-500/50 bg-rose-950/30 hover:bg-rose-900/50 hover:border-rose-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-rose-300 group-hover:text-rose-200">06. ERIKSEN FLANKER</span>
-                                <span class="text-xs bg-rose-500/30 text-rose-300 px-2 py-0.5 rounded-full border border-rose-500/50">ACTIVE</span>
+                    </article>
+                    <article class="trial-hub-card" data-domain="attention">
+                        <div class="trial-task-face border-2 border-purple-500/50 bg-purple-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-purple-300"><a href="oddball_game.html">02. ODDBALL TASK</a></h3>
+                                <span class="trial-hub-badge text-xs bg-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/50">ACTIVE</span>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Report the direction of the center arrow and ignore the flanking symbols.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #fda4af" href="flanker-info.html">Parameters</a>
-                        </div>
-                    </div>
-
-                    <div class="trial-hub-card" data-domain="attention">
-                        <a href="gonogo_game.html" class="group block border-2 border-lime-500/50 bg-lime-950/30 hover:bg-lime-900/50 hover:border-lime-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-lime-300 group-hover:text-lime-200">08. GO / NO-GO</span>
-                                <span class="text-xs bg-lime-500/30 text-lime-300 px-2 py-0.5 rounded-full border border-lime-500/50">ACTIVE</span>
+                            <p class="text-xs text-gray-400 leading-normal">Evaluates attention and discrimination ability by detecting rare stimuli among frequent standard stimuli.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #d8b4fe" href="oddball_game.html">Play <span class="sr-only">Oddball</span></a>
+                                <a class="trial-more" style="--trial-accent: #d8b4fe" href="oddball-info.html">Parameters <span class="sr-only">for Oddball</span></a>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Respond quickly to a green arrow. Withhold when a red X appears.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #bef264" href="gonogo-info.html">Parameters</a>
                         </div>
-                    </div>
+                    </article>
+                    <article class="trial-hub-card" data-domain="attention">
+                        <div class="trial-task-face border-2 border-rose-500/50 bg-rose-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-rose-300"><a href="flanker_game.html">06. ERIKSEN FLANKER</a></h3>
+                                <span class="trial-hub-badge text-xs bg-rose-500/30 text-rose-300 px-2 py-0.5 rounded-full border border-rose-500/50">ACTIVE</span>
+                            </div>
+                            <p class="text-xs text-gray-400 leading-normal">Report the direction of the center arrow and ignore the flanking symbols.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #fda4af" href="flanker_game.html">Play <span class="sr-only">Eriksen Flanker</span></a>
+                                <a class="trial-more" style="--trial-accent: #fda4af" href="flanker-info.html">Parameters <span class="sr-only">for Eriksen Flanker</span></a>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="trial-hub-card" data-domain="attention">
+                        <div class="trial-task-face border-2 border-lime-500/50 bg-lime-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-lime-300"><a href="gonogo_game.html">08. GO / NO-GO</a></h3>
+                                <span class="trial-hub-badge text-xs bg-lime-500/30 text-lime-300 px-2 py-0.5 rounded-full border border-lime-500/50">ACTIVE</span>
+                            </div>
+                            <p class="text-xs text-gray-400 leading-normal">Respond quickly to a green arrow. Withhold when a red X appears.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #bef264" href="gonogo_game.html">Play <span class="sr-only">Go / No-Go</span></a>
+                                <a class="trial-more" style="--trial-accent: #bef264" href="gonogo-info.html">Parameters <span class="sr-only">for Go / No-Go</span></a>
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </section>
 
-            <section class="trial-hub-section" data-domain="perception" aria-labelledby="domain-perception">
+            <section class="trial-hub-section" data-domain="perception" style="--area-accent: #22d3ee" aria-labelledby="domain-perception">
+                <div class="trial-area-art" aria-hidden="true">
+                    <svg class="art-svg art-perception" viewBox="0 0 320 190">
+                        <ellipse cx="200" cy="100" rx="110" ry="62" fill="#22d3ee" opacity="0.1"/>
+                        <g class="perc-stairs">
+                            <rect x="18" y="128" width="28" height="22" fill="#083344"/>
+                            <rect x="18" y="102" width="28" height="22" fill="#155e75"/>
+                            <rect x="18" y="76" width="28" height="22" fill="#0891b2"/>
+                            <rect class="perc-bright" x="18" y="50" width="28" height="22" fill="#67e8f9"/>
+                            <rect x="18" y="24" width="28" height="22" fill="#ecfeff"/>
+                        </g>
+                        <g class="perc-flow" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round" fill="none">
+                            <path class="drift d1 movable" d="M78 36 h16"/>
+                            <path class="drift d2 movable" d="M120 48 h18"/>
+                            <path class="drift d3 movable" d="M168 34 h14"/>
+                            <path class="drift d4 movable" d="M214 46 h16"/>
+                            <path class="drift d5 movable" d="M96 68 h18"/>
+                            <path class="drift d6 movable" d="M150 62 h14"/>
+                            <path class="drift d7 movable" d="M198 72 h16"/>
+                            <path class="drift d8 movable" d="M250 58 h14"/>
+                        </g>
+                        <g class="perc-flow" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" fill="none">
+                            <path class="noise n1 movable" d="M140 88 h14"/>
+                            <path class="noise n2 movable" d="M188 96 h12"/>
+                            <path class="noise n3 movable" d="M230 84 h14"/>
+                        </g>
+                        <g class="perc-trails" stroke="#fde68a" stroke-width="2" stroke-linecap="round" opacity="0.35">
+                            <path d="M70 36 h34"/>
+                            <path d="M112 48 h36"/>
+                            <path d="M160 34 h32"/>
+                            <path d="M206 46 h34"/>
+                            <path d="M88 68 h36"/>
+                            <path d="M142 62 h32"/>
+                            <path d="M190 72 h34"/>
+                            <path d="M242 58 h30"/>
+                        </g>
+                        <g class="perc-few" fill="#67e8f9">
+                            <circle cx="118" cy="132" r="5"/>
+                            <circle cx="136" cy="146" r="4.5"/>
+                            <circle cx="128" cy="160" r="4"/>
+                            <circle cx="150" cy="154" r="4.5"/>
+                        </g>
+                        <g class="perc-many movable" fill="#6ee7b7">
+                            <circle cx="214" cy="118" r="5"/>
+                            <circle cx="232" cy="128" r="4.5"/>
+                            <circle cx="250" cy="116" r="5"/>
+                            <circle cx="268" cy="130" r="4"/>
+                            <circle cx="222" cy="142" r="4.5"/>
+                            <circle cx="242" cy="150" r="5"/>
+                            <circle cx="260" cy="146" r="4"/>
+                            <circle cx="236" cy="164" r="4.5"/>
+                            <circle cx="258" cy="164" r="4"/>
+                        </g>
+                        <circle class="perc-ring" cx="242" cy="140" r="40" fill="none" stroke="#6ee7b7" stroke-width="1.5"/>
+                    </svg>
+                </div>
                 <h2 class="trial-hub-heading" id="domain-perception">Perception</h2>
-                <div class="space-y-4">
-                    <div class="trial-hub-card" data-domain="perception">
-                        <a href="brightness_game.html" class="group block border-2 border-cyan-500/50 bg-cyan-950/30 hover:bg-cyan-900/50 hover:border-cyan-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-cyan-300 group-hover:text-cyan-200">03. BRIGHTNESS DETECTION</span>
-                                <span class="text-xs bg-cyan-500/30 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/50">ACTIVE</span>
+                <p class="trial-area-blurb">Brightness, number, and the direction of motion.</p>
+                <div class="trial-area-tasks">
+                    <article class="trial-hub-card" data-domain="perception">
+                        <div class="trial-task-face border-2 border-cyan-500/50 bg-cyan-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-cyan-300"><a href="brightness_game.html">03. BRIGHTNESS DETECTION</a></h3>
+                                <span class="trial-hub-badge text-xs bg-cyan-500/30 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/50">ACTIVE</span>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Assesses visual perception and sensitivity thresholds through luminance discrimination tasks.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #67e8f9" href="brightness-info.html">Parameters</a>
-                        </div>
-                    </div>
-
-                    <div class="trial-hub-card" data-domain="perception">
-                        <a href="numerosity_game.html" class="group block border-2 border-emerald-500/50 bg-emerald-950/30 hover:bg-emerald-900/50 hover:border-emerald-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-emerald-300 group-hover:text-emerald-200">04. NUMEROSITY COMPARISON</span>
-                                <span class="text-xs bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/50">ACTIVE</span>
+                            <p class="text-xs text-gray-400 leading-normal">Assesses visual perception and sensitivity thresholds through luminance discrimination tasks.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #67e8f9" href="brightness_game.html">Play <span class="sr-only">Brightness Detection</span></a>
+                                <a class="trial-more" style="--trial-accent: #67e8f9" href="brightness-info.html">Parameters <span class="sr-only">for Brightness Detection</span></a>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Choose which of two brief dot arrays had more dots, across easy, medium, and hard number gaps.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #6ee7b7" href="numerosity-info.html">Parameters</a>
                         </div>
-                    </div>
-
-                    <div class="trial-hub-card" data-domain="perception">
-                        <a href="rdk_game.html" class="group block border-2 border-amber-500/50 bg-amber-950/30 hover:bg-amber-900/50 hover:border-amber-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-amber-300 group-hover:text-amber-200">05. RDK MOTION COHERENCE</span>
-                                <span class="text-xs bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/50">ACTIVE</span>
+                    </article>
+                    <article class="trial-hub-card" data-domain="perception">
+                        <div class="trial-task-face border-2 border-emerald-500/50 bg-emerald-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-emerald-300"><a href="numerosity_game.html">04. NUMEROSITY COMPARISON</a></h3>
+                                <span class="trial-hub-badge text-xs bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/50">ACTIVE</span>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Judge whether a cloud of moving dots drifts left or right, at easy, medium, and hard coherence.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #fcd34d" href="rdk-info.html">Parameters</a>
+                            <p class="text-xs text-gray-400 leading-normal">Choose which of two brief dot arrays had more dots, across easy, medium, and hard number gaps.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #6ee7b7" href="numerosity_game.html">Play <span class="sr-only">Numerosity Comparison</span></a>
+                                <a class="trial-more" style="--trial-accent: #6ee7b7" href="numerosity-info.html">Parameters <span class="sr-only">for Numerosity Comparison</span></a>
+                            </div>
                         </div>
-                    </div>
+                    </article>
+                    <article class="trial-hub-card" data-domain="perception">
+                        <div class="trial-task-face border-2 border-amber-500/50 bg-amber-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-amber-300"><a href="rdk_game.html">05. RDK MOTION COHERENCE</a></h3>
+                                <span class="trial-hub-badge text-xs bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/50">ACTIVE</span>
+                            </div>
+                            <p class="text-xs text-gray-400 leading-normal">Judge whether a cloud of moving dots drifts left or right, at easy, medium, and hard coherence.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #fcd34d" href="rdk_game.html">Play <span class="sr-only">RDK Motion Coherence</span></a>
+                                <a class="trial-more" style="--trial-accent: #fcd34d" href="rdk-info.html">Parameters <span class="sr-only">for RDK Motion Coherence</span></a>
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </section>
 
-            <section class="trial-hub-section" data-domain="memory" aria-labelledby="domain-memory">
+            <section class="trial-hub-section" data-domain="memory" style="--area-accent: #e879f9" aria-labelledby="domain-memory">
+                <div class="trial-area-art" aria-hidden="true">
+                    <svg class="art-svg art-memory" viewBox="0 0 320 190">
+                        <ellipse cx="110" cy="92" rx="90" ry="64" fill="#e879f9" opacity="0.1"/>
+                        <g>
+                            <rect class="mem-cell" x="22" y="28" width="48" height="48" rx="5" fill="#38bdf8"/>
+                            <rect class="mem-cell" x="78" y="28" width="48" height="48" rx="5" fill="#fde68a"/>
+                            <rect class="mem-cell mem-probe" x="134" y="28" width="48" height="48" rx="5" fill="#a78bfa"/>
+                            <rect class="mem-probe-new" x="144" y="38" width="28" height="28" rx="3" fill="#fb7185"/>
+                            <rect class="mem-cell" x="22" y="84" width="48" height="48" rx="5" fill="#fb7185"/>
+                            <rect class="mem-cell" x="78" y="84" width="48" height="48" rx="5" fill="#34d399"/>
+                            <rect class="mem-cell" x="134" y="84" width="48" height="48" rx="5" fill="#818cf8"/>
+                            <path class="mem-bracket" d="M128 22 H142 M128 22 V36 M188 22 H174 M188 22 V36 M128 138 H142 M128 138 V124 M188 138 H174 M188 138 V124" stroke="#fff" stroke-width="2.5" fill="none"/>
+                        </g>
+                        <path class="mem-path" d="M214 48 H252 L274 86 L236 118 L214 156" stroke="#e879f9" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+                        <g>
+                            <rect class="mem-step s1" x="196" y="32" width="32" height="32" rx="3" fill="#e879f9" stroke="#e879f9"/>
+                            <rect class="mem-step s2" x="240" y="32" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
+                            <rect class="mem-step s3" x="258" y="70" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
+                            <rect class="mem-step s4" x="220" y="102" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
+                            <rect class="mem-step s5" x="196" y="140" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
+                        </g>
+                    </svg>
+                </div>
                 <h2 class="trial-hub-heading" id="domain-memory">Memory</h2>
-                <div class="space-y-4">
-                    <div class="trial-hub-card" data-domain="memory">
-                        <a href="vwm_game.html" class="group block border-2 border-sky-500/50 bg-sky-950/30 hover:bg-sky-900/50 hover:border-sky-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-sky-300 group-hover:text-sky-200">07. VISUAL WORKING MEMORY</span>
-                                <span class="text-xs bg-sky-500/30 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/50">ACTIVE</span>
+                <p class="trial-area-blurb">Hold a pattern, then bring it back.</p>
+                <div class="trial-area-tasks">
+                    <article class="trial-hub-card" data-domain="memory">
+                        <div class="trial-task-face border-2 border-sky-500/50 bg-sky-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-sky-300"><a href="vwm_game.html">07. VISUAL WORKING MEMORY</a></h3>
+                                <span class="trial-hub-badge text-xs bg-sky-500/30 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/50">ACTIVE</span>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Remember a brief array of colored squares, then say whether a probed square changed.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #7dd3fc" href="vwm-info.html">Parameters</a>
-                        </div>
-                    </div>
-
-                    <div class="trial-hub-card" data-domain="memory">
-                        <a href="corsi_game.html" class="group block border-2 border-fuchsia-500/50 bg-fuchsia-950/30 hover:bg-fuchsia-900/50 hover:border-fuchsia-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-fuchsia-300 group-hover:text-fuchsia-200">09. CORSI SPAN</span>
-                                <span class="text-xs bg-fuchsia-500/30 text-fuchsia-300 px-2 py-0.5 rounded-full border border-fuchsia-500/50">ACTIVE</span>
+                            <p class="text-xs text-gray-400 leading-normal">Remember a brief array of colored squares, then say whether a probed square changed.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #7dd3fc" href="vwm_game.html">Play <span class="sr-only">Visual Working Memory</span></a>
+                                <a class="trial-more" style="--trial-accent: #7dd3fc" href="vwm-info.html">Parameters <span class="sr-only">for Visual Working Memory</span></a>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Watch blocks flash, then tap them back in the same order.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #f0abfc" href="corsi-info.html">Parameters</a>
                         </div>
-                    </div>
+                    </article>
+                    <article class="trial-hub-card" data-domain="memory">
+                        <div class="trial-task-face border-2 border-fuchsia-500/50 bg-fuchsia-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-fuchsia-300"><a href="corsi_game.html">09. CORSI SPAN</a></h3>
+                                <span class="trial-hub-badge text-xs bg-fuchsia-500/30 text-fuchsia-300 px-2 py-0.5 rounded-full border border-fuchsia-500/50">ACTIVE</span>
+                            </div>
+                            <p class="text-xs text-gray-400 leading-normal">Watch blocks flash, then tap them back in the same order.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #f0abfc" href="corsi_game.html">Play <span class="sr-only">Corsi Span</span></a>
+                                <a class="trial-more" style="--trial-accent: #f0abfc" href="corsi-info.html">Parameters <span class="sr-only">for Corsi Span</span></a>
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </section>
 
-            <section class="trial-hub-section" data-domain="learning" aria-labelledby="domain-learning">
+            <section class="trial-hub-section" data-domain="learning" style="--area-accent: #facc15" aria-labelledby="domain-learning">
+                <div class="trial-area-art" aria-hidden="true">
+                    <svg class="art-svg art-learning" viewBox="0 0 320 190">
+                        <ellipse cx="160" cy="100" rx="130" ry="60" fill="#facc15" opacity="0.08"/>
+                        <g class="learn-left">
+                            <rect x="28" y="36" width="112" height="122" rx="12" fill="rgba(250,204,21,0.08)" stroke="#facc15" stroke-width="2.5"/>
+                            <path d="M84 58 L98 78 L84 86 L70 78 Z" fill="#fde68a"/>
+                            <path d="M84 70 L104 90 L84 110 L64 90 Z" fill="#facc15"/>
+                            <rect x="46" y="126" width="76" height="14" rx="3" fill="none" stroke="#facc15" stroke-width="1.5" opacity="0.45"/>
+                            <rect class="learn-bar" x="48" y="128" width="72" height="10" rx="2" fill="#facc15"/>
+                        </g>
+                        <g class="learn-right">
+                            <rect x="180" y="36" width="112" height="122" rx="12" fill="rgba(250,204,21,0.04)" stroke="#facc15" stroke-width="2.5"/>
+                            <path d="M236 58 L250 78 L236 86 L222 78 Z" fill="#fde68a"/>
+                            <path d="M236 70 L256 90 L236 110 L216 90 Z" fill="#facc15"/>
+                            <rect x="198" y="126" width="76" height="14" rx="3" fill="none" stroke="#facc15" stroke-width="1.5" opacity="0.45"/>
+                            <rect class="learn-bar" x="200" y="128" width="26" height="10" rx="2" fill="#facc15"/>
+                        </g>
+                        <path class="learn-swap" d="M124 86 C152 48, 184 48, 208 78" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        <path class="learn-swap" d="M198 70 L210 80 L196 86" stroke="#fff" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+                        <g class="learn-token">
+                            <circle cx="84" cy="20" r="7" fill="none" stroke="#fff" stroke-width="2"/>
+                            <circle cx="84" cy="20" r="2.5" fill="#fff"/>
+                        </g>
+                    </svg>
+                </div>
                 <h2 class="trial-hub-heading" id="domain-learning">Learning</h2>
-                <div class="space-y-4">
-                    <div class="trial-hub-card" data-domain="learning">
-                        <a href="bandit_game.html" class="group block border-2 border-yellow-500/50 bg-yellow-950/30 hover:bg-yellow-900/50 hover:border-yellow-400 rounded-xl p-5 transition duration-300 transform hover:scale-105">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-lg text-yellow-300 group-hover:text-yellow-200">10. REVERSAL LEARNING</span>
-                                <span class="text-xs bg-yellow-500/30 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/50">ACTIVE</span>
+                <p class="trial-area-blurb">Chase what pays, then switch when it flips.</p>
+                <div class="trial-area-tasks">
+                    <article class="trial-hub-card" data-domain="learning">
+                        <div class="trial-task-face border-2 border-yellow-500/50 bg-yellow-950/30 p-5 pb-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <h3 class="trial-task-name text-yellow-300"><a href="bandit_game.html">10. REVERSAL LEARNING</a></h3>
+                                <span class="trial-hub-badge text-xs bg-yellow-500/30 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/50">ACTIVE</span>
                             </div>
-                            <p class="text-xs text-gray-400 leading-normal">
-                                Pick the card that pays more often, then update when the better option switches.
-                            </p>
-                        </a>
-                        <div class="flex justify-end">
-                            <a class="trial-more" style="--trial-accent: #fde047" href="bandit-info.html">Parameters</a>
+                            <p class="text-xs text-gray-400 leading-normal">Pick the card that pays more often, then update when the better option switches.</p>
+                            <div class="trial-task-actions">
+                                <a class="trial-more trial-task-play" style="--trial-accent: #fde047" href="bandit_game.html">Play <span class="sr-only">Reversal Learning</span></a>
+                                <a class="trial-more" style="--trial-accent: #fde047" href="bandit-info.html">Parameters <span class="sr-only">for Reversal Learning</span></a>
+                            </div>
                         </div>
-                    </div>
+                    </article>
                 </div>
             </section>
         </div>
-    </div>
+    </main>
 
-    <div class="mt-10 text-center">
-        <div class="flex flex-wrap items-center justify-center">
+    <footer class="stage-foot">
+        <div class="stage-foot-links">
             <a class="trial-more" href="about.html">About these demos</a>
-            <span class="text-[11px] text-slate-600" aria-hidden="true">·</span>
+            <span class="stage-foot-dot" aria-hidden="true">·</span>
             <a class="trial-more" rel="author noopener noreferrer" href="https://yiuhong.github.io/" target="_blank">About Yiu Hong</a>
         </div>
-        <p class="text-[11px] text-slate-600 tracking-widest uppercase">Runs in the browser · saved on this device · nothing uploaded</p>
-    </div>
+        <p class="stage-foot-note">Runs in the browser · saved on this device · nothing uploaded</p>
+    </footer>
 
-    <script>
-        (function () {
-            var hub = document.getElementById("task-hub");
-            if (!hub) return;
-
-            var chips = Array.prototype.slice.call(hub.querySelectorAll(".trial-hub-chip"));
-            var cards = Array.prototype.slice.call(hub.querySelectorAll(".trial-hub-card"));
-            var empty = document.getElementById("task-hub-empty");
-            var toolbar = hub.querySelector(".trial-hub-filters");
-
-            function countFor(filter) {
-                if (filter === "all") return cards.length;
-                return cards.filter(function (card) {
-                    return card.getAttribute("data-domain") === filter;
-                }).length;
-            }
-
-            chips.forEach(function (chip) {
-                var filter = chip.getAttribute("data-filter");
-                var count = countFor(filter);
-                var countEl = chip.querySelector(".trial-hub-count");
-                var labelEl = chip.querySelector(".trial-hub-chip-label");
-                if (countEl) countEl.textContent = String(count);
-                var name = labelEl ? labelEl.textContent.replace(/\s+/g, " ").trim() : filter;
-                chip.setAttribute("aria-label", name + ", " + count + (count === 1 ? " task" : " tasks"));
-            });
-
-            function applyFilter(filter) {
-                var liveCards = Array.prototype.slice.call(hub.querySelectorAll(".trial-hub-card"));
-                var liveSections = Array.prototype.slice.call(hub.querySelectorAll(".trial-hub-section"));
-                var visible = 0;
-                liveCards.forEach(function (card) {
-                    var show = filter === "all" || card.getAttribute("data-domain") === filter;
-                    card.hidden = !show;
-                    if (show) visible += 1;
-                });
-                liveSections.forEach(function (section) {
-                    section.hidden = !section.querySelector(".trial-hub-card:not([hidden])");
-                });
-                chips.forEach(function (chip) {
-                    chip.setAttribute("aria-pressed", chip.getAttribute("data-filter") === filter ? "true" : "false");
-                });
-                if (empty) empty.textContent = visible === 0 ? "No tasks in this domain." : "";
-            }
-
-            chips.forEach(function (chip) {
-                chip.addEventListener("click", function () {
-                    applyFilter(chip.getAttribute("data-filter"));
-                });
-            });
-
-            if (toolbar) {
-                toolbar.addEventListener("keydown", function (event) {
-                    var key = event.key;
-                    var forward = key === "ArrowRight" || key === "ArrowDown";
-                    var backward = key === "ArrowLeft" || key === "ArrowUp";
-                    if (!forward && !backward && key !== "Home" && key !== "End") return;
-                    var index = chips.indexOf(document.activeElement);
-                    if (index === -1) return;
-                    event.preventDefault();
-                    var next = index;
-                    if (forward) next = (index + 1) % chips.length;
-                    else if (backward) next = (index - 1 + chips.length) % chips.length;
-                    else if (key === "Home") next = 0;
-                    else next = chips.length - 1;
-                    chips[next].focus();
-                    applyFilter(chips[next].getAttribute("data-filter"));
-                });
-            }
-
-            applyFilter("all");
-        })();
-    </script>
-
+    <script src="assets/hub-stage.js"></script>
 </body>
 </html>
