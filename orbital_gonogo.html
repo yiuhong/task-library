@@ -295,12 +295,14 @@
       material="color: #00F5D4; wireframe: true; transparent: true; opacity: 0.12; side: double">
     </a-entity>
 
+    <!-- The disc sits under the targets. It does not write depth, or its
+         interpolated depth hides the bottom of the near sphere. -->
     <a-cylinder
       position="0 -0.05 0"
       radius="16"
       height="0.1"
       color="#070d1f"
-      material="roughness: 0.8; metalness: 0.2">
+      material="roughness: 0.8; metalness: 0.2; depthWrite: false">
     </a-cylinder>
 
     <a-light type="ambient" color="#88aaff" intensity="0.65"></a-light>

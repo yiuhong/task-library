@@ -17,7 +17,7 @@
 
         <section>
             <h2>What it shows</h2>
-            <p>This is the spatial sibling of <a href="gonogo_game.html">Go / No-Go</a>. It is a separate task. Depth is a planned factor: the same physical target is shown on three frontal planes, so a nearer target looks larger. The run is one shared field. Targets are not placed beside or behind the viewer.</p>
+            <p>This is the spatial sibling of <a href="gonogo_game.html">Go / No-Go</a>. It is a separate task. Depth is a planned factor: the same physical target is shown on three frontal planes, so a nearer target looks larger. Every target uses one fixed direction, a few degrees right and slightly up from the fixation mark, so screen position does not change from trial to trial. The run is one shared field. Targets are not placed beside or behind the viewer.</p>
             <p>The results screen reports go hits, no-go false alarms, and mean go response time for the whole run and again for near, mid, and far. A hit is a response on a go trial inside the window. A false alarm is a response on a no-go trial. A miss is a go trial that reaches the deadline with no response. A correct rejection is a no-go trial with no response. This is a teaching demo, not a clinical or normed test.</p>
             <p>The page is a WebXR special case. It does not use the gamified or classical shell, and the hub card has no Classical link. <a href="vr.html">vr.html</a> redirects here.</p>
         </section>
@@ -39,19 +39,19 @@
                 </div>
                 <div>
                     <dt>Depth planes</dt>
-                    <dd>Near 2.70 m, mid 3.35 m, far 4.05 m, measured along the straight-ahead axis from the eye pose at the start of the run. All three sit inside the frontal range of about 2.5–4.2 m. Each plane has 7 go trials and 3 no-go trials. The full list is a Fisher–Yates shuffle, so plane and trial type stay balanced while order does not.</dd>
+                    <dd>Near 1.80 m, mid 3.30 m, far 5.50 m, measured along the straight-ahead depth axis from the eye pose at the start of the run. Each plane has 7 go trials and 3 no-go trials. The full list is a Fisher–Yates shuffle, so plane and trial type stay balanced while order does not. The shuffle does not move the target.</dd>
                 </div>
                 <div>
                     <dt>Placement</dt>
-                    <dd>Each target is placed by visual angle from fixation, then dropped onto its plane. Horizontal angle is −18° to +18°. Vertical angle is −5° to +6°. With the eye near the origin, that stays inside about x ±2.5 m and within about −0.5 to +0.6 m of eye height. The target is always in front.</dd>
+                    <dd>Every target uses the same fixed visual direction: 4° right and 2° up from straight ahead. Azimuth and elevation do not change from trial to trial or from plane to plane. Only distance changes, so the target stays at one screen position and a nearer target looks larger. The offset keeps the target off the fixation mark. One target is shown at a time, always in front.</dd>
                 </div>
                 <div>
                     <dt>Size</dt>
-                    <dd>Physical radius stays 0.40 m on every plane. Visual angle is the full diameter, <code>2 × atan(radius / distance)</code>. Nearer targets look bigger. Visual angle is not held constant. On-axis diameters are about 16.8° near, 13.6° mid, and 11.3° far.</dd>
+                    <dd>Physical radius stays 0.40 m on every plane. Visual angle is the full diameter, <code>2 × atan(radius / distance)</code>. Nearer targets look bigger. Visual angle is not held constant. On-axis diameters are about 25.1° near, 13.8° mid, and 8.3° far.</dd>
                 </div>
                 <div>
                     <dt>Fixation</dt>
-                    <dd>A white plus at 3.00 m straight ahead, between the near and mid planes, shown during the gap before each target. The target itself does not move during the 1200 ms window.</dd>
+                    <dd>A white plus at 3.00 m straight ahead, slightly in front of the mid plane, shown during the gap before each target. The target itself does not move during the 1200 ms window.</dd>
                 </div>
                 <div>
                     <dt>Response window</dt>
