@@ -12,12 +12,12 @@
             <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
             <p class="trial-kicker">Task info · Spatial Go/No-Go</p>
             <h1>Spatial Go/No-Go</h1>
-            <p class="lede">A cyan sphere is a go. Tap, click, or trigger it before the deadline. A magenta octahedron is a no-go. Do not respond. Targets stay in front of you, on a near, mid, or far plane. The scene title is Orbital Energy Sorter. There is no practice block.</p>
+            <p class="lede">A cyan sphere is a go. Tap, click, or trigger it before the deadline. A magenta octahedron is a no-go. Do not respond. Targets stay in front of you, on a near, mid, or far plane. The scene title is Orbital Energy Sorter. The default run uses one physical size, hides the plus when the target appears, and has no practice block. Size, fixation, and a short practice are choices on the start screen.</p>
         </header>
 
         <section>
             <h2>What it shows</h2>
-            <p>This is the spatial sibling of <a href="gonogo_game.html">Go / No-Go</a>. It is a separate task. Depth is a planned factor: the same physical target is shown on three frontal planes, so a nearer target looks larger. Every target is straight ahead on the fixation axis, so screen position does not change from trial to trial. A nearer target may cover the fixation mark. The run is one shared field. Targets are not placed beside or behind the viewer.</p>
+            <p>This is the spatial sibling of <a href="gonogo_game.html">Go / No-Go</a>. It is a separate task. Depth is a planned factor on three frontal planes. The default shows the same physical target on each plane, so a nearer target looks larger. Constant visual angle is the other size choice: the physical radius scales so near, mid, and far match the mid-plane angle. Every target is straight ahead on the fixation axis, so screen position does not change from trial to trial. In the default fixation setting the plus hides when the target appears, and a nearer opaque target may cover the fixation spot. Plus stays visible keeps the plus up behind a translucent target. The run is one shared field. Targets are not placed beside or behind the viewer. Colour and shape still decide go and no-go. Depth does not.</p>
             <p>The results screen reports go hits, no-go false alarms, and mean go response time for the whole run and again for near, mid, and far. A hit is a response on a go trial inside the window. A false alarm is a response on a no-go trial. A miss is a go trial that reaches the deadline with no response. A correct rejection is a no-go trial with no response. This is a teaching demo, not a clinical or normed test.</p>
             <p>The page is a WebXR special case. It does not use the gamified or classical shell, and the hub card has no Classical link. <a href="vr.html">vr.html</a> redirects here.</p>
         </section>
@@ -27,15 +27,15 @@
             <dl class="trial-defs">
                 <div>
                     <dt>Trials</dt>
-                    <dd>30 trials. No practice block. 21 go (70%) and 9 no-go (30%).</dd>
+                    <dd>30 trials in the main run. 21 go (70%) and 9 no-go (30%). Short practice is off unless it is switched on, so the default run has no practice block.</dd>
                 </div>
                 <div>
                     <dt>Go stimulus</dt>
-                    <dd>Cyan sphere, <code>#00F5D4</code>, physical radius 0.40 m. Respond within the window.</dd>
+                    <dd>Cyan sphere, <code>#00F5D4</code>. In the default size mode the physical radius is 0.40 m. In constant visual angle the radius follows the plane. Respond within the window.</dd>
                 </div>
                 <div>
                     <dt>No-go stimulus</dt>
-                    <dd>Magenta octahedron, <code>#FF2A85</code>, physical radius 0.40 m. Do not respond. The shape spins. The spin does not change the window.</dd>
+                    <dd>Magenta octahedron, <code>#FF2A85</code>, with the same radius rule as the go sphere. Do not respond. The shape spins. The spin does not change the window.</dd>
                 </div>
                 <div>
                     <dt>Depth planes</dt>
@@ -43,15 +43,19 @@
                 </div>
                 <div>
                     <dt>Placement</dt>
-                    <dd>Every target is straight ahead on the fixation axis: azimuth 0° and elevation 0°. Azimuth and elevation do not change from trial to trial or from plane to plane. Only distance changes, so the target stays at one screen position and a nearer target looks larger. A nearer target may cover the fixation mark. One target is shown at a time, always in front.</dd>
+                    <dd>Every target is straight ahead on the fixation axis: azimuth 0° and elevation 0°. Azimuth and elevation do not change from trial to trial or from plane to plane. Only distance changes, so the target stays at one screen position. In the default size mode a nearer target looks larger. One target is shown at a time, always in front.</dd>
                 </div>
                 <div>
                     <dt>Size</dt>
-                    <dd>Physical radius stays 0.40 m on every plane. Visual angle is the full diameter, <code>2 × atan(radius / distance)</code>. Nearer targets look bigger. Visual angle is not held constant. On-axis diameters are about 25.1° near, 13.8° mid, and 8.3° far.</dd>
+                    <dd>Chosen on the start screen and logged as <code>size_mode</code> on every trial. Constant physical size (<code>constant_physical</code>) is the default. Radius stays 0.40 m. Visual angle is the full diameter, <code>2 × atan(radius / distance)</code>. On-axis diameters are about 25.1° near, 13.8° mid, and 8.3° far. Constant visual angle (<code>constant_angle</code>) uses the mid plane as the reference, 0.40 m at 3.30 m. Radius is <code>0.40 × (plane distance / 3.30)</code> m, and the object uses that value rounded to the nearest millimetre: about 0.218 m near, 0.400 m mid, and 0.667 m far. The on-axis diameter stays about 13.8°. Each trial logs the shown <code>stimulus_radius_m</code> and the <code>visual_angle_deg</code> from the eye at onset, so a head movement can change the angle slightly. The go/no-go rule does not change.</dd>
                 </div>
                 <div>
                     <dt>Fixation</dt>
-                    <dd>A white plus at 3.00 m straight ahead, on the same axis as the targets and slightly in front of the mid plane, shown during the gap before each target. A nearer target may cover the plus. The target itself does not move during the 1200 ms window.</dd>
+                    <dd>A white plus at 3.00 m straight ahead, on the same axis as the targets and slightly in front of the mid plane. It is shown during the gap before each target. The target itself does not move during the 1200 ms window. Hide plus (<code>hidden</code>) is the default: the plus is removed when the target appears, and the target stays opaque. A nearer target may cover the fixation spot. Plus stays visible (<code>visible</code>) keeps the plus on and draws the target at opacity 0.45 with depth writing off, so the plus shows through a target that sits in front of it. <code>fixation_mode</code> is logged on every trial. <code>fixation_occluded</code> is 1 only in the hidden setting, when the target's bounding radius crosses in front of the plus and covers that direction from the eye at onset. With the default 0.40 m radius that is the near plane and the mid plane: the mid body's near side is at 2.90 m, so the plus at 3.00 m sits inside it. The far plane is 0. Visible-plus trials log 0, because occlusion is switched off.</dd>
+                </div>
+                <div>
+                    <dt>Practice</dt>
+                    <dd>Off by default, so a run that leaves the start-screen choices alone is still 30 trials with no practice block. Short practice, when switched on, plays three trials before the 30: near go, mid no-go, then far go. The plus stays visible on those trials, whichever fixation choice is set for the main run. Practice does not change the score or the streak. The rows are logged with <code>block</code> <code>practice</code>. The 30-trial rows use <code>block</code> <code>main</code>. Hit rate, false-alarm rate, and mean go response time on the results screen use the main rows.</dd>
                 </div>
                 <div>
                     <dt>Response window</dt>
@@ -75,7 +79,8 @@
         <section>
             <h2>How to play</h2>
             <ul>
-                <li>Press Start experiment. A headset is optional. WebXR, tested on VIVE Focus 3.</li>
+                <li>On the start screen, leave Size on physical size and Fixation on hide plus for the default run. Visual angle holds the mid-plane angle. Plus stays visible keeps the plus up through a translucent target. Short practice adds three trials with the plus visible, then the 30 trials.</li>
+                <li>Press Start experiment. A headset is optional. WebXR, tested on VIVE Focus 3. In a headset the same three choices are buttons on the start panel.</li>
                 <li>On a phone or tablet, tap the object. On a desktop, click it. In a headset, pull the trigger while the laser is on it. Landscape keeps more of the field on a phone screen.</li>
                 <li>On a cyan sphere, respond before 1200 ms. On a magenta octahedron, keep still until the trial ends.</li>
                 <li>Empty space is not a response. The object is the button.</li>
@@ -91,8 +96,8 @@
 
         <section>
             <h2>Data</h2>
-            <p>When the run finishes, this browser stores one payload under <code>projectTrial_orbital_gonogo_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control and no <code>mode</code> field. The page does not log orientation turns.</p>
-            <p>Download CSV writes the current run. Columns are trial_num, trial_type (<code>GO</code> or <code>NOGO</code>), depth_plane (<code>near</code>, <code>mid</code>, or <code>far</code>), plane_distance_m, distance_m, visual_angle_deg, angle_h_deg, angle_v_deg, iti_ms, x_pos, y_pos, z_pos, eccentricity_deg, stimulus_radius_m, response_made, outcome, rt_ms, score_total, and streak. <code>distance_m</code> is the distance from the eye at onset. <code>plane_distance_m</code> is the planned plane. The saved payload includes the same trial rows plus hit rate, false-alarm rate, and mean go response time overall and by depth. The file name is <code>projectTrial_orbital_gonogo_</code> plus a timestamp.</p>
+            <p>When the run finishes, this browser stores one payload under <code>projectTrial_orbital_gonogo_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control and no shell <code>mode</code> field (<code>gamified</code> or <code>classical</code>). The page does not log orientation turns. The payload records <code>size_mode</code> and <code>fixation_mode</code> for the run. Its top-level <code>stimulus_radius_m</code> stays the 0.40 m reference radius. Each trial row stores the radius that was shown.</p>
+            <p>Download CSV writes the current run, including practice rows when practice was on. Columns are trial_num, trial_type (<code>GO</code> or <code>NOGO</code>), depth_plane (<code>near</code>, <code>mid</code>, or <code>far</code>), plane_distance_m, distance_m, visual_angle_deg, angle_h_deg, angle_v_deg, iti_ms, x_pos, y_pos, z_pos, eccentricity_deg, stimulus_radius_m, response_made, outcome, rt_ms, score_total, streak, size_mode (<code>constant_physical</code> or <code>constant_angle</code>), fixation_mode (<code>hidden</code> or <code>visible</code>), fixation_occluded (<code>1</code> or <code>0</code>), and block (<code>practice</code> or <code>main</code>). <code>distance_m</code> is the distance from the eye at onset. <code>plane_distance_m</code> is the planned plane. <code>stimulus_radius_m</code> is the radius shown on that trial. <code>visual_angle_deg</code> uses that radius and the onset distance. The saved payload includes the same trial rows plus hit rate, false-alarm rate, and mean go response time overall and by depth for the main block. The file name is <code>projectTrial_orbital_gonogo_</code> plus a timestamp.</p>
         </section>
 
         <div class="trial-actions">

@@ -124,6 +124,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      overflow: hidden;
       padding: 0.45rem 0 4.4rem;
     }
 
@@ -132,6 +133,7 @@
       max-height: 100%;
       overflow: auto;
       touch-action: pan-y;
+      pointer-events: auto;
       background: #091326;
       border: 1px solid var(--line);
       border-radius: 1rem;
@@ -256,9 +258,64 @@
 
     .links { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; }
 
-    button:focus-visible, a:focus-visible {
+    button:focus-visible, a:focus-visible, .opt-choice:focus-within {
       outline: 2px solid var(--cyan);
       outline-offset: 2px;
+    }
+
+    .opt {
+      margin: 0.45rem 0 0.15rem;
+      padding: 0.3rem 0.5rem 0.4rem;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 0.7rem;
+      min-width: 0;
+    }
+
+    .opt legend {
+      padding: 0 0.25rem;
+      color: var(--cyan);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .opt-choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin: 0.28rem 0;
+      min-height: 44px;
+      color: var(--ink);
+      font-size: 0.75rem;
+      line-height: 1.35;
+      cursor: pointer;
+    }
+
+    .opt-check {
+      margin-top: 0.35rem;
+      padding: 0.15rem 0.15rem 0;
+    }
+
+    .opt-choice input {
+      width: 1.05rem;
+      height: 1.05rem;
+      margin-top: 0.12rem;
+      flex: none;
+      accent-color: var(--cyan);
+    }
+
+    .opt-choice b { font-weight: 700; }
+
+    @media (max-width: 720px) {
+      .device-note { display: none; }
+      .sheet-wrap { padding: 0.3rem 0 3.6rem; }
+      .sheet { padding: 0.65rem 0.7rem 0.55rem; }
+      .sheet h1 { font-size: 1.12rem; }
+      #setupNote { display: none; }
+      .opt { margin: 0.28rem 0 0.05rem; padding: 0.15rem 0.45rem 0.25rem; }
+      .opt-choice { margin: 0.14rem 0; }
+      .actions { position: static; background: none; padding-top: 0.35rem; }
     }
 
     @media (orientation: portrait) and (max-width: 800px) {
@@ -270,10 +327,12 @@
       .sheet { padding: 0.45rem 0.65rem 0.45rem; }
       .sheet h1 { font-size: 1rem; margin-bottom: 0.15rem; }
       .legend { margin: 0.15rem 0; }
-      .legend li, .sheet p { font-size: 0.7rem; margin: 0.18rem 0; }
+      .legend li, .sheet p, .opt-choice { font-size: 0.68rem; margin: 0.12rem 0; }
+      .opt { margin: 0.2rem 0; padding: 0.15rem 0.4rem 0.2rem; }
+      .opt-choice { min-height: 0; }
       .device-note { display: none; }
       .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .actions { padding-top: 0.3rem; }
+      .actions { position: static; background: none; padding-top: 0.3rem; }
     }
   </style>
 </head>
@@ -338,7 +397,7 @@
       </a-entity>
     </a-entity>
 
-    <a-entity id="hudCluster" position="0 2.55 -3.6">
+    <a-entity id="hudCluster" position="0 2.55 -3.6" visible="false">
       <a-plane width="3.26" height="0.56" color="#00F5D4" material="shader: flat; opacity: 0.35; transparent: true" position="0 0 -0.01"></a-plane>
       <a-plane width="3.2" height="0.5" color="#091326" material="shader: flat; opacity: 0.92; transparent: true">
         <a-text value="ORBITAL ENERGY SORTER" color="#72efdd" align="center" position="0 0.14 0.01" width="2.8"></a-text>
@@ -351,18 +410,24 @@
     </a-entity>
 
     <a-entity id="startPanel" position="0 -999 -2.6" visible="false">
-      <a-plane width="2.96" height="2.28" color="#00F5D4" material="shader: flat; opacity: 0.3; transparent: true" position="0 0 -0.01"></a-plane>
-      <a-plane width="2.9" height="2.22" color="#091326" material="shader: flat; opacity: 0.94; transparent: true">
-        <a-text value="ORBITAL ENERGY SORTER" color="#00F5D4" align="center" position="0 0.86 0.01" width="4"></a-text>
-        <a-text value="Spatial Go/No-Go  ·  30 trials" color="#A9BCD0" align="center" position="0 0.66 0.01" width="2.6"></a-text>
-        <a-text value="WebXR, tested on VIVE Focus 3" color="#E0FBFC" align="center" position="0 0.48 0.01" width="2.5"></a-text>
-        <a-sphere radius="0.09" position="-1.15 0.16 0.08" material="shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.65"></a-sphere>
-        <a-text value="CYAN SPHERE (GO 70%)\nTrigger within 1200 ms" color="#E0FBFC" align="left" position="-0.95 0.16 0.01" width="2.15"></a-text>
-        <a-octahedron radius="0.1" position="-1.15 -0.22 0.08" material="shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.65"></a-octahedron>
-        <a-text value="MAGENTA OCTAHEDRON (NO-GO 30%)\nDo not trigger" color="#FFD6E8" align="left" position="-0.95 -0.22 0.01" width="2.15"></a-text>
-        <a-text value="Near, mid, or far — always in front.\nCloser targets look larger." color="#A9BCD0" align="center" position="0 -0.58 0.01" width="2.3"></a-text>
-        <a-plane id="startBtn" position="0 -0.88 0.03" width="1.5" height="0.32" color="#00F5D4" material="shader: flat"></a-plane>
-        <a-text value="START EXPERIMENT" color="#04101E" align="center" position="0 -0.88 0.04" width="3.2"></a-text>
+      <a-plane width="2.96" height="3.12" color="#00F5D4" material="shader: flat; opacity: 0.3; transparent: true" position="0 0 -0.01"></a-plane>
+      <a-plane width="2.9" height="3.06" color="#091326" material="shader: flat; opacity: 0.94; transparent: true">
+        <a-text value="ORBITAL ENERGY SORTER" color="#00F5D4" align="center" position="0 1.32 0.01" width="4"></a-text>
+        <a-text value="Spatial Go/No-Go  ·  30 trials" color="#A9BCD0" align="center" position="0 1.12 0.01" width="2.6"></a-text>
+        <a-text value="WebXR, tested on VIVE Focus 3" color="#E0FBFC" align="center" position="0 0.94 0.01" width="2.5"></a-text>
+        <a-sphere radius="0.08" position="-1.15 0.66 0.08" material="shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.65"></a-sphere>
+        <a-text value="CYAN SPHERE (GO 70%)\nTrigger within 1200 ms" color="#E0FBFC" align="left" position="-0.95 0.66 0.01" width="2.15"></a-text>
+        <a-octahedron radius="0.09" position="-1.15 0.30 0.08" material="shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.65"></a-octahedron>
+        <a-text value="MAGENTA OCTAHEDRON (NO-GO 30%)\nDo not trigger" color="#FFD6E8" align="left" position="-0.95 0.30 0.01" width="2.15"></a-text>
+        <a-text id="worldDepthHint" value="Near, mid, or far — always in front.\nCloser targets look larger." color="#A9BCD0" align="center" position="0 -0.06 0.01" width="2.4"></a-text>
+        <a-plane id="sizeModeBtn" position="0 -0.42 0.03" width="2.35" height="0.26" color="#0e3a4a" material="shader: flat"></a-plane>
+        <a-text id="sizeModeText" value="SIZE: PHYSICAL" color="#E7EEF6" align="center" position="0 -0.42 0.04" width="2.15"></a-text>
+        <a-plane id="fixModeBtn" position="0 -0.72 0.03" width="2.35" height="0.26" color="#0e3a4a" material="shader: flat"></a-plane>
+        <a-text id="fixModeText" value="FIXATION: HIDE PLUS" color="#E7EEF6" align="center" position="0 -0.72 0.04" width="2.15"></a-text>
+        <a-plane id="practiceModeBtn" position="0 -1.02 0.03" width="2.35" height="0.26" color="#0e3a4a" material="shader: flat"></a-plane>
+        <a-text id="practiceModeText" value="PRACTICE: OFF" color="#E7EEF6" align="center" position="0 -1.02 0.04" width="2.15"></a-text>
+        <a-plane id="startBtn" position="0 -1.34 0.03" width="1.7" height="0.32" color="#00F5D4" material="shader: flat"></a-plane>
+        <a-text id="startBtnText" value="START EXPERIMENT" color="#04101E" align="center" position="0 -1.34 0.04" width="3.2"></a-text>
       </a-plane>
     </a-entity>
 
@@ -408,7 +473,34 @@
           <li><span class="swatch go" aria-hidden="true"></span><span>Cyan sphere — GO, 70%. Tap, click, or trigger it within 1200 ms.</span></li>
           <li><span class="swatch nogo" aria-hidden="true"></span><span>Magenta octahedron — NO-GO, 30%. Do not respond.</span></li>
         </ul>
-        <p>Near, mid, and far use the same physical size, so closer targets look bigger. Tap the object. Empty space does not count. Responses stay on this device.</p>
+        <fieldset class="opt">
+          <legend>Size</legend>
+          <label class="opt-choice">
+            <input type="radio" name="sizeMode" value="constant_physical" checked>
+            <span><b>Physical size.</b> Same 0.40 m object. Closer looks larger.</span>
+          </label>
+          <label class="opt-choice">
+            <input type="radio" name="sizeMode" value="constant_angle">
+            <span><b>Visual angle.</b> Match the mid-plane angle. Closer is smaller.</span>
+          </label>
+        </fieldset>
+        <fieldset class="opt">
+          <legend>Fixation</legend>
+          <label class="opt-choice">
+            <input type="radio" name="fixationMode" value="hidden" checked>
+            <span><b>Hide plus.</b> The plus leaves when the target appears.</span>
+          </label>
+          <label class="opt-choice">
+            <input type="radio" name="fixationMode" value="visible">
+            <span><b>Plus stays visible.</b> The target is translucent, so the plus shows through.</span>
+          </label>
+        </fieldset>
+        <label class="opt-choice opt-check">
+          <input type="checkbox" id="practiceToggle">
+            <span><b>Short practice.</b> Three trials with the plus visible, then the 30 trials.</span>
+        </label>
+        <p id="setupNote">Near, mid, and far use the same physical size, so closer targets look bigger. The plus hides when the target appears.</p>
+        <p>Tap the object. Empty space does not count. Responses stay on this device.</p>
         <div class="actions">
           <button id="htmlStart" class="primary" type="button" disabled>Loading scene…</button>
         </div>
@@ -434,6 +526,7 @@
           </thead>
           <tbody id="depthTable"></tbody>
         </table>
+        <p id="runNote"></p>
         <p id="storageNote">Responses stay on this device.</p>
         <div class="actions">
           <button id="htmlCsv" class="ghost" type="button">Download CSV</button>
@@ -457,8 +550,6 @@
       var audio = TrialAudio.create();
 
       var TOTAL = plan.TOTAL_TRIALS;
-      var TIMEOUT = plan.STIMULUS_TIMEOUT_MS;
-      var RADIUS = plan.TARGET_RADIUS_M;
 
       var baseY = 1.6;
       var sessionEye = { x: 0, y: 1.6, z: 0 };
@@ -466,12 +557,16 @@
       var phase = 'start';
       var immersive = false;
       var sceneReady = false;
+      var sessionSizeMode = plan.SIZE_PHYSICAL;
+      var sessionFixationMode = plan.FIXATION_HIDDEN;
+      var sessionPractice = false;
 
-      var trialSchedule = [];
+      var runQueue = [];
       var currentTrialIndex = 0;
       var scoreTotal = 0;
       var currentStreak = 0;
       var sessionLogs = [];
+      var hudTrialLabel = 'Trial: 0 / ' + TOTAL;
 
       var activeStimulusEl = null;
       var trialTimerId = null;
@@ -492,6 +587,14 @@
       var worldSfxText = document.getElementById('worldSfxText');
       var startPanelEl = document.getElementById('startPanel');
       var startBtnEl = document.getElementById('startBtn');
+      var startBtnText = document.getElementById('startBtnText');
+      var sizeModeBtnEl = document.getElementById('sizeModeBtn');
+      var sizeModeText = document.getElementById('sizeModeText');
+      var fixModeBtnEl = document.getElementById('fixModeBtn');
+      var fixModeText = document.getElementById('fixModeText');
+      var practiceModeBtnEl = document.getElementById('practiceModeBtn');
+      var practiceModeText = document.getElementById('practiceModeText');
+      var worldDepthHint = document.getElementById('worldDepthHint');
       var resultsPanelEl = document.getElementById('resultsPanel');
       var resultsSummaryText = document.getElementById('resultsSummaryText');
       var storageConfirmText = document.getElementById('storageConfirmText');
@@ -511,6 +614,9 @@
       var overallStats = document.getElementById('overallStats');
       var depthTable = document.getElementById('depthTable');
       var storageNote = document.getElementById('storageNote');
+      var runNote = document.getElementById('runNote');
+      var setupNote = document.getElementById('setupNote');
+      var practiceToggle = document.getElementById('practiceToggle');
 
       function round3(n) {
         return Math.round(n * 1000) / 1000;
@@ -611,10 +717,58 @@
         }
       }
 
+      function selectedSizeMode() {
+        var el = document.querySelector('input[name="sizeMode"]:checked');
+        return el ? el.value : plan.SIZE_PHYSICAL;
+      }
+
+      function selectedFixationMode() {
+        var el = document.querySelector('input[name="fixationMode"]:checked');
+        return el ? el.value : plan.FIXATION_HIDDEN;
+      }
+
+      function practiceSelected() {
+        return !!(practiceToggle && practiceToggle.checked);
+      }
+
+      function paintOptions() {
+        var size = selectedSizeMode();
+        var fix = selectedFixationMode();
+        var prac = practiceSelected();
+        sizeModeText.setAttribute('value', size === plan.SIZE_ANGLE ? 'SIZE: VISUAL ANGLE' : 'SIZE: PHYSICAL');
+        fixModeText.setAttribute('value', fix === plan.FIXATION_VISIBLE ? 'FIXATION: PLUS STAYS' : 'FIXATION: HIDE PLUS');
+        practiceModeText.setAttribute('value', prac ? 'PRACTICE: ON' : 'PRACTICE: OFF');
+        var note = size === plan.SIZE_ANGLE
+          ? 'Near, mid, and far match the mid-plane visual angle, so closer targets are physically smaller.'
+          : 'Near, mid, and far use the same physical size, so closer targets look bigger.';
+        note += fix === plan.FIXATION_VISIBLE
+          ? ' The plus stays visible through a translucent target.'
+          : ' The plus hides when the target appears.';
+        if (prac) note += ' Three practice trials run first.';
+        setupNote.textContent = note;
+        worldDepthHint.setAttribute('value', size === plan.SIZE_ANGLE
+          ? 'Near, mid, or far — always in front.\nSame visual size. Closer is smaller.'
+          : 'Near, mid, or far — always in front.\nCloser targets look larger.');
+        startBtnText.setAttribute('value', prac ? 'START PRACTICE' : 'START EXPERIMENT');
+        if (sceneReady && !htmlStart.disabled) {
+          htmlStart.textContent = prac ? 'Start practice' : 'Start experiment';
+        }
+      }
+
+      function cycleNamed(name, values) {
+        var checked = document.querySelector('input[name="' + name + '"]:checked');
+        var current = checked ? checked.value : values[0];
+        var index = values.indexOf(current);
+        var next = values[(index + 1) % values.length];
+        var input = document.querySelector('input[name="' + name + '"][value="' + next + '"]');
+        if (input) input.checked = true;
+        paintOptions();
+      }
+
       function syncChrome() {
         var showStart = immersive && phase === 'start' && sceneReady;
         var showResults = immersive && phase === 'results';
-        setPanel(startPanelEl, [startBtnEl], showStart);
+        setPanel(startPanelEl, [startBtnEl, sizeModeBtnEl, fixModeBtnEl, practiceModeBtnEl], showStart);
         setPanel(resultsPanelEl, [downloadCsvBtnEl, playAgainBtnEl], showResults);
         worldSfxBtn.setAttribute('visible', immersive ? 'true' : 'false');
         worldSfxText.setAttribute('visible', immersive ? 'true' : 'false');
@@ -622,15 +776,15 @@
         else worldSfxBtn.classList.remove('clickable');
         startSheet.hidden = phase !== 'start';
         resultsSheet.hidden = phase !== 'results';
+        hudClusterEl.setAttribute('visible', phase === 'run' ? 'true' : 'false');
         refreshAllRaycasters();
       }
 
       function updateDashboardHUD() {
-        var displayTrial = Math.min(currentTrialIndex, TOTAL);
-        hudTrialText.setAttribute('value', 'Trial: ' + displayTrial + ' / ' + TOTAL);
+        hudTrialText.setAttribute('value', hudTrialLabel);
         hudScoreText.setAttribute('value', 'Score: ' + formatScore(scoreTotal));
         hudStreakText.setAttribute('value', 'Streak: ' + currentStreak);
-        htmlHud.textContent = 'Trial ' + displayTrial + ' / ' + TOTAL + ' · Score ' + formatScore(scoreTotal) + ' · Streak ' + currentStreak;
+        htmlHud.textContent = hudTrialLabel.replace(': ', ' ') + ' · Score ' + formatScore(scoreTotal) + ' · Streak ' + currentStreak;
       }
 
       function spawnFloatingFeedback(text, color, positionObj) {
@@ -665,41 +819,65 @@
       }
 
       function recordTrialOutcome(fields) {
-        var row = {
-          trial_num: currentTrialMeta.trial_num,
-          trial_type: currentTrialMeta.trial_type,
-          depth_plane: currentTrialMeta.depth_plane,
-          plane_distance_m: currentTrialMeta.plane_distance_m,
-          distance_m: currentTrialMeta.distance_m,
-          visual_angle_deg: currentTrialMeta.visual_angle_deg,
-          angle_h_deg: currentTrialMeta.angle_h_deg,
-          angle_v_deg: currentTrialMeta.angle_v_deg,
-          iti_ms: currentTrialMeta.iti_ms,
-          x_pos: currentTrialMeta.x_pos,
-          y_pos: currentTrialMeta.y_pos,
-          z_pos: currentTrialMeta.z_pos,
-          eccentricity_deg: currentTrialMeta.eccentricity_deg,
-          stimulus_radius_m: RADIUS,
+        sessionLogs.push(plan.buildTrialRow(currentTrialMeta, {
           response_made: fields.response_made,
           outcome: fields.outcome,
           rt_ms: fields.rt_ms,
           score_total: scoreTotal,
           streak: currentStreak
+        }));
+      }
+
+      function stampTrial(trial, block, fixationMode) {
+        return {
+          trial_type: trial.trial_type,
+          depth_plane: trial.depth_plane,
+          plane_distance_m: trial.plane_distance_m,
+          block: block,
+          fixation_mode: fixationMode,
+          size_mode: sessionSizeMode
         };
-        sessionLogs.push(row);
+      }
+
+      function countBlock(block, lastIndex) {
+        var n = 0;
+        var i;
+        var last = lastIndex === undefined ? runQueue.length - 1 : lastIndex;
+        for (i = 0; i <= last && i < runQueue.length; i++) {
+          if (runQueue[i].block === block) n += 1;
+        }
+        return n;
       }
 
       function startExperiment() {
         if (!sceneReady || phase === 'run') return;
         audio.ensureContext();
         detectBaseHeadHeight();
+        clearTimeout(trialTimerId);
+        clearTimeout(itiTimerId);
+        clearActiveStimulus();
 
-        trialSchedule = plan.createSchedule();
+        sessionSizeMode = selectedSizeMode();
+        sessionFixationMode = selectedFixationMode();
+        sessionPractice = practiceSelected();
+
+        var practice = sessionPractice
+          ? plan.createPracticeSchedule().map(function (trial) {
+            return stampTrial(trial, plan.BLOCK_PRACTICE, plan.FIXATION_VISIBLE);
+          })
+          : [];
+        var main = plan.createSchedule().map(function (trial) {
+          return stampTrial(trial, plan.BLOCK_MAIN, sessionFixationMode);
+        });
+        runQueue = practice.concat(main);
         currentTrialIndex = 0;
         scoreTotal = 0;
         currentStreak = 0;
         sessionLogs = [];
         phase = 'run';
+        hudTrialLabel = sessionPractice
+          ? ('Practice: 0 / ' + practice.length)
+          : ('Trial: 0 / ' + TOTAL);
         updateDashboardHUD();
         syncChrome();
         runNextTrial();
@@ -710,22 +888,35 @@
         clearTimeout(itiTimerId);
         clearActiveStimulus();
 
-        if (currentTrialIndex >= TOTAL) {
+        if (currentTrialIndex >= runQueue.length) {
           finishExperiment();
           return;
         }
 
-        var trialNum = currentTrialIndex + 1;
-        var trial = trialSchedule[currentTrialIndex];
+        var trial = runQueue[currentTrialIndex];
+        var trialNum = countBlock(trial.block, currentTrialIndex);
+        var blockTotal = trial.block === plan.BLOCK_PRACTICE ? countBlock(plan.BLOCK_PRACTICE) : TOTAL;
+        var prefix = trial.block === plan.BLOCK_PRACTICE ? 'Practice: ' : 'Trial: ';
+        hudTrialLabel = prefix + trialNum + ' / ' + blockTotal;
+        updateDashboardHUD();
+
         var itiMs = Math.round(plan.ITI_MIN_MS + Math.random() * (plan.ITI_MAX_MS - plan.ITI_MIN_MS));
-        hudTrialText.setAttribute('value', 'Trial: ' + trialNum + ' / ' + TOTAL);
-        htmlHud.textContent = 'Trial ' + trialNum + ' / ' + TOTAL + ' · Score ' + formatScore(scoreTotal) + ' · Streak ' + currentStreak;
+        if (trial.block === plan.BLOCK_MAIN && currentTrialIndex > 0 &&
+            runQueue[currentTrialIndex - 1].block === plan.BLOCK_PRACTICE) {
+          spawnFloatingFeedback('MAIN BLOCK', '#FFFFFF', {
+            x: sessionEye.x,
+            y: baseY,
+            z: sessionEye.z - 2.2
+          });
+        }
 
         fixationCrossEl.setAttribute('position', sessionFixation.x + ' ' + sessionFixation.y + ' ' + sessionFixation.z);
         fixationCrossEl.setAttribute('visible', 'true');
 
         itiTimerId = setTimeout(function () {
-          fixationCrossEl.setAttribute('visible', 'false');
+          if (trial.fixation_mode !== plan.FIXATION_VISIBLE) {
+            fixationCrossEl.setAttribute('visible', 'false');
+          }
           spawnStimulus(trialNum, trial, itiMs);
         }, itiMs);
       }
@@ -734,26 +925,35 @@
         triggerDebounce = false;
         trialActive = true;
 
+        var radius = plan.shownRadius(trial.plane_distance_m, trial.size_mode);
+        var seeThrough = trial.fixation_mode === plan.FIXATION_VISIBLE;
         var placed = plan.placeOnPlane(trial.plane_distance_m, sessionEye, baseY);
         var eyeNow = readEye();
         var distance = plan.distanceM(placed.x, placed.y, placed.z, eyeNow);
         var eccentricity = plan.eccentricityDeg(placed.x, placed.y, placed.z, eyeNow, sessionFixation);
-        var visualAngle = plan.visualAngleDeg(RADIUS, distance);
+        var visualAngle = plan.visualAngleDeg(radius, distance);
+        var occluded = plan.fixationOccluded(trial.fixation_mode, placed, radius, eyeNow, sessionFixation);
 
         var stimEl = document.createElement('a-entity');
         stimEl.setAttribute('position', placed.x + ' ' + placed.y + ' ' + placed.z);
 
+        var veil = seeThrough
+          ? ('; transparent: true; opacity: ' + plan.VISIBLE_TARGET_OPACITY + '; depthWrite: false')
+          : '';
+        var goMat = 'shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.3' + veil;
+        var nogoMat = 'shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.4' + veil;
+
         if (trial.trial_type === 'GO') {
-          stimEl.setAttribute('geometry', 'primitive: sphere; radius: ' + RADIUS + '; segmentsWidth: 24; segmentsHeight: 18');
-          stimEl.setAttribute('material', 'shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.3');
+          stimEl.setAttribute('geometry', 'primitive: sphere; radius: ' + radius + '; segmentsWidth: 24; segmentsHeight: 18');
+          stimEl.setAttribute('material', goMat);
           var ringEl = document.createElement('a-ring');
-          ringEl.setAttribute('radius-inner', '0.44');
-          ringEl.setAttribute('radius-outer', '0.48');
-          ringEl.setAttribute('material', 'shader: flat; color: #00F5D4; side: double; opacity: 0.65; transparent: true');
+          ringEl.setAttribute('radius-inner', String(round3(radius * 1.1)));
+          ringEl.setAttribute('radius-outer', String(round3(radius * 1.2)));
+          ringEl.setAttribute('material', 'shader: flat; color: #00F5D4; side: double; opacity: ' + (seeThrough ? '0.35' : '0.65') + '; transparent: true');
           stimEl.appendChild(ringEl);
         } else {
-          stimEl.setAttribute('geometry', 'primitive: octahedron; radius: ' + RADIUS);
-          stimEl.setAttribute('material', 'shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.75; roughness: 0.2; metalness: 0.4');
+          stimEl.setAttribute('geometry', 'primitive: octahedron; radius: ' + radius);
+          stimEl.setAttribute('material', nogoMat);
           stimEl.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur: 2400; loop: true; easing: linear');
         }
 
@@ -778,13 +978,29 @@
           y_pos: placed.y,
           z_pos: placed.z,
           eccentricity_deg: eccentricity,
+          stimulus_radius_m: radius,
+          size_mode: trial.size_mode,
+          fixation_mode: trial.fixation_mode,
+          fixation_occluded: occluded,
+          block: trial.block,
           spawnTime: performance.now()
         };
+
+        if (seeThrough) {
+          stimEl.addEventListener('loaded', function () {
+            stimEl.object3D.traverse(function (node) { node.renderOrder = 2; });
+          });
+        }
 
         trialTimerId = setTimeout(function () {
           if (!trialActive) return;
           handleTrialTimeout();
-        }, TIMEOUT);
+        }, plan.STIMULUS_TIMEOUT_MS);
+      }
+
+      function advanceTrial() {
+        currentTrialIndex += 1;
+        runNextTrial();
       }
 
       function onStimulusTriggerDown() {
@@ -800,27 +1016,30 @@
           y: currentTrialMeta.y_pos,
           z: currentTrialMeta.z_pos
         };
+        var practice = currentTrialMeta.block === plan.BLOCK_PRACTICE;
         clearActiveStimulus();
 
         if (currentTrialMeta.trial_type === 'GO') {
-          var speedBonus = Math.round((TIMEOUT - rtMs) / 10);
+          var speedBonus = Math.round((plan.STIMULUS_TIMEOUT_MS - rtMs) / 10);
           var pointsEarned = 100 + Math.max(0, speedBonus);
-          scoreTotal += pointsEarned;
-          currentStreak += 1;
+          if (!practice) {
+            scoreTotal += pointsEarned;
+            currentStreak += 1;
+          }
           playSound('hit');
-          spawnFloatingFeedback('+' + pointsEarned + ' (' + rtMs + 'ms)', '#00F5D4', pos);
+          spawnFloatingFeedback(practice ? 'PRACTICE HIT' : ('+' + pointsEarned + ' (' + rtMs + 'ms)'), '#00F5D4', pos);
           recordTrialOutcome({ response_made: 1, outcome: 'HIT', rt_ms: rtMs });
         } else {
-          scoreTotal -= 150;
-          currentStreak = 0;
+          if (!practice) {
+            scoreTotal -= 150;
+            currentStreak = 0;
+          }
           playSound('error');
-          spawnFloatingFeedback('FALSE ALARM! -150', '#FF2A85', pos);
+          spawnFloatingFeedback(practice ? 'PRACTICE FA' : 'FALSE ALARM! -150', '#FF2A85', pos);
           recordTrialOutcome({ response_made: 1, outcome: 'FALSE_ALARM', rt_ms: rtMs });
         }
 
-        currentTrialIndex += 1;
-        updateDashboardHUD();
-        runNextTrial();
+        advanceTrial();
       }
 
       function handleTrialTimeout() {
@@ -832,23 +1051,22 @@
           y: currentTrialMeta.y_pos,
           z: currentTrialMeta.z_pos
         };
+        var practice = currentTrialMeta.block === plan.BLOCK_PRACTICE;
         clearActiveStimulus();
 
         if (currentTrialMeta.trial_type === 'GO') {
-          currentStreak = 0;
+          if (!practice) currentStreak = 0;
           playSound('error');
-          spawnFloatingFeedback('TOO SLOW!', '#FFD166', pos);
+          spawnFloatingFeedback(practice ? 'PRACTICE MISS' : 'TOO SLOW!', '#FFD166', pos);
           recordTrialOutcome({ response_made: 0, outcome: 'MISS', rt_ms: '' });
         } else {
-          scoreTotal += 50;
+          if (!practice) scoreTotal += 50;
           playSound('cr');
-          spawnFloatingFeedback('HOLD OK +50', '#72EFDD', pos);
+          spawnFloatingFeedback(practice ? 'PRACTICE HOLD' : 'HOLD OK +50', '#72EFDD', pos);
           recordTrialOutcome({ response_made: 0, outcome: 'CORRECT_REJECTION', rt_ms: '' });
         }
 
-        currentTrialIndex += 1;
-        updateDashboardHUD();
-        runNextTrial();
+        advanceTrial();
       }
 
       function fillResults(summary, savedText) {
@@ -864,6 +1082,9 @@
           var row = summary.by_depth[id];
           lines.push(id.toUpperCase() + '  Go ' + row.go_hits + '/' + row.go_n + '  RT ' + formatMs(row.mean_go_rt_ms) + '  FA ' + row.nogo_false_alarms + '/' + row.nogo_n);
         });
+        var sizeWords = sessionSizeMode === plan.SIZE_ANGLE ? 'visual angle' : 'physical size';
+        var fixWords = sessionFixationMode === plan.FIXATION_VISIBLE ? 'plus stays' : 'plus hidden';
+        lines.push(sizeWords + ' · ' + fixWords);
         resultsSummaryText.setAttribute('value', lines.join('\n'));
         storageConfirmText.setAttribute('value', savedText);
 
@@ -897,12 +1118,24 @@
           depthTable.appendChild(tr);
         });
         storageNote.textContent = savedText;
+        var practiceN = sessionLogs.filter(function (row) {
+          return row.block === plan.BLOCK_PRACTICE;
+        }).length;
+        var runLine = 'Size: ' + (sessionSizeMode === plan.SIZE_ANGLE ? 'constant visual angle' : 'constant physical size')
+          + '. Fixation: ' + (sessionFixationMode === plan.FIXATION_VISIBLE ? 'plus stays visible' : 'plus hidden') + '.';
+        if (practiceN) {
+          runLine += ' Practice (' + practiceN + ') is logged and is not in the rates above. Score is the 30-trial run.';
+        }
+        runNote.textContent = runLine;
       }
 
       function finishExperiment() {
         fixationCrossEl.setAttribute('visible', 'false');
         clearActiveStimulus();
-        var summary = plan.summarize(sessionLogs);
+        var mainLogs = sessionLogs.filter(function (row) {
+          return row.block !== plan.BLOCK_PRACTICE;
+        });
+        var summary = plan.summarize(mainLogs);
         var savedText = 'Saved on this device as ' + plan.STORAGE_KEY + '. Responses stay on this device.';
         try {
           var payload = plan.buildPayload({
@@ -910,6 +1143,9 @@
             baseY: baseY,
             eye: sessionEye,
             fixation: sessionFixation,
+            sizeMode: sessionSizeMode,
+            fixationMode: sessionFixationMode,
+            practice: sessionPractice,
             finalScore: scoreTotal,
             summary: summary,
             trials: sessionLogs
@@ -977,6 +1213,16 @@
       }
 
       bindUiButton(startBtnEl, startExperiment);
+      bindUiButton(sizeModeBtnEl, function () {
+        cycleNamed('sizeMode', [plan.SIZE_PHYSICAL, plan.SIZE_ANGLE]);
+      });
+      bindUiButton(fixModeBtnEl, function () {
+        cycleNamed('fixationMode', [plan.FIXATION_HIDDEN, plan.FIXATION_VISIBLE]);
+      });
+      bindUiButton(practiceModeBtnEl, function () {
+        practiceToggle.checked = !practiceToggle.checked;
+        paintOptions();
+      });
       bindUiButton(downloadCsvBtnEl, function () {
         audio.ensureContext();
         playSound('cr');
@@ -989,6 +1235,12 @@
         paintSfx(audio.isEnabled());
         if (next) audio.ensureContext();
       });
+
+      Array.prototype.forEach.call(
+        document.querySelectorAll('input[name="sizeMode"], input[name="fixationMode"]'),
+        function (input) { input.addEventListener('change', paintOptions); }
+      );
+      practiceToggle.addEventListener('change', paintOptions);
 
       htmlStart.addEventListener('click', startExperiment);
       htmlAgain.addEventListener('click', startExperiment);
@@ -1013,7 +1265,7 @@
         immersive = !!(sceneEl.is && sceneEl.is('vr-mode'));
         detectBaseHeadHeight();
         htmlStart.disabled = false;
-        htmlStart.textContent = 'Start experiment';
+        paintOptions();
         if (sceneEl.canvas) {
           sceneEl.canvas.addEventListener('pointerdown', onCanvasPointerDown);
         }
