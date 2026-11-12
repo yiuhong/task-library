@@ -25,11 +25,11 @@
 
   Every trial uses one fixed visual direction, the same azimuth and
   elevation on every plane:
-    azimuth    +4°  (right of straight ahead)
-    elevation  +2°  (above straight ahead)
+    azimuth    0°  (straight ahead, on the fixation axis)
+    elevation  0°  (straight ahead, on the fixation axis)
   Only distance changes, so the target stays at one screen position
-  and a nearer target looks larger. The offset keeps the target off
-  the fixation mark.
+  and a nearer target looks larger. Fixation stays on that same axis
+  at 3.00 m, so a nearer target can cover the fixation mark.
 */
 (function (global) {
   'use strict';
@@ -42,8 +42,8 @@
   var ITI_MIN_MS = 800;
   var ITI_MAX_MS = 1400;
   var TARGET_RADIUS_M = 0.4;
-  var AZIMUTH_DEG = 4;
-  var ELEVATION_DEG = 2;
+  var AZIMUTH_DEG = 0;
+  var ELEVATION_DEG = 0;
   var FIXATION_DISTANCE_M = 3;
 
   var DEPTH_PLANES = [
