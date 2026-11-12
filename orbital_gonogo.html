@@ -499,7 +499,7 @@
           <input type="checkbox" id="practiceToggle">
             <span><b>Short practice.</b> Three trials with the plus visible, then the 30 trials.</span>
         </label>
-        <p id="setupNote">Near, mid, and far use the same physical size, so closer targets look bigger. The plus hides when the target appears.</p>
+        <p id="setupNote">Near, mid, and far use the same physical size, so closer targets look bigger. The plus hides when the target appears. Both shapes stay still.</p>
         <p>Tap the object. Empty space does not count. Responses stay on this device.</p>
         <div class="actions">
           <button id="htmlStart" class="primary" type="button" disabled>Loading scene…</button>
@@ -744,6 +744,7 @@
         note += fix === plan.FIXATION_VISIBLE
           ? ' The plus stays visible through a translucent target.'
           : ' The plus hides when the target appears.';
+        note += ' Both shapes stay still.';
         if (prac) note += ' Three practice trials run first.';
         setupNote.textContent = note;
         worldDepthHint.setAttribute('value', size === plan.SIZE_ANGLE
@@ -954,7 +955,6 @@
         } else {
           stimEl.setAttribute('geometry', 'primitive: octahedron; radius: ' + radius);
           stimEl.setAttribute('material', nogoMat);
-          stimEl.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur: 2400; loop: true; easing: linear');
         }
 
         stimEl.classList.add('clickable');

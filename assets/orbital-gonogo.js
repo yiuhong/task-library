@@ -32,6 +32,8 @@
   far go) with the plus visible. Those trials are not part of the 30.
   The default run has no practice block.
 
+  Both shapes stay still. Colour and shape still decide go and no-go.
+
   Each plane: 7 GO + 3 NOGO = 10 trials. Three planes = 30 trials
   (21 GO / 9 NOGO, 70% / 30%). Order is a Fisher–Yates shuffle.
   The shuffle changes order only. It does not move the target.
