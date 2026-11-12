@@ -59,34 +59,20 @@
         <div id="task-hub-source">
             <section class="trial-hub-section" data-domain="attention" style="--area-accent: #818cf8" aria-labelledby="domain-attention">
                 <div class="trial-area-art" aria-hidden="true">
+                    <!-- Eriksen Flanker: incongruent row, center target opposite the flanks. -->
                     <svg class="art-svg art-attention" viewBox="0 0 320 190">
-                        <ellipse cx="160" cy="96" rx="120" ry="58" fill="#818cf8" opacity="0.14"/>
-                        <g fill="#312e81">
-                            <circle cx="28" cy="32" r="6"/>
-                            <circle cx="52" cy="32" r="6"/>
-                            <circle cx="76" cy="32" r="6"/>
-                            <circle cx="124" cy="32" r="6"/>
-                            <circle cx="148" cy="32" r="6"/>
-                            <circle cx="172" cy="32" r="6"/>
-                            <circle cx="196" cy="32" r="6"/>
+                        <ellipse cx="160" cy="88" rx="136" ry="46" fill="#22d3ee" opacity="0.10"/>
+                        <g class="attn-flank-l movable" fill="#22d3ee">
+                            <path transform="translate(22 64)" d="M44 15 H22 L22 2 L0 24 L22 46 L22 33 H44 Z"/>
+                            <path transform="translate(78 64)" d="M44 15 H22 L22 2 L0 24 L22 46 L22 33 H44 Z"/>
                         </g>
-                        <circle class="attn-odd movable" cx="100" cy="32" r="9" fill="#fb7185"/>
-                        <circle class="attn-odd-ring" cx="100" cy="32" r="16" fill="none" stroke="#fb7185" stroke-width="2" opacity="0"/>
-                        <g class="attn-flank-l movable" stroke="#818cf8" stroke-width="8" stroke-linejoin="miter" stroke-linecap="square" fill="none">
-                            <path d="M86 104 H36 M36 104 L58 82 M36 104 L58 126"/>
+                        <g class="attn-center movable" fill="#ecfeff">
+                            <path transform="translate(134 59)" d="M0 18 H28 L28 0 L52 29 L28 58 L28 40 H0 Z"/>
                         </g>
-                        <g class="attn-center movable" stroke="#f9a8d4" stroke-width="9" stroke-linejoin="miter" stroke-linecap="square" fill="none">
-                            <path d="M118 104 H202 M202 104 L178 80 M202 104 L178 128"/>
+                        <g class="attn-flank-r movable" fill="#22d3ee">
+                            <path transform="translate(198 64)" d="M44 15 H22 L22 2 L0 24 L22 46 L22 33 H44 Z"/>
+                            <path transform="translate(254 64)" d="M44 15 H22 L22 2 L0 24 L22 46 L22 33 H44 Z"/>
                         </g>
-                        <g class="attn-flank-r movable" stroke="#818cf8" stroke-width="8" stroke-linejoin="miter" stroke-linecap="square" fill="none">
-                            <path d="M234 104 H284 M284 104 L262 82 M284 104 L262 126"/>
-                        </g>
-                        <g class="attn-reticle movable" stroke="#22d3ee" stroke-width="2.5" fill="none">
-                            <rect x="128" y="68" width="64" height="72"/>
-                            <path d="M160 68 V52 M160 140 V156 M128 104 H112 M192 104 H208"/>
-                            <rect x="154" y="98" width="12" height="12" fill="#22d3ee" stroke="none"/>
-                        </g>
-                        <rect class="attn-scan" x="24" y="52" width="3" height="100" fill="#22d3ee"/>
                     </svg>
                 </div>
                 <h2 class="trial-hub-heading" id="domain-attention">Attention</h2>
@@ -162,58 +148,61 @@
 
             <section class="trial-hub-section" data-domain="perception" style="--area-accent: #22d3ee" aria-labelledby="domain-perception">
                 <div class="trial-area-art" aria-hidden="true">
+                    <!-- Random-dot motion: one aperture, coherent dots drifting right. -->
                     <svg class="art-svg art-perception" viewBox="0 0 320 190">
-                        <ellipse cx="200" cy="100" rx="110" ry="62" fill="#22d3ee" opacity="0.1"/>
-                        <g class="perc-stairs">
-                            <rect x="18" y="128" width="28" height="22" fill="#083344"/>
-                            <rect x="18" y="102" width="28" height="22" fill="#155e75"/>
-                            <rect x="18" y="76" width="28" height="22" fill="#0891b2"/>
-                            <rect class="perc-bright" x="18" y="50" width="28" height="22" fill="#67e8f9"/>
-                            <rect x="18" y="24" width="28" height="22" fill="#ecfeff"/>
+                        <circle cx="160" cy="84" r="70" fill="#082033" stroke="#22d3ee" stroke-width="2.5"/>
+                        <g class="drift d1 movable">
+                            <path d="M145.5 98.9 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="161.3" cy="98.9" r="5.8" fill="#ecfeff"/>
                         </g>
-                        <g class="perc-flow" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round" fill="none">
-                            <path class="drift d1 movable" d="M78 36 h16"/>
-                            <path class="drift d2 movable" d="M120 48 h18"/>
-                            <path class="drift d3 movable" d="M168 34 h14"/>
-                            <path class="drift d4 movable" d="M214 46 h16"/>
-                            <path class="drift d5 movable" d="M96 68 h18"/>
-                            <path class="drift d6 movable" d="M150 62 h14"/>
-                            <path class="drift d7 movable" d="M198 72 h16"/>
-                            <path class="drift d8 movable" d="M250 58 h14"/>
+                        <g class="drift d2 movable">
+                            <path d="M158.4 41.4 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="174" cy="41.4" r="5.6" fill="#a5f3fc"/>
                         </g>
-                        <g class="perc-flow" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" fill="none">
-                            <path class="noise n1 movable" d="M140 88 h14"/>
-                            <path class="noise n2 movable" d="M188 96 h12"/>
-                            <path class="noise n3 movable" d="M230 84 h14"/>
+                        <g class="drift d3 movable">
+                            <path d="M119.6 78.1 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="135" cy="78.1" r="5.5" fill="#f0fdff"/>
                         </g>
-                        <g class="perc-trails" stroke="#fde68a" stroke-width="2" stroke-linecap="round" opacity="0.35">
-                            <path d="M70 36 h34"/>
-                            <path d="M112 48 h36"/>
-                            <path d="M160 34 h32"/>
-                            <path d="M206 46 h34"/>
-                            <path d="M88 68 h36"/>
-                            <path d="M142 62 h32"/>
-                            <path d="M190 72 h34"/>
-                            <path d="M242 58 h30"/>
+                        <g class="drift d4 movable">
+                            <path d="M185.6 63.4 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="202.1" cy="63.4" r="6.5" fill="#ecfeff"/>
                         </g>
-                        <g class="perc-few" fill="#67e8f9">
-                            <circle cx="118" cy="132" r="5"/>
-                            <circle cx="136" cy="146" r="4.5"/>
-                            <circle cx="128" cy="160" r="4"/>
-                            <circle cx="150" cy="154" r="4.5"/>
+                        <g class="drift d5 movable">
+                            <path d="M150.9 64 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="166.6" cy="64" r="5.7" fill="#a5f3fc"/>
                         </g>
-                        <g class="perc-many movable" fill="#6ee7b7">
-                            <circle cx="214" cy="118" r="5"/>
-                            <circle cx="232" cy="128" r="4.5"/>
-                            <circle cx="250" cy="116" r="5"/>
-                            <circle cx="268" cy="130" r="4"/>
-                            <circle cx="222" cy="142" r="4.5"/>
-                            <circle cx="242" cy="150" r="5"/>
-                            <circle cx="260" cy="146" r="4"/>
-                            <circle cx="236" cy="164" r="4.5"/>
-                            <circle cx="258" cy="164" r="4"/>
+                        <g class="drift d6 movable">
+                            <path d="M112.8 52.6 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="129.4" cy="52.6" r="6.6" fill="#ecfeff"/>
                         </g>
-                        <circle class="perc-ring" cx="242" cy="140" r="40" fill="none" stroke="#6ee7b7" stroke-width="1.5"/>
+                        <g class="drift d7 movable">
+                            <path d="M182.9 95.5 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="198.5" cy="95.5" r="5.6" fill="#f0fdff"/>
+                        </g>
+                        <g class="drift d8 movable">
+                            <path d="M115.9 127.3 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="131.4" cy="127.3" r="5.5" fill="#a5f3fc"/>
+                        </g>
+                        <g class="drift d1 movable">
+                            <path d="M144.9 135.9 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="160.3" cy="135.9" r="5.4" fill="#ecfeff"/>
+                        </g>
+                        <g class="drift d3 movable">
+                            <path d="M179.3 120.7 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="195.5" cy="120.7" r="6.3" fill="#f0fdff"/>
+                        </g>
+                        <g class="drift d5 movable">
+                            <path d="M103.9 105.5 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="119.4" cy="105.5" r="5.5" fill="#ecfeff"/>
+                        </g>
+                        <g class="drift d6 movable">
+                            <path d="M129.9 36.1 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="146.6" cy="36.1" r="6.7" fill="#a5f3fc"/>
+                        </g>
+                        <g class="drift d2 movable">
+                            <path d="M163.8 82.8 h8" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                            <circle cx="179.4" cy="82.8" r="5.6" fill="#ecfeff"/>
+                        </g>
                     </svg>
                 </div>
                 <h2 class="trial-hub-heading" id="domain-perception">Perception</h2>
@@ -263,26 +252,14 @@
 
             <section class="trial-hub-section" data-domain="memory" style="--area-accent: #e879f9" aria-labelledby="domain-memory">
                 <div class="trial-area-art" aria-hidden="true">
+                    <!-- Corsi Span: one path through four spatial pads. -->
                     <svg class="art-svg art-memory" viewBox="0 0 320 190">
-                        <ellipse cx="110" cy="92" rx="90" ry="64" fill="#e879f9" opacity="0.1"/>
-                        <g>
-                            <rect class="mem-cell" x="22" y="28" width="48" height="48" rx="5" fill="#38bdf8"/>
-                            <rect class="mem-cell" x="78" y="28" width="48" height="48" rx="5" fill="#fde68a"/>
-                            <rect class="mem-cell mem-probe" x="134" y="28" width="48" height="48" rx="5" fill="#a78bfa"/>
-                            <rect class="mem-probe-new" x="144" y="38" width="28" height="28" rx="3" fill="#fb7185"/>
-                            <rect class="mem-cell" x="22" y="84" width="48" height="48" rx="5" fill="#fb7185"/>
-                            <rect class="mem-cell" x="78" y="84" width="48" height="48" rx="5" fill="#34d399"/>
-                            <rect class="mem-cell" x="134" y="84" width="48" height="48" rx="5" fill="#818cf8"/>
-                            <path class="mem-bracket" d="M128 22 H142 M128 22 V36 M188 22 H174 M188 22 V36 M128 138 H142 M128 138 V124 M188 138 H174 M188 138 V124" stroke="#fff" stroke-width="2.5" fill="none"/>
-                        </g>
-                        <path class="mem-path" d="M214 48 H252 L274 86 L236 118 L214 156" stroke="#e879f9" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
-                        <g>
-                            <rect class="mem-step s1" x="196" y="32" width="32" height="32" rx="3" fill="#e879f9" stroke="#e879f9"/>
-                            <rect class="mem-step s2" x="240" y="32" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
-                            <rect class="mem-step s3" x="258" y="70" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
-                            <rect class="mem-step s4" x="220" y="102" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
-                            <rect class="mem-step s5" x="196" y="140" width="32" height="32" rx="3" fill="#4a1848" stroke="#e879f9"/>
-                        </g>
+                        <ellipse cx="156" cy="84" rx="124" ry="62" fill="#22d3ee" opacity="0.08"/>
+                        <path class="mem-path" d="M71 63 L151 43 L241 61 L129 121" stroke="#67e8f9" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect class="mem-step s1" x="46" y="38" width="50" height="50" rx="8" fill="#10182c" stroke="#a5f3fc" stroke-width="3"/>
+                        <rect class="mem-step s2" x="126" y="18" width="50" height="50" rx="8" fill="#10182c" stroke="#a5f3fc" stroke-width="3"/>
+                        <rect class="mem-step s3" x="216" y="36" width="50" height="50" rx="8" fill="#10182c" stroke="#a5f3fc" stroke-width="3"/>
+                        <rect class="mem-step s4" x="104" y="96" width="50" height="50" rx="8" fill="#10182c" stroke="#a5f3fc" stroke-width="3"/>
                     </svg>
                 </div>
                 <h2 class="trial-hub-heading" id="domain-memory">Memory</h2>
@@ -319,27 +296,32 @@
 
             <section class="trial-hub-section" data-domain="learning" style="--area-accent: #facc15" aria-labelledby="domain-learning">
                 <div class="trial-area-art" aria-hidden="true">
+                    <!-- Reversal Learning: two option cards and a swap cue. -->
                     <svg class="art-svg art-learning" viewBox="0 0 320 190">
-                        <ellipse cx="160" cy="100" rx="130" ry="60" fill="#facc15" opacity="0.08"/>
+                        <ellipse cx="160" cy="86" rx="132" ry="58" fill="#22d3ee" opacity="0.08"/>
                         <g class="learn-left">
-                            <rect x="28" y="36" width="112" height="122" rx="12" fill="rgba(250,204,21,0.08)" stroke="#facc15" stroke-width="2.5"/>
-                            <path d="M84 58 L98 78 L84 86 L70 78 Z" fill="#fde68a"/>
-                            <path d="M84 70 L104 90 L84 110 L64 90 Z" fill="#facc15"/>
-                            <rect x="46" y="126" width="76" height="14" rx="3" fill="none" stroke="#facc15" stroke-width="1.5" opacity="0.45"/>
-                            <rect class="learn-bar" x="48" y="128" width="72" height="10" rx="2" fill="#facc15"/>
+                            <rect x="22" y="28" width="108" height="116" rx="12" fill="#0c1424" stroke="#22d3ee" stroke-width="3"/>
+                            <path d="M76 68 L96 88 L76 108 L56 88 Z" fill="none" stroke="#67e8f9" stroke-width="3"/>
+                            <path d="M76 78 L86 88 L76 98 L66 88 Z" fill="#a5f3fc"/>
+                            <rect x="40" y="116" width="72" height="12" rx="3" fill="none" stroke="#22d3ee" stroke-width="2"/>
+                            <rect class="learn-bar" x="42" y="118" width="68" height="8" rx="2" fill="#67e8f9"/>
                         </g>
                         <g class="learn-right">
-                            <rect x="180" y="36" width="112" height="122" rx="12" fill="rgba(250,204,21,0.04)" stroke="#facc15" stroke-width="2.5"/>
-                            <path d="M236 58 L250 78 L236 86 L222 78 Z" fill="#fde68a"/>
-                            <path d="M236 70 L256 90 L236 110 L216 90 Z" fill="#facc15"/>
-                            <rect x="198" y="126" width="76" height="14" rx="3" fill="none" stroke="#facc15" stroke-width="1.5" opacity="0.45"/>
-                            <rect class="learn-bar" x="200" y="128" width="26" height="10" rx="2" fill="#facc15"/>
+                            <rect x="190" y="28" width="108" height="116" rx="12" fill="#0c1424" stroke="#22d3ee" stroke-width="3"/>
+                            <path d="M244 68 L266 108 L222 108 Z" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linejoin="round"/>
+                            <path d="M244 80 L256 104 L232 104 Z" fill="#a5f3fc"/>
+                            <rect x="208" y="116" width="72" height="12" rx="3" fill="none" stroke="#22d3ee" stroke-width="2"/>
+                            <rect class="learn-bar" x="210" y="118" width="26" height="8" rx="2" fill="#67e8f9"/>
                         </g>
-                        <path class="learn-swap" d="M124 86 C152 48, 184 48, 208 78" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                        <path class="learn-swap" d="M198 70 L210 80 L196 86" stroke="#fff" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+                        <g class="learn-swap" fill="none" stroke="#ecfeff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M138 70 Q160 42 182 70"/>
+                            <path d="M170 64 L183 71 L179 57"/>
+                            <path d="M182 102 Q160 130 138 102"/>
+                            <path d="M150 108 L137 101 L141 115"/>
+                        </g>
                         <g class="learn-token">
-                            <circle cx="84" cy="20" r="7" fill="none" stroke="#fff" stroke-width="2"/>
-                            <circle cx="84" cy="20" r="2.5" fill="#fff"/>
+                            <circle cx="76" cy="42" r="5.5" fill="none" stroke="#ecfeff" stroke-width="2.5"/>
+                            <circle cx="76" cy="42" r="2.2" fill="#ecfeff"/>
                         </g>
                     </svg>
                 </div>

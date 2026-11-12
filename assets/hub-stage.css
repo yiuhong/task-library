@@ -664,43 +664,25 @@ a.trial-task-play {
     }
 }
 
-/* ----- illustrations ----- */
+/* ----- illustrations -----
+   One task per tile: Flanker, random-dot motion, Corsi, reversal.
+   Shared ink is cyan/teal on navy so the four tiles match. */
 
 .art-svg .movable {
     transform-box: fill-box;
     transform-origin: center;
 }
 
-.attn-scan {
-    opacity: 0;
-}
-
-.perc-trails {
-    opacity: 0;
-}
-
-.perc-ring {
-    opacity: 0.28;
-}
-
-.mem-probe-new {
-    opacity: 0;
-}
-
 .mem-step {
-    opacity: 0.35;
+    fill: #10182c;
 }
 
 .mem-step.s1 {
-    opacity: 1;
-}
-
-.learn-right {
-    opacity: 0.4;
+    fill: #22d3ee;
 }
 
 .learn-swap {
-    opacity: 0.28;
+    opacity: 0.92;
 }
 
 /* Pose is driven by .is-hot (mouse or pen) and :focus-visible, not by
@@ -723,76 +705,14 @@ a.trial-task-play {
     .stage-tile.is-hot .attn-center,
     .stage-tile:focus-visible .attn-center,
     .stage-board .trial-area-art:hover .attn-center {
-        stroke: #fff;
-        filter: drop-shadow(0 0 8px #f9a8d4);
-    }
-
-    .stage-tile.is-hot .attn-odd-ring,
-    .stage-tile:focus-visible .attn-odd-ring,
-    .stage-board .trial-area-art:hover .attn-odd-ring {
-        opacity: 1;
-    }
-
-    .stage-tile.is-hot .attn-reticle,
-    .stage-tile:focus-visible .attn-reticle,
-    .stage-board .trial-area-art:hover .attn-reticle {
-        filter: drop-shadow(0 0 6px #22d3ee);
-    }
-
-    .stage-tile.is-hot .attn-odd,
-    .stage-tile:focus-visible .attn-odd,
-    .stage-board .trial-area-art:hover .attn-odd {
-        transform: scale(1.4);
-    }
-
-    .stage-tile.is-hot .perc-bright,
-    .stage-tile:focus-visible .perc-bright,
-    .stage-board .trial-area-art:hover .perc-bright {
         fill: #fff;
-        filter: drop-shadow(0 0 8px #fff);
-    }
-
-    .stage-tile.is-hot .perc-ring,
-    .stage-tile:focus-visible .perc-ring,
-    .stage-board .trial-area-art:hover .perc-ring {
-        opacity: 1;
-        stroke-width: 2.5px;
-    }
-
-    .stage-tile.is-hot .perc-trails,
-    .stage-tile:focus-visible .perc-trails,
-    .stage-board .trial-area-art:hover .perc-trails {
-        opacity: 0.95;
-    }
-
-    .stage-tile.is-hot .perc-many,
-    .stage-tile:focus-visible .perc-many,
-    .stage-board .trial-area-art:hover .perc-many {
-        transform: scale(1.08);
-    }
-
-    .stage-tile.is-hot .mem-cell,
-    .stage-tile:focus-visible .mem-cell,
-    .stage-board .trial-area-art:hover .mem-cell {
-        opacity: 0.22;
-    }
-
-    .stage-tile.is-hot .mem-probe-new,
-    .stage-tile:focus-visible .mem-probe-new,
-    .stage-board .trial-area-art:hover .mem-probe-new {
-        opacity: 1;
-    }
-
-    .stage-tile.is-hot .mem-bracket,
-    .stage-tile:focus-visible .mem-bracket,
-    .stage-board .trial-area-art:hover .mem-bracket {
-        stroke: #fb7185;
+        filter: drop-shadow(0 0 8px #67e8f9);
     }
 
     .stage-tile.is-hot .learn-left,
     .stage-tile:focus-visible .learn-left,
     .stage-board .trial-area-art:hover .learn-left {
-        opacity: 0.38;
+        opacity: 0.5;
     }
 
     .stage-tile.is-hot .learn-right,
@@ -816,7 +736,7 @@ a.trial-task-play {
     .stage-tile.is-hot .learn-token,
     .stage-tile:focus-visible .learn-token,
     .stage-board .trial-area-art:hover .learn-token {
-        transform: translate(152px, 70px);
+        transform: translate(168px, 0);
     }
 
     .stage-tile.is-hot .learn-swap,
@@ -831,15 +751,9 @@ a.trial-task-play {
         animation: hub-halo 28s linear infinite;
     }
 
-    .stage-tile.is-hot .attn-scan,
-    .stage-tile:focus-visible .attn-scan,
-    .stage-board .trial-area-art:hover .attn-scan {
-        animation: hub-scan 1.25s linear infinite;
-    }
-
-    .stage-tile.is-hot .attn-reticle,
-    .stage-tile:focus-visible .attn-reticle,
-    .stage-board .trial-area-art:hover .attn-reticle {
+    .stage-tile.is-hot .attn-center,
+    .stage-tile:focus-visible .attn-center,
+    .stage-board .trial-area-art:hover .attn-center {
         animation: hub-lock 1.25s ease-in-out infinite;
     }
 
@@ -847,12 +761,6 @@ a.trial-task-play {
     .stage-tile:focus-visible .drift,
     .stage-board .trial-area-art:hover .drift {
         animation: hub-drift 1.15s linear infinite;
-    }
-
-    .stage-tile.is-hot .noise,
-    .stage-tile:focus-visible .noise,
-    .stage-board .trial-area-art:hover .noise {
-        animation: hub-noise 1.35s linear infinite;
     }
 
     .stage-tile.is-hot .mem-step,
@@ -867,10 +775,10 @@ a.trial-task-play {
         animation: hub-token 1.15s ease-in-out infinite;
     }
 
-    .drift.d2, .noise.n2, .mem-step.s2 { animation-delay: -0.2s; }
-    .drift.d3, .noise.n3, .mem-step.s3 { animation-delay: -0.45s; }
+    .drift.d2, .mem-step.s2 { animation-delay: -0.2s; }
+    .drift.d3, .mem-step.s3 { animation-delay: -0.45s; }
     .drift.d4, .mem-step.s4 { animation-delay: -0.7s; }
-    .drift.d5, .mem-step.s5 { animation-delay: -0.95s; }
+    .drift.d5 { animation-delay: -0.95s; }
     .drift.d6 { animation-delay: -0.3s; }
     .drift.d7 { animation-delay: -0.85s; }
     .drift.d8 { animation-delay: -0.55s; }
@@ -878,12 +786,8 @@ a.trial-task-play {
 
 /* Touch: a slow idle so the art moves without a hover. */
 @media (hover: none) and (prefers-reduced-motion: no-preference) {
-    .stage-tile .attn-reticle {
+    .stage-tile .attn-center {
         animation: hub-lock 3.4s ease-in-out infinite;
-    }
-
-    .stage-tile .attn-scan {
-        animation: hub-scan 3.6s linear infinite;
     }
 
     .stage-tile .drift {
@@ -901,7 +805,7 @@ a.trial-task-play {
     .stage-tile .drift.d2, .stage-tile .mem-step.s2 { animation-delay: -0.4s; }
     .stage-tile .drift.d3, .stage-tile .mem-step.s3 { animation-delay: -0.8s; }
     .stage-tile .drift.d4, .stage-tile .mem-step.s4 { animation-delay: -1.2s; }
-    .stage-tile .drift.d5, .stage-tile .mem-step.s5 { animation-delay: -1.6s; }
+    .stage-tile .drift.d5 { animation-delay: -1.6s; }
     .stage-tile .drift.d6 { animation-delay: -0.6s; }
     .stage-tile .drift.d7 { animation-delay: -1.5s; }
     .stage-tile .drift.d8 { animation-delay: -2s; }
@@ -911,39 +815,26 @@ a.trial-task-play {
     to { rotate: 360deg; }
 }
 
-@keyframes hub-scan {
-    0% { transform: translateX(0); opacity: 0; }
-    14% { opacity: 0.85; }
-    86% { opacity: 0.8; }
-    100% { transform: translateX(250px); opacity: 0; }
-}
-
 @keyframes hub-lock {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.07); }
+    50% { transform: scale(1.06); }
 }
 
 @keyframes hub-drift {
-    0% { transform: translateX(-10px); opacity: 0; }
-    18% { opacity: 1; }
-    100% { transform: translateX(28px); opacity: 0; }
-}
-
-@keyframes hub-noise {
-    0% { transform: translateX(8px); opacity: 0; }
-    20% { opacity: 0.8; }
-    100% { transform: translateX(-20px); opacity: 0; }
+    0% { transform: translateX(-6px); opacity: 0.82; }
+    45% { opacity: 1; }
+    100% { transform: translateX(10px); opacity: 0.82; }
 }
 
 @keyframes hub-step {
-    0%, 12% { opacity: 0.3; fill: #4a1848; }
-    16%, 32% { opacity: 1; fill: #e879f9; }
-    40%, 100% { opacity: 0.3; fill: #4a1848; }
+    0%, 14% { fill: #10182c; }
+    18%, 36% { fill: #22d3ee; }
+    42%, 100% { fill: #10182c; }
 }
 
 @keyframes hub-token {
-    0%, 100% { transform: translate(152px, 64px); }
-    50% { transform: translate(152px, 78px); }
+    0%, 100% { transform: translate(168px, -3px); }
+    50% { transform: translate(168px, 3px); }
 }
 
 @keyframes hub-bob {
@@ -955,16 +846,11 @@ a.trial-task-play {
 .learn-token,
 .attn-flank-l,
 .attn-flank-r,
-.attn-odd,
-.attn-reticle,
 .attn-center,
-.perc-many,
-.perc-bright,
-.mem-cell,
-.mem-probe-new {
+.mem-step {
     transform-box: fill-box;
     transform-origin: center;
-    transition: transform 0.35s ease, opacity 0.35s ease, fill 0.35s ease;
+    transition: transform 0.35s ease, opacity 0.35s ease, fill 0.35s ease, filter 0.35s ease;
 }
 
 .learn-bar {
@@ -984,10 +870,8 @@ a.trial-task-play {
     .learn-token,
     .attn-flank-l,
     .attn-flank-r,
-    .attn-odd,
-    .attn-reticle,
-    .mem-cell,
-    .mem-probe-new {
+    .attn-center,
+    .mem-step {
         transition: none;
     }
 }
