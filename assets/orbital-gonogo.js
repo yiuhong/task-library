@@ -32,6 +32,12 @@
   far go) with the plus visible. Those trials are not part of the 30.
   The default run has no practice block.
 
+  Motion is chosen on the start screen. The default spins only the
+  no-go octahedron and leaves the go sphere still. Both still holds
+  both shapes still. The spin does not change the 1200 ms window, the
+  score, the trial counts, or placement. Colour and shape still decide
+  go and no-go.
+
   Each plane: 7 GO + 3 NOGO = 10 trials. Three planes = 30 trials
   (21 GO / 9 NOGO, 70% / 30%). Order is a Fisher–Yates shuffle.
   The shuffle changes order only. It does not move the target.
@@ -60,6 +66,8 @@
   var SIZE_ANGLE = 'constant_angle';
   var FIXATION_HIDDEN = 'hidden';
   var FIXATION_VISIBLE = 'visible';
+  var ROTATION_NOGO = 'nogo_spins';
+  var ROTATION_STILL = 'both_still';
   var BLOCK_MAIN = 'main';
   var BLOCK_PRACTICE = 'practice';
   var REFERENCE_PLANE_ID = 'mid';
@@ -99,6 +107,7 @@
     'streak',
     'size_mode',
     'fixation_mode',
+    'rotation_mode',
     'fixation_occluded',
     'block'
   ];
@@ -252,6 +261,19 @@
   }
 
   /*
+    Default motion spins the no-go only. Both still spins neither.
+    Any other value is treated as the default.
+  */
+  function stimulusSpins(trialType, rotationMode) {
+    if (rotationMode === ROTATION_STILL) return false;
+    return trialType === 'NOGO';
+  }
+
+  function loggedRotationMode(rotationMode) {
+    return rotationMode === ROTATION_STILL ? ROTATION_STILL : ROTATION_NOGO;
+  }
+
+  /*
     1 when an opaque target's bounding radius crosses in front of the
     fixation point and covers that direction. The visible-plus setting
     returns 0: the plus stays up through a translucent target.
@@ -373,6 +395,7 @@
       streak: fields.streak,
       size_mode: meta.size_mode,
       fixation_mode: meta.fixation_mode,
+      rotation_mode: loggedRotationMode(meta.rotation_mode),
       fixation_occluded: meta.fixation_occluded,
       block: meta.block || BLOCK_MAIN
     };
@@ -394,6 +417,7 @@
   function buildPayload(meta) {
     var sizeMode = meta.sizeMode || SIZE_PHYSICAL;
     var fixationMode = meta.fixationMode || FIXATION_HIDDEN;
+    var rotationMode = loggedRotationMode(meta.rotationMode);
     var planes = [];
     var p;
     for (p = 0; p < DEPTH_PLANES.length; p++) {
@@ -421,6 +445,7 @@
         size_rule: sizeMode === SIZE_ANGLE ? 'constant_visual_angle' : 'constant_physical_size',
         size_mode: sizeMode,
         fixation_mode: fixationMode,
+        rotation_mode: rotationMode,
         reference_plane: REFERENCE_PLANE_ID,
         reference_distance_m: referenceDistanceM(),
         reference_radius_m: TARGET_RADIUS_M,
@@ -429,6 +454,7 @@
       stimulus_radius_m: TARGET_RADIUS_M,
       size_mode: sizeMode,
       fixation_mode: fixationMode,
+      rotation_mode: rotationMode,
       final_score: meta.finalScore,
       summary: meta.summary,
       trials: meta.trials
@@ -451,6 +477,8 @@
     SIZE_ANGLE: SIZE_ANGLE,
     FIXATION_HIDDEN: FIXATION_HIDDEN,
     FIXATION_VISIBLE: FIXATION_VISIBLE,
+    ROTATION_NOGO: ROTATION_NOGO,
+    ROTATION_STILL: ROTATION_STILL,
     BLOCK_MAIN: BLOCK_MAIN,
     BLOCK_PRACTICE: BLOCK_PRACTICE,
     REFERENCE_PLANE_ID: REFERENCE_PLANE_ID,
@@ -467,6 +495,7 @@
     eccentricityDeg: eccentricityDeg,
     distanceM: distanceM,
     visualAngleDeg: visualAngleDeg,
+    stimulusSpins: stimulusSpins,
     fixationOccluded: fixationOccluded,
     summarize: summarize,
     buildTrialRow: buildTrialRow,
