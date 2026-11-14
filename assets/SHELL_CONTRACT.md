@@ -43,6 +43,7 @@ Call `apply(readMode())` in the head, before the stylesheets, and again after th
 Theme CSS:
 
 - `assets/trial-theme.css` is the shared dark Trial theme. Gamified Stroop uses it.
+- `assets/tailwind.css` is the compiled Tailwind CSS 3.4 sheet for utility classes on the hub and on shell pages. Do not load the Play CDN. Rebuild notes are in [`docs/package-conventions.md`](../docs/package-conventions.md).
 - `assets/shells/gamified.css` holds optional feedback components (combo bounce, shake, fire) and the neon stimulus glow.
 - `assets/shells/classical.css` is the quiet lab theme. The run canvas is PsychoPy mid-gray `#7f7f7f`. Every rule is scoped to `html[data-trial-mode="classical"]`.
 - `assets/trial-audio.js` is the tone player. The shell passes an audio session only when the core's policy for that mode sets `audio: true`. A classical policy sets `audio: false` and passes `null`. Classical does not call `playTone`, and it does not write `project-trial:sfx`. Flanker, Go / No-Go, Visual Working Memory, and Reversal Learning are silent in both shells.
@@ -74,12 +75,15 @@ The core may use `TrialStore` and `TrialOrientation`. Pass `mode` into `TrialSto
 
 ## What a shell page does
 
+Pages that use utility classes link `assets/tailwind.css`. On the hub and the current shell pages, that link sits where the Play CDN script used to sit, so the cascade is unchanged.
+
 ```html
 <script src="assets/shells/shell.js"></script>
 <script>
   TrialShell.apply(TrialShell.readMode());
 </script>
 <link rel="stylesheet" href="assets/trial-theme.css">
+<link rel="stylesheet" href="assets/tailwind.css">
 <link rel="stylesheet" href="assets/shells/gamified.css">
 <link rel="stylesheet" href="assets/shells/classical.css">
 <!-- task layout CSS, then the landmarks the core documents -->

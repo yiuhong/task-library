@@ -13,33 +13,7 @@
   <link rel="stylesheet" href="assets/tasks/vwm.css">
   <link rel="stylesheet" href="assets/shells/gamified.css">
   <link rel="stylesheet" href="assets/shells/classical.css">
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            trial: {
-              bg: 'var(--bg-primary, #090d16)',
-              surface: 'var(--bg-surface, #111827)',
-              panel: 'var(--bg-panel, #1e293b)',
-              text: 'var(--text-primary, #f1f5f9)',
-              muted: 'var(--text-muted, #94a3b8)',
-              accent: 'var(--accent-primary, #38bdf8)',
-              accentDim: 'var(--accent-dim, rgba(56, 189, 248, 0.15))',
-              border: 'var(--border-color, #334155)'
-            }
-          },
-          fontFamily: {
-            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
-          }
-        }
-      }
-    };
-  </script>
+  <link rel="stylesheet" href="assets/tailwind.css">
   
 </head>
 <body data-trial-task="vwm" class="min-h-screen flex flex-col justify-between font-sans antialiased selection:bg-sky-500 selection:text-slate-950">

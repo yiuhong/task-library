@@ -15,54 +15,7 @@
   <link rel="stylesheet" href="assets/shells/gamified.css" />
   <link rel="stylesheet" href="assets/shells/classical.css" />
 
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Class names assigned from the task core. The CDN scans this
-    // page and does not read assets/tasks/*.js.
-    tailwind.config = {
-      darkMode: 'class',
-      safelist: [
-        'bg-amber-950/90',
-        'bg-emerald-950/90',
-        'bg-rose-950/90',
-        'border-amber-500/40',
-        'border-amber-500/60',
-        'border-emerald-500/40',
-        'border-emerald-500/60',
-        'border-rose-500/60',
-        'last:border-none',
-        'opacity-100',
-        'text-amber-300',
-        'text-amber-400',
-        'text-right',
-        'text-rose-300',
-        'text-rose-400',
-        'w-16'
-      ],
-      theme: {
-        extend: {
-          colors: {
-            trial: {
-              bg: '#060911',
-              surface: '#0d1322',
-              panel: '#131c31',
-              border: '#1e293b',
-              accent: '#10b981',      /* Emerald 500 */
-              accentGlow: '#34d399',  /* Emerald 400 */
-              accentDim: '#064e3b',   /* Emerald 900 */
-              danger: '#f43f5e',      /* Rose 500 */
-              warning: '#f59e0b'      /* Amber 500 */
-            }
-          },
-          fontFamily: {
-            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
-          }
-        }
-      }
-    };
-  </script>
+  <link rel="stylesheet" href="assets/tailwind.css" />
 
 
 </head>
