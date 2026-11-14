@@ -14,34 +14,7 @@
   <link rel="stylesheet" href="assets/shells/gamified.css" />
   <link rel="stylesheet" href="assets/shells/classical.css" />
 
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Class names assigned from the task core. The CDN scans this
-    // page and does not read assets/tasks/*.js.
-    tailwind.config = {
-      darkMode: 'class',
-      safelist: [
-        'py-2.5',
-        'text-rose-400'
-      ],
-      theme: {
-        extend: {
-          colors: {
-            trialBg: '#060911',
-            trialCard: '#0d1322',
-            trialBorder: '#1e293b',
-            trialAmber: '#f59e0b',
-            trialAmberGlow: 'rgba(245, 158, 11, 0.35)'
-          },
-          fontFamily: {
-            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
-          }
-        }
-      }
-    };
-  </script>
+  <link rel="stylesheet" href="assets/tailwind.css" />
 
 
 </head>

@@ -16,10 +16,15 @@ No bundler. Load code with plain script tags, consistent with [`assets/SHELL_CON
 
 ## Tailwind
 
-Hub and task chrome should use a compiled Tailwind CSS 3.4 sheet, with a Trial theme. That sheet is not the Project Viz utilities sheet. Do not use the Tailwind Play CDN (`https://cdn.tailwindcss.com`) for new pages.
+Hub and task chrome load a compiled Tailwind CSS 3.4 sheet with a Trial theme:
 
-On main when this file was added, the hub (`index.html`) and these 10 task pages still load `https://cdn.tailwindcss.com`:
+[`assets/tailwind.css`](../assets/tailwind.css)
 
+That sheet is not the Project Viz utilities sheet. Do not use the Tailwind Play CDN (`https://cdn.tailwindcss.com`), and do not add a live `tailwind.config` script.
+
+The hub and these task pages load the compiled sheet (plus the Trial theme and shell CSS they already used):
+
+- `index.html`
 - `stroop_game.html`
 - `oddball_game.html`
 - `gonogo_game.html`
@@ -31,7 +36,13 @@ On main when this file was added, the hub (`index.html`) and these 10 task pages
 - `rdk_game.html`
 - `numerosity_game.html`
 
-Replacing that CDN is a later, separate change.
+Info pages, `about.html`, `vr.html`, `noematachograph.html`, and `orbital_gonogo.html` do not load Tailwind.
+
+Rebuild the sheet with the Tailwind CLI 3.4.17 from `assets/tailwind/input.css` and `tailwind.config.js`:
+
+`npm run build:css`
+
+The config scans the hub, the `*_game.html` pages, and the task and shell scripts. Commit the rebuilt `assets/tailwind.css` in the same change that adds a utility class. Flanker accent colors stay CSS variables owned by `assets/tasks/flanker.css`. Corsi sets `--trial-tw-mono` so `font-mono` stays JetBrains Mono.
 
 ## 3D / WebXR
 

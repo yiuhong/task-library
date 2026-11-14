@@ -12,6 +12,8 @@
       --accent-neon: #d946ef;
       --accent-glow: rgba(217, 70, 239, 0.6);
       --accent-soft: rgba(217, 70, 239, 0.14);
+      /* font-mono on this page, matching the old Play CDN config. */
+      --trial-tw-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
     }
 
     * {

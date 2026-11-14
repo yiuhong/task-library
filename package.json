@@ -1,0 +1,11 @@
+{
+  "name": "task-library",
+  "private": true,
+  "description": "Rebuild assets/tailwind.css. Task pages load that sheet with a plain link and do not run this package.",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i assets/tailwind/input.css -o assets/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

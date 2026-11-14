@@ -8,7 +8,7 @@ Project Trial is Yiu Hong Ko’s browser collection of attention, perception, an
 
 ## Package conventions
 
-New tasks follow [`docs/package-conventions.md`](docs/package-conventions.md). The default for 2D is first-party canvas and the shared shells. Hub and task chrome should use a compiled Tailwind CSS 3.4 sheet with a Trial theme. A-Frame 1.8 is the one 3D/WebXR package. The set is smaller than Project Viz, and the Viz plotting stack stays out of this repo.
+New tasks follow [`docs/package-conventions.md`](docs/package-conventions.md). The default for 2D is first-party canvas and the shared shells. Hub and task chrome load the compiled Tailwind CSS 3.4 sheet [`assets/tailwind.css`](assets/tailwind.css), with a Trial theme, and do not use the Play CDN. A-Frame 1.8 is the one 3D/WebXR package. The set is smaller than Project Viz, and the Viz plotting stack stays out of this repo.
 
 ## Shells and task cores
 

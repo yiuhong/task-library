@@ -1,0 +1,10 @@
+/*!
+  Project Trial compiled Tailwind CSS 3.4 sheet.
+  Source: assets/tailwind/input.css and tailwind.config.js.
+  Rebuild with npm run build:css (Tailwind CLI 3.4.17).
+  This is the Trial theme, not the Project Viz utilities sheet.
+  Do not load https://cdn.tailwindcss.com.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
