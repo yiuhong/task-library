@@ -9,7 +9,7 @@
     Flat-screen play (phone, tablet, desktop) and headset play share one
     frontal field, one trial list, and one score.
   -->
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
   <style>
     :root {
       --ink: #e7eef6;
@@ -364,9 +364,15 @@
       material="roughness: 0.8; metalness: 0.2; depthWrite: false">
     </a-cylinder>
 
-    <a-light type="ambient" color="#88aaff" intensity="0.65"></a-light>
-    <a-light type="point" position="0 6 -2" color="#00F5D4" intensity="0.8" distance="20"></a-light>
-    <a-light type="point" position="0 3 -5" color="#FF2A85" intensity="0.35" distance="15"></a-light>
+    <!--
+      1.6.0 intensities were 0.65, 0.8, and 0.35. That build multiplied
+      light intensity by π while legacy lights were on. A-Frame 1.8 /
+      Three r184 does not, so the attributes carry the factor. Decay
+      stays the component default of 1.
+    -->
+    <a-light type="ambient" color="#88aaff" intensity="2.042"></a-light>
+    <a-light type="point" position="0 6 -2" color="#00F5D4" intensity="2.513" distance="20"></a-light>
+    <a-light type="point" position="0 3 -5" color="#FF2A85" intensity="1.100" distance="15"></a-light>
 
     <a-entity id="rig" position="0 0 0">
       <a-camera

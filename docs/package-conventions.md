@@ -52,7 +52,7 @@ A-Frame 1.8 is the one 3D/WebXR package (current stable as of 23 June 2026):
 
 Three.js comes only as A-Frame’s own pin. A-Frame 1.8 ships Three r184 / super-three 0.184.0. Do not add a separate Three.js pin, and do not use Project Viz’s r187 here.
 
-On main when this file was added, Spatial Go/No-Go (`orbital_gonogo.html`) still loads A-Frame 1.6.0. Upgrading to 1.8 is a later, separate change that needs a headset smoke check. Other tasks do not load A-Frame or Three.js.
+Spatial Go/No-Go (`orbital_gonogo.html`) loads that URL. `vr.html` only redirects there. Other pages do not load A-Frame or Three.js.
 
 ## Plot libraries
 
