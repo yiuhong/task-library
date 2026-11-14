@@ -49,7 +49,7 @@ Theme CSS:
 
 ## What a task core exposes
 
-Hang the core on `TrialTasks.<id>` with a plain script tag. No bundler.
+Hang the core on `TrialTasks.<id>` with a plain script tag. No bundler. Which packages a new task may load is in [`docs/package-conventions.md`](../docs/package-conventions.md).
 
 ```js
 TrialTasks.example = {

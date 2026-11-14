@@ -6,6 +6,10 @@ Public hub: [https://yiuhong.github.io/task-library/](https://yiuhong.github.io/
 
 Project Trial is Yiu Hong Ko’s browser collection of attention, perception, and reaction-time tasks. The GitHub repository stays named `task-library`.
 
+## Package conventions
+
+New tasks follow [`docs/package-conventions.md`](docs/package-conventions.md). The default for 2D is first-party canvas and the shared shells. Hub and task chrome should use a compiled Tailwind CSS 3.4 sheet with a Trial theme. A-Frame 1.8 is the one 3D/WebXR package. The set is smaller than Project Viz, and the Viz plotting stack stays out of this repo.
+
 ## Shells and task cores
 
 Each hub task is a shell plus a task core. The shell is chrome: frame, theme, HUD, and the Gamified | Classical control on the welcome and results screens. The core is the science: parameters, trial loop, stimuli, keys, and feedback policy. Gamified and classical load the same `assets/tasks/<id>.js`, so the trial list is not copied into a second page.
