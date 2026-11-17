@@ -118,7 +118,8 @@ button.trial-pad:focus-visible,
 .trial-more:focus-visible,
 .trial-btn:focus-visible,
 .trial-data-btn:focus-visible,
-.trial-doc a:focus-visible {
+.trial-doc a:focus-visible,
+.trial-source:focus-visible {
     outline: 2px solid var(--trial-text);
     outline-offset: 3px;
 }
@@ -445,6 +446,12 @@ button.trial-data-clear.is-armed {
 
 .trial-doc a {
     color: var(--trial-accent);
+}
+
+.trial-source {
+    color: var(--trial-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
 }
 
 .trial-doc code {
