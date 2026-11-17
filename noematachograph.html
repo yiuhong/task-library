@@ -66,6 +66,7 @@
         }
 
         header {
+            flex-shrink: 0;
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
@@ -87,6 +88,19 @@
             font-style: italic;
             color: #aaa;
             font-size: 1.1rem;
+        }
+
+        p.source-note {
+            max-width: 40rem;
+            margin: 0.55rem auto 0;
+            font-style: italic;
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.45;
+        }
+
+        p.source-note a {
+            color: var(--brass-light);
         }
 
         .main-content {
@@ -279,6 +293,7 @@
         <header>
             <h1>Noematachograph</h1>
             <p class="subtitle">Franciscus Donders' Mental Chronometry Experiment (1868)</p>
+            <p class="source-note">Counting tuning-fork cycles between the stimulus sound and the spoken response is how Donders timed an interval on the noematachograph. Donders (1868); English translation, <a href="https://doi.org/10.1016/0001-6918(69)90065-1">On the speed of mental processes</a> (1969). He specified 261 vibrations per second. The 80-cycle plate is this page's example, not a trace from that paper.</p>
         </header>
 
         <div class="main-content">
