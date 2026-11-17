@@ -1,6 +1,6 @@
 # Package conventions
 
-Project Trial’s package set is intentionally smaller and more task-oriented than Project Viz. Do not copy the Viz plotting stack (D3, Chart.js, KaTeX, jStat, or a separate Three.js pin) into this repo.
+Project Trial’s package set stays small and task-oriented. Do not add a plotting stack (D3, Chart.js, KaTeX, jStat, or a separate Three.js pin) to this repo.
 
 New tasks must follow this file. English remains the canonical copy.
 
@@ -20,7 +20,7 @@ Hub and task chrome load a compiled Tailwind CSS 3.4 sheet with a Trial theme:
 
 [`assets/tailwind.css`](../assets/tailwind.css)
 
-That sheet is not the Project Viz utilities sheet. Do not use the Tailwind Play CDN (`https://cdn.tailwindcss.com`), and do not add a live `tailwind.config` script.
+That sheet is the Trial theme. Do not use the Tailwind Play CDN (`https://cdn.tailwindcss.com`), and do not add a live `tailwind.config` script.
 
 The hub and these task pages load the compiled sheet (plus the Trial theme and shell CSS they already used):
 
@@ -50,7 +50,7 @@ A-Frame 1.8 is the one 3D/WebXR package (current stable as of 23 June 2026):
 
 `https://aframe.io/releases/1.8.0/aframe.min.js`
 
-Three.js comes only as A-Frame’s own pin. A-Frame 1.8 ships Three r184 / super-three 0.184.0. Do not add a separate Three.js pin, and do not use Project Viz’s r187 here.
+Three.js comes only as A-Frame’s own pin. A-Frame 1.8 ships Three r184 / super-three 0.184.0. Do not add a separate Three.js pin.
 
 Spatial Go/No-Go (`orbital_gonogo.html`) loads that URL. `vr.html` only redirects there. Other pages do not load A-Frame or Three.js.
 
