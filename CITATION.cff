@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: >-
+  If you use Project Trial, cite it with the metadata in this file.
+  Teaching content is CC BY 4.0. Source code is MIT.
+type: software
+title: "Project Trial: A library of gamified psychological tasks"
+version: 0.1.0
+date-released: "2026-11-17"
+url: "https://yiuhong.github.io/task-library/"
+repository-code: "https://github.com/yiuhong/task-library"
+license: CC-BY-4.0
+authors:
+  - family-names: Ko
+    given-names: Yiu Hong
+    email: yiuhong.ko@gmail.com
+    orcid: "https://orcid.org/0000-0003-4436-0166"
+keywords:
+  - psychology
+  - cognitive-tasks
+  - teaching
+abstract: >-
+  Project Trial is a browser library of gamified psychological tasks
+  for teaching attention, perception, memory, and learning.
+  Teaching content is licensed CC BY 4.0. Source code is MIT.

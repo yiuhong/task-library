@@ -1,0 +1,98 @@
+/*
+  Project Trial footer.
+  Same centered link row and note as the hub stage footer, extended
+  for the citation line. Scoped to .stage-foot so task chrome is unchanged.
+*/
+
+.stage-foot {
+    margin-top: 1.15rem;
+    padding-top: 0.35rem;
+    text-align: center;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.trial-hub > .stage-foot {
+    flex-shrink: 0;
+}
+
+.stage-foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.stage-foot-dot {
+    color: #475569;
+    font-size: 11px;
+}
+
+.stage-foot-note {
+    margin: 0.1rem 0 0;
+    color: #475569;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.stage-foot-pair {
+    display: inline-flex;
+    align-items: center;
+}
+
+.stage-foot-label {
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.stage-foot a.trial-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 0.35rem;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--trial-accent, #818cf8);
+}
+
+.stage-foot a.trial-more:hover {
+    color: var(--trial-text, #ffffff);
+}
+
+.stage-foot a.trial-more:focus-visible {
+    outline: 2px solid var(--trial-text, #ffffff);
+    outline-offset: 3px;
+}
+
+.stage-foot a.stage-foot-mail {
+    text-transform: none;
+    letter-spacing: 0.01em;
+}
+
+/* Welcome and results cards scroll. The trial canvas is not a shell screen. */
+body.stage-foot-play .shell-screen {
+    overflow-y: auto;
+    max-height: calc(100dvh - 6.5rem);
+}
+
+body[data-trial-task="numerosity"].stage-foot-play .shell-screen {
+    max-height: calc(100dvh - 13rem);
+}
+
+#controls.stage-foot-host {
+    overflow-y: auto;
+    min-height: 0;
+}
+
+#controls.stage-foot-host > .stage-foot {
+    margin-top: 0.35rem;
+}

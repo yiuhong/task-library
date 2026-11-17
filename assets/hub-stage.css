@@ -437,33 +437,8 @@ a.trial-task-play {
     flex: none;
 }
 
-/* ----- footer ----- */
-
-.stage-foot {
-    margin-top: 1.15rem;
-    padding-top: 0.35rem;
-    text-align: center;
-}
-
-.stage-foot-links {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-}
-
-.stage-foot-dot {
-    color: #475569;
-    font-size: 11px;
-}
-
-.stage-foot-note {
-    margin: 0.1rem 0 0;
-    color: #475569;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
+/* Footer styles live in assets/site-footer.css. The hub script measures
+   the footer into --stage-foot-reserve so the desktop orbit leaves room. */
 
 /* No-JS fallback: the sections stay in the document as a list. */
 #task-hub-source .trial-hub-section {
@@ -593,7 +568,7 @@ a.trial-task-play {
         container-name: stage;
         flex: 1 1 auto;
         width: 100%;
-        height: max(40rem, calc(100dvh - 8.25rem));
+        height: max(40rem, calc(100dvh - var(--stage-foot-reserve, 8.25rem)));
         min-height: 0;
         margin: 0;
     }

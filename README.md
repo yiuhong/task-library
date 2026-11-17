@@ -6,9 +6,11 @@ Public hub: [https://yiuhong.github.io/task-library/](https://yiuhong.github.io/
 
 Project Trial is Yiu Hong Ko’s browser collection of attention, perception, and reaction-time tasks. The GitHub repository stays named `task-library`.
 
+Cite the library from [Cite & reuse](cite.html). The license table is on [Licenses](license.html). Teaching content is CC BY 4.0 ([LICENSE](LICENSE)). Source code is MIT ([LICENSE-CODE](LICENSE-CODE)). Release notes: [CHANGELOG.md](CHANGELOG.md).
+
 ## Package conventions
 
-New tasks follow [`docs/package-conventions.md`](docs/package-conventions.md). The default for 2D is first-party canvas and the shared shells. Hub and task chrome load the compiled Tailwind CSS 3.4 sheet [`assets/tailwind.css`](assets/tailwind.css), with a Trial theme, and do not use the Play CDN. A-Frame 1.8 is the one 3D/WebXR package. The set is smaller than Project Viz, and the Viz plotting stack stays out of this repo.
+New tasks follow [`docs/package-conventions.md`](docs/package-conventions.md). The default for 2D is first-party canvas and the shared shells. Hub and task chrome load the compiled Tailwind CSS 3.4 sheet [`assets/tailwind.css`](assets/tailwind.css), with a Trial theme, and do not use the Play CDN. A-Frame 1.8 is the one 3D/WebXR package. The package set stays small, and plotting libraries stay out of this repo.
 
 ## Shells and task cores
 
@@ -23,7 +25,7 @@ Approved black-and-white lockup, outlined in `assets/`:
 - [`assets/project-trial-wordmark.svg`](assets/project-trial-wordmark.svg) — pure black on transparent. This is the black-and-white mark for the personal site.
 - [`assets/project-trial-wordmark-dark.svg`](assets/project-trial-wordmark-dark.svg) — white type and a cyan target on transparent. This is the mark on the dark hub.
 
-“Project” is the thin sans, the same lettering as Project Viz. “Trial” is the bold pixel word, set with a clear weight contrast and a slight space between the words. The tittle on the i is a square reticle: a square frame, short ticks at the middle of each side, and a small center mark.
+“Project” is the thin sans. “Trial” is the bold pixel word, set with a clear weight contrast and a slight space between the words. The tittle on the i is a square reticle: a square frame, short ticks at the middle of each side, and a small center mark.
 
 ## Live on the hub
 
@@ -39,7 +41,7 @@ Approved black-and-white lockup, outlined in `assets/`:
 - **Corsi Span** — [`corsi_game.html`](corsi_game.html). Tap a flashed block sequence back in order. Parameters: [`corsi-info.html`](corsi-info.html).
 - **Reversal Learning** — [`bandit_game.html`](bandit_game.html). Two-armed bandit with a silent switch of the better option. Parameters: [`bandit-info.html`](bandit-info.html).
 
-Hub overview: [`about.html`](about.html).
+Hub overview: [`about.html`](about.html). Citation and reuse: [`cite.html`](cite.html).
 
 ## Shared look
 
