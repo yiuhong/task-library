@@ -27,6 +27,7 @@
         licensePage: "license.html",
         licenseCode: "LICENSE-CODE",
         about: "about.html",
+        researchers: "researchers.html",
         version: "0.1.0",
         updated: "2026-11-17",
         updatedDisplay: "17 November 2026",

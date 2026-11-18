@@ -9,6 +9,13 @@
   Classical (summary) shows Correct / Incorrect / No response on practice only.
   The main block clears the feedback line. The 400 ms hold and 350 ms blank
   still run. This task is silent: both policies set audio to false.
+
+  The header ACC and MEAN RT nodes stay in the page. flanker.css hides
+  [data-shell-live] in both shells, so a running score is not on screen
+  during a trial. The results screen still reports accuracy and mean RT.
+
+  Download CSV and Download JSON use TrialExport. The trial list, the
+  timings, and the conflict-effect formula are unchanged.
 */
 (function (global) {
   var CONFIG = {
@@ -52,6 +59,46 @@
     var mode = options.mode === "classical" ? "classical" : "gamified";
     var policy = FEEDBACK[mode];
     var audio = options.audio || null;
+    var lastSummary = null;
+
+    if (!global.TrialExport) {
+      throw new Error("Flanker requires assets/trial-export.js");
+    }
+
+    var exportLog = global.TrialExport.session({
+      taskId: "flanker",
+      mode: mode,
+      params: function () {
+        return {
+          storageKey: CONFIG.storageKey,
+          practiceTrials: CONFIG.practiceTrials,
+          mainTrials: CONFIG.mainTrials,
+          fixationMinMs: CONFIG.fixationMinMs,
+          fixationMaxMs: CONFIG.fixationMaxMs,
+          stimulusTimeoutMs: CONFIG.stimulusTimeoutMs,
+          feedbackDurationMs: CONFIG.feedbackDurationMs,
+          itiDurationMs: CONFIG.itiDurationMs,
+          conditions: CONFIG.conditions.slice(),
+          directions: CONFIG.directions.slice(),
+          keyMap: {
+            ArrowLeft: CONFIG.keyMap.ArrowLeft,
+            KeyA: CONFIG.keyMap.KeyA,
+            ArrowRight: CONFIG.keyMap.ArrowRight,
+            KeyL: CONFIG.keyMap.KeyL
+          },
+          presentation: {
+            policyId: policy.id,
+            trialFeedback: !!policy.trialFeedback,
+            practiceFeedback: !!policy.practiceFeedback,
+            audio: false,
+            score: false
+          }
+        };
+      },
+      summary: function () {
+        return lastSummary;
+      }
+    });
 
     // Application State
     const state = {
@@ -61,6 +108,7 @@
       globalTrialCounter: 0,
       awaitingResponse: false,
       stimOnsetPerf: 0,
+      currentFixationMs: null,
       activeTimeoutId: null,
       results: [] // Stores all trials (practice + main)
     };
@@ -90,6 +138,7 @@
       btnStartPractice: document.getElementById("btn-start-practice"),
       btnStartMain: document.getElementById("btn-start-main"),
       btnDownloadCsv: document.getElementById("btn-download-csv"),
+      btnDownloadJson: document.getElementById("btn-download-json"),
       btnRestart: document.getElementById("btn-restart"),
 
       padLeft: document.getElementById("pad-left"),
@@ -163,6 +212,7 @@
     /**
      * Update Top HUD & Progress Bar
      */
+    // ACC and MEAN RT stay in the header markup. Both shells hide them.
     function updateHUD() {
       const totalInBlock = state.trialQueue.length;
       const currentNum = Math.min(state.trialIndex + 1, totalInBlock);
@@ -239,6 +289,7 @@
         Math.floor(
           Math.random() * (CONFIG.fixationMaxMs - CONFIG.fixationMinMs + 1)
         ) + CONFIG.fixationMinMs;
+      state.currentFixationMs = fixationDuration;
 
       state.activeTimeoutId = setTimeout(() => {
         presentStimulus();
@@ -262,7 +313,7 @@
       // Timeout handler (1500 ms)
       state.activeTimeoutId = setTimeout(() => {
         if (state.awaitingResponse) {
-          handleResponse("timeout", null);
+          handleResponse("timeout", null, performance.now());
         }
       }, CONFIG.stimulusTimeoutMs);
     }
@@ -270,7 +321,7 @@
     /**
      * Record response or timeout
      */
-    function handleResponse(responseDir, rtMs) {
+    function handleResponse(responseDir, rtMs, responsePerfMs) {
       if (!state.awaitingResponse) return;
       state.awaitingResponse = false;
       clearTimeout(state.activeTimeoutId);
@@ -278,6 +329,7 @@
       const currentTrial = state.trialQueue[state.trialIndex];
       const isTimeout = responseDir === "timeout";
       const isCorrect = !isTimeout && responseDir === currentTrial.target_dir ? 1 : 0;
+      const roundedRt = isTimeout ? "" : Math.round(rtMs);
 
       state.globalTrialCounter += 1;
 
@@ -287,14 +339,38 @@
         condition: currentTrial.condition,
         target_dir: currentTrial.target_dir,
         flanker_dir: currentTrial.flanker_dir,
+        stimulus: currentTrial.stimulus,
         response: responseDir,
         correct: isCorrect,
-        rt_ms: isTimeout ? "" : Math.round(rtMs),
+        rt_ms: roundedRt,
         timestamp: new Date().toISOString(),
+        onset_perf_ms: state.stimOnsetPerf,
+        response_perf_ms: responsePerfMs,
+        fixation_ms: state.currentFixationMs,
+        timed_out: isTimeout ? 1 : 0,
         mode: mode
       };
 
       state.results.push(trialRecord);
+      exportLog.record({
+        trialIndex: trialRecord.trial,
+        block: trialRecord.block,
+        stimulus: currentTrial.stimulus,
+        condition: currentTrial.condition,
+        response: responseDir,
+        accuracy: isCorrect,
+        rtMs: roundedRt,
+        timestamp: trialRecord.timestamp,
+        onsetPerfMs: state.stimOnsetPerf,
+        responsePerfMs: responsePerfMs,
+        extra: {
+          trial_in_block: state.trialIndex + 1,
+          target_dir: currentTrial.target_dir,
+          flanker_dir: currentTrial.flanker_dir,
+          fixation_ms: state.currentFixationMs,
+          timed_out: isTimeout ? 1 : 0
+        }
+      });
 
       // Visual pad press feedback
       if (responseDir === "left") flashPad(el.padLeft);
@@ -475,6 +551,12 @@
         trials: state.results,
         mode: mode
       };
+      lastSummary = {
+        overall_accuracy_pct: summaryPayload.overall_accuracy_pct,
+        overall_mean_rt_ms: summaryPayload.overall_mean_rt_ms,
+        flanker_conflict_effect_ms: summaryPayload.flanker_conflict_effect_ms,
+        conditions: condSummary
+      };
 
       try {
         localStorage.setItem(CONFIG.storageKey, JSON.stringify(summaryPayload));
@@ -483,40 +565,16 @@
       }
     }
 
-    /**
-     * Download CSV with exact requested columns:
-     * trial, block, condition, target_dir, flanker_dir, response, correct, rt_ms, timestamp, mode
-     */
+    function exportStamp() {
+      return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    }
+
     function downloadCSV() {
-      const headers = [
-        "trial",
-        "block",
-        "condition",
-        "target_dir",
-        "flanker_dir",
-        "response",
-        "correct",
-        "rt_ms",
-        "timestamp",
-        "mode"
-      ];
+      exportLog.downloadCsv("flanker_conflict_" + exportStamp() + ".csv");
+    }
 
-      const rows = state.results.map(r =>
-        headers.map(h => `${r[h] !== undefined && r[h] !== null ? r[h] : ""}`).join(",")
-      );
-
-      const csvContent = [headers.join(","), ...rows].join("\n");
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-      a.href = url;
-      a.download = `flanker_conflict_${stamp}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+    function downloadJSON() {
+      exportLog.downloadJson("flanker_conflict_" + exportStamp() + ".json");
     }
 
     /**
@@ -534,8 +592,9 @@
       el.padLeft.addEventListener("pointerdown", e => {
         e.preventDefault();
         if (state.awaitingResponse) {
-          const rt = performance.now() - state.stimOnsetPerf;
-          handleResponse("left", rt);
+          const responsePerf = performance.now();
+          const rt = responsePerf - state.stimOnsetPerf;
+          handleResponse("left", rt, responsePerf);
         } else {
           flashPad(el.padLeft);
         }
@@ -544,8 +603,9 @@
       el.padRight.addEventListener("pointerdown", e => {
         e.preventDefault();
         if (state.awaitingResponse) {
-          const rt = performance.now() - state.stimOnsetPerf;
-          handleResponse("right", rt);
+          const responsePerf = performance.now();
+          const rt = responsePerf - state.stimOnsetPerf;
+          handleResponse("right", rt, responsePerf);
         } else {
           flashPad(el.padRight);
         }
@@ -558,14 +618,21 @@
 
         if (state.awaitingResponse) {
           e.preventDefault();
-          const rt = performance.now() - state.stimOnsetPerf;
-          handleResponse(mappedDir, rt);
+          const responsePerf = performance.now();
+          const rt = responsePerf - state.stimOnsetPerf;
+          handleResponse(mappedDir, rt, responsePerf);
         }
       });
 
-      el.btnStartPractice.addEventListener("click", () => {
+      function resetRun() {
         state.results = [];
         state.globalTrialCounter = 0;
+        lastSummary = null;
+        exportLog.clear();
+      }
+
+      el.btnStartPractice.addEventListener("click", () => {
+        resetRun();
         startBlock("practice");
       });
 
@@ -577,9 +644,12 @@
         downloadCSV();
       });
 
+      el.btnDownloadJson.addEventListener("click", () => {
+        downloadJSON();
+      });
+
       el.btnRestart.addEventListener("click", () => {
-        state.results = [];
-        state.globalTrialCounter = 0;
+        resetRun();
         state.block = "idle";
         updateHUD();
         showScreen("intro");

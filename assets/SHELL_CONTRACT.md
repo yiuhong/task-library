@@ -31,7 +31,7 @@ The welcome screen and the results screen each have a Gamified | Classical contr
 `TrialShell.apply(mode)` does five things:
 
 1. Sets `data-trial-mode` on `<html>` and `<body>`.
-2. Hides `[data-shell-arcade]` in the classical shell. Score, combo, reward tones controls, and other game chrome use this attribute. `[data-shell-live]` (running accuracy and mean RT) is hidden by classical CSS.
+2. Hides `[data-shell-arcade]` in the classical shell. Score, combo, reward tones controls, and other game chrome use this attribute. `[data-shell-live]` (running accuracy and mean RT) is hidden by classical CSS. Eriksen Flanker hides those nodes in both shells.
 3. Shows `[data-shell-summary]` only in the classical shell. Lab-only instructions use this attribute.
 4. Writes `[data-shell-copy]` text from `data-gamified` or `data-classical`. If `data-gamified` is omitted, the element's text is the gamified string.
 5. Fills each `[data-shell-toggle]` with the segmented control.
@@ -101,6 +101,29 @@ Pages that use utility classes link `assets/tailwind.css`. On the hub and the cu
 ```
 
 The head `apply` stamps `data-trial-mode` before CSS, so the classical theme is the first paint, and it can retitle the page. The bottom `apply` runs after the landmarks exist and swaps the visible copy and HUD slots. Calling it twice is safe.
+
+## Experiment export
+
+`assets/trial-export.js` is the shared trial download. Visual working memory and Eriksen flanker load it. Other tasks keep the download they already had until they take this hook.
+
+A core that adopts it loads the script before the task script. Inside `mount`:
+
+```js
+var log = TrialExport.session({
+  taskId: "example",
+  mode: mode,
+  params: function () { return { /* JSON-safe snapshot of the science parameters */ }; },
+  summary: function () { return lastSummary; }
+});
+```
+
+Call `log.record` once per finished trial, with `trialIndex`, `block`, `stimulus`, `condition`, `response`, `accuracy`, `rtMs`, `timestamp`, `onsetPerfMs`, `responsePerfMs`, and `extra` for task fields. Call `log.clear` when a new run drops the previous rows. Leave practice rows in the log when the main block should keep them. `log.stamp` can copy a set-level number onto the rows it belongs to after the score is computed. It must use the score the results screen already computed.
+
+The results screen has two buttons. They call `log.downloadCsv(filename)` and `log.downloadJson(filename)` from a click handler. That is the only way the file leaves the page. Do not `fetch` the payload. Do not add a server.
+
+JSON schema is `project-trial.export.v1`. The wrapper holds `taskId`, `mode`, `libraryVersion`, `params`, `summary`, and `trials`. CSV columns start with `task_id`, `mode`, `params_json`, `trial_index`, `block`, `stimulus`, `condition`, `response`, `accuracy`, `rt_ms`, `timestamp`, `onset_perf_ms`, `response_perf_ms`, then `extra` keys. `rt_ms` stays the millisecond value the task already scores.
+
+For a wired task, keep a running score and a running mean RT off the trial, in both shells. A short word after the response, or a summary after the block, can stay. Say what the gamified shell shows, on the parameters page, including the cue that can affect the next trial. The cue must not change the stimulus, the scheduled intervals, the randomisation, or the score.
 
 ## Classical feedback
 

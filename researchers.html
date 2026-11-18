@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For researchers · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+    <link rel="stylesheet" href="assets/site-footer.css" data-site-footer-css>
+</head>
+<body class="trial-app">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Researchers</p>
+            <h1>For researchers</h1>
+            <p class="lede">One task core, two presentations. This page is how to run a protocol on your own computer, what the download contains, and what a browser clock can guarantee. It does not enroll anyone, ask for consent, or take a copy of the data.</p>
+            <p class="trial-toc">
+                <a href="#core">One core</a>
+                · <a href="#protocol">Run a protocol</a>
+                · <a href="#export">Export</a>
+                · <a href="#timing">Timing</a>
+                · <a href="#gamified">Gamified mode</a>
+                · <a href="#vwm">Visual working memory</a>
+                · <a href="#flanker">Eriksen flanker</a>
+                · <a href="#roadmap">Validation roadmap</a>
+                · <a href="#later">Later tasks</a>
+            </p>
+        </header>
+
+        <section id="core">
+            <h2>One core, two modes</h2>
+            <p>A wired task is one script, <code>assets/tasks/&lt;id&gt;.js</code>. The gamified page and the classical page both load that script. The shell paints the frame, the type, and the buttons. It does not build the trial list, choose the stimulus, or score the response.</p>
+            <p>Mode is <code>classical</code> or <code>gamified</code>. <code>?mode=classical</code> and <code>?mode=gamified</code> select it and store the choice in this browser under <code>project-trial:mode</code>. With no mode in the address, the stored choice is used. If nothing is stored, the task opens gamified.</p>
+            <p>Classical uses a mid-gray field, about <code>#7f7f7f</code>, and Arial. Gamified uses the dark Trial theme. Points, badges, sounds, and motion are chrome. On a wired task they do not change the stimulus, the scheduled intervals, the randomisation, or the score. Where a shell still shows a word after a response, the task note below says what that word is.</p>
+        </section>
+
+        <section id="protocol">
+            <h2>How to run a protocol</h2>
+            <ol>
+                <li>Open the <a href="diagnostics.html">device check</a> on the computer you will use. Leave the tab visible while it runs. Download the report if you want a record of that browser. This site does not keep it.</li>
+                <li>Open the task. Choose classical or gamified on the welcome screen before the scored block.</li>
+                <li>Read the methods note for that task. Classical is the quieter main block. Gamified runs the same trials and the same scoring, and it can show a brief outcome after the response has been stored.</li>
+                <li>Practice rows are marked <code>practice</code>. On visual working memory, Skip to Main drops the practice log and starts the 36. Flanker practice is excluded from the results-screen totals and included in the file.</li>
+                <li>Finish the main block. On the results screen, press Download CSV and Download JSON. The file is written because you pressed the button.</li>
+                <li>The browser also keeps the latest finished run in <code>localStorage</code> on this device. A later finished run replaces it. Take the download with you. Clearing site data in the browser removes the local copy.</li>
+            </ol>
+            <p>There is no participant list here. Consent, identifiers, and any server you use belong in your own protocol. The files are not sent back to this site. It has nowhere to put them.</p>
+        </section>
+
+        <section id="export">
+            <h2>Export</h2>
+            <p>Wired tasks share <code>assets/trial-export.js</code>. The JSON schema is <code>project-trial.export.v1</code>. The wrapper has <code>taskId</code>, <code>mode</code>, <code>libraryVersion</code>, <code>exportedAt</code>, <code>params</code>, <code>summary</code>, and <code>trials</code>. <code>libraryVersion</code> is the version string already printed in the footer. This page does not move that number.</p>
+            <p><code>params</code> is a snapshot of the task’s counts, timings, stimuli, response map, and the feedback policy of the shell that ran. <code>summary</code> repeats the numbers the results screen already computed. Trial fields use the CSV headers. The CSV repeats the snapshot in <code>params_json</code> on every row so the sheet stands alone. The JSON keeps <code>params</code> once.</p>
+            <div class="trial-table-wrap">
+                <table class="trial-table">
+                    <caption>Shared columns, in this order</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Column</th>
+                            <th scope="col">What it is</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">task_id</th>
+                            <td><code>vwm</code> or <code>flanker</code> for the tasks wired here.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">mode</th>
+                            <td><code>classical</code> or <code>gamified</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">params_json</th>
+                            <td>The parameter snapshot, on every CSV row. Omitted inside each JSON trial because <code>params</code> is on the wrapper.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">trial_index</th>
+                            <td>1-based index across practice and main in that run.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">block</th>
+                            <td><code>practice</code> or <code>main</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">stimulus</th>
+                            <td>A short description of what that trial showed.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">condition</th>
+                            <td>The task’s condition label for that trial.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">response</th>
+                            <td>The choice, or <code>timeout</code> on a flanker trial that passed the window.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">accuracy</th>
+                            <td><code>1</code> or <code>0</code>, using the score the results screen already uses.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">rt_ms</th>
+                            <td>The millisecond value that task already averages, rounded the same way. Blank on a flanker timeout, in JSON <code>null</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">timestamp</th>
+                            <td>Wall-clock time when the response was stored, ISO 8601.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">onset_perf_ms</th>
+                            <td><code>performance.now()</code> when the scored stimulus was shown. The origin is this page load, near zero, and is a page clock.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">response_perf_ms</th>
+                            <td><code>performance.now()</code> when the response was stored, or when a flanker window closed.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Task columns follow those, in the order the task first records them. A missing task field is blank in the CSV and <code>null</code> in JSON. <code>onset_perf_ms</code> and <code>response_perf_ms</code> let you recompute the difference. <code>rt_ms</code> is the rounded difference the score uses, so the two can disagree by less than a millisecond.</p>
+        </section>
+
+        <section id="timing">
+            <h2>Browser timing</h2>
+            <p>These tasks schedule their intervals with <code>setTimeout</code>. That clock is not locked to the display. Response time is a difference of two <code>performance.now()</code> readings: one in the function that shows the scored stimulus, and one in the input handler. The first stamp is when the page asks for the paint. It is earlier than the moment the pixels change, and earlier than the light reaching the eye. The second stamp is when the handler runs. It is later than the switch in the keyboard or the finger on the glass.</p>
+            <p>A hidden tab can delay timers. Another monitor, another browser, or a busy machine can change the same protocol. The <a href="diagnostics.html">device check</a> reads this tab at this moment. The reading stays with the person who downloads it. It does not transfer to the next machine, and it does not stand in for a light sensor or a calibrated button box.</p>
+            <p>Report the numbers as browser measurements. A photodiode study, if you run one, is a separate record.</p>
+        </section>
+
+        <section id="gamified">
+            <h2>Gamified mode</h2>
+            <p>The gamified shell is the same trial loop in a different frame. It can be the right shell when a gray page would lose the person you need to test, or when the shell itself is what you want to study. The cost is an outcome cue after some trials. The cue is drawn after that trial’s response has been stored. It does not rewrite the trial list, the stimulus, or the score. It can change how the person meets the next trial.</p>
+            <p>Wired tasks keep a running score and a running mean RT off the screen during the trial, in both shells. A short word after the trial, or a summary after the block, can still appear. The notes below say which words appear. For a main block without those words, choose classical. The timer limits above apply to both shells.</p>
+        </section>
+
+        <section id="vwm">
+            <h2>Visual working memory</h2>
+            <p>Play from <a href="vwm_game.html">the gamified shell</a> or <a href="vwm_game.html?mode=classical">the classical shell</a>. Colored squares with a same or different probe are the display in Luck and Vogel (1997), <a href="https://doi.org/10.1038/36846">doi:10.1038/36846</a>. Cowan's K follows Cowan (2001), <a href="https://doi.org/10.1017/S0140525X01003922">doi:10.1017/S0140525X01003922</a>. Pashler's K follows Pashler (1988), <a href="https://doi.org/10.3758/BF03210419">doi:10.3758/BF03210419</a>. Counts and timings are on the <a href="vwm-info.html">parameters page</a>. The download uses those formulas.</p>
+            <p>Response time starts when the probe is drawn. The 500 ms fixation, 250 ms sample, and 900 ms delay sit in the parameter snapshot, and they sit outside <code>rt_ms</code>. <code>condition</code> is <code>SAME</code> or <code>DIFFERENT</code>. <code>set_size</code> is 4, 6, or 8. <code>items_json</code> holds the squares. Positions in the file are rounded to 0.001 canvas unit. The canvas drew the unrounded values.</p>
+            <p><code>hit</code>, <code>false_alarm</code>, <code>miss</code>, and <code>correct_rejection</code> follow the results screen: a different trial is the signal, and the answer “different” is a hit or a false alarm. <code>cowan_k</code> and <code>pashler_k</code> copy the set-size estimates from the main block onto each main trial of that set size. Practice rows leave them blank. A single trial does not receive its own K. The headline mean on the screen is <code>summary.meanCowanK</code>. The overall helper is called without a set size, so its own K fields stay 0. Use <code>bySetSize</code>.</p>
+            <p>After the choice is stored, the gamified shell turns the fixation green or red and shows the word and the response time for the 500 ms interval. Classical keeps a dark fixation. Classical practice can show Correct or Incorrect, without the response time. Classical main shows no word. The interval is 500 ms in both shells. For a main block without the color and the word, use classical.</p>
+        </section>
+
+        <section id="flanker">
+            <h2>Eriksen flanker</h2>
+            <p>Play from <a href="flanker_game.html">the gamified shell</a> or <a href="flanker_game.html?mode=classical">the classical shell</a>. The arrow array, the 6 practice trials, the 36 main trials, and the Eriksen and Eriksen (1974) note, <a href="https://doi.org/10.3758/bf03203267">doi:10.3758/bf03203267</a>, are on the <a href="flanker-info.html">parameters page</a>. This demo already uses arrows. The download does not change that.</p>
+            <p><code>condition</code> is <code>congruent</code>, <code>incongruent</code>, or <code>neutral</code>. <code>stimulus</code> is the five-character array. <code>fixation_ms</code> is the fixation that was drawn, sampled from 400 ms through 600 ms. Response time starts at array onset and does not include fixation. A timeout stores a blank <code>rt_ms</code>, <code>timed_out</code> 1, and accuracy 0. The results screen still treats that trial as incorrect and leaves it out of the mean correct RT. The conflict effect in <code>summary</code> is still incongruent mean correct RT minus congruent mean correct RT.</p>
+            <p>The header slots for running accuracy and mean RT are hidden in both shells. The trial counter and the progress bar stay. They are not a score. After the response is stored, the gamified shell shows TOO SLOW, CORRECT, or INCORRECT for the 400 ms hold, with the response time or the target side underneath. Classical practice shows a short word and no response time. Classical main shows no word. The hold and the 350 ms blank still run, so the gap from one array to the next is the same. The gamified word can affect the next trial. For a main block without it, use classical.</p>
+        </section>
+
+        <section id="roadmap">
+            <h2>Validation roadmap</h2>
+            <p>First, the machine. Run the <a href="diagnostics.html">device check</a> on every computer you mean to use, with the tab visible, and keep the JSON with your protocol notes. It reports the animation-callback rate, how late <code>setTimeout</code> was relative to the delay the page asked for, the smallest step this page saw from <code>performance.now()</code>, and, if you run the flashes, the page clock from the color change to your own key or click. That file supports a decision about whether the machine is worth using. It does not clear the machine for a methods section on its own.</p>
+            <p>Later, human data. A light sensor on the glass, or a calibrated button box, on a few of those machines, is the check this site cannot run. A separate study can then compare a known effect, such as the flanker conflict or change-detection K, with the published pattern. This page does not run that study and does not collect those trials.</p>
+        </section>
+
+        <section id="later">
+            <h2>Later tasks</h2>
+            <p>Stroop, Oddball, Brightness, Numerosity, RDK, Go / No-Go, Corsi, Reversal Learning, and Spatial Go/No-Go keep the download they already had. They are not on <code>project-trial.export.v1</code> yet.</p>
+            <p>A later task can load <code>assets/trial-export.js</code> before its core, open <code>TrialExport.session</code> with the task id, the mode, and a parameter snapshot, call <code>record</code> once per finished trial, and put Download CSV and Download JSON on the results screen. Those buttons are the only path off the device. The trial list and the scoring stay in the core. The methods note for that task goes on its parameters page, including what the gamified shell shows after a trial. The hook is written out in <code>assets/trial-export.js</code> and in <code>assets/SHELL_CONTRACT.md</code>.</p>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="diagnostics.html">Device check</a>
+            <a class="trial-btn trial-btn-ghost" href="vwm-info.html">Visual working memory</a>
+            <a class="trial-btn trial-btn-ghost" href="flanker-info.html">Eriksen flanker</a>
+            <a class="trial-btn trial-btn-ghost" href="about.html">About these demos</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+
+    <script src="assets/site-meta.js"></script>
+    <script src="assets/site-footer.js"></script>
+</body>
+</html>

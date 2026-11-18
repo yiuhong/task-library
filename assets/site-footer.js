@@ -61,6 +61,7 @@
         }
 
         add(link(meta.about, "About these demos"));
+        add(link(meta.researchers, "For researchers"));
         add(link(meta.personalSite, "About Yiu Hong", {
             rel: "author noopener noreferrer",
             target: "_blank"
