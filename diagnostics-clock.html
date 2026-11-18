@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock step · Device check · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+    <link rel="stylesheet" href="assets/device-check.css">
+    <link rel="stylesheet" href="assets/site-footer.css" data-site-footer-css>
+</head>
+<body class="trial-app" data-device-check="clock">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Device check</p>
+            <h1>Clock step</h1>
+            <p class="lede">The step of <code>performance.now()</code> in a tight loop on this page. A support step on this tab. It is not a study. It is not a photodiode or light-sensor validation. Nothing is uploaded.</p>
+            <p class="trial-toc">
+                <a href="diagnostics.html">All checks</a>
+                · <a href="diagnostics-refresh.html">Refresh</a>
+                · <a href="diagnostics-timers.html">Timers</a>
+                · <a href="diagnostics-clock.html" aria-current="page">Clock step</a>
+                · <a href="diagnostics-page-clock.html">Page clock</a>
+            </p>
+        </header>
+
+        <section>
+            <h2>The rule on this page</h2>
+            <p>These are conservative rules of thumb for a browser tab, not a lab certificate. The same thresholds are written into the JSON.</p>
+            <ul>
+                <li>Pass if the median <code>performance.now()</code> step is 1 ms or less.</li>
+                <li>Fail if the median step is coarser than 1 ms, or if the clock did not move in the sample loop.</li>
+                <li>Could not run if this tab was hidden, or if the browser has no <code>performance.now()</code>. That is not a machine fail.</li>
+            </ul>
+            <p>The loop records up to 20 changes. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail. Could not run is a dash icon and those words.</p>
+        </section>
+
+        <section>
+            <h2>Run this check</h2>
+            <p>Leave this tab visible. The loop is short. Download writes a JSON file on this computer. The schema is <code>project-trial.device-check.v2</code>. Nothing is uploaded.</p>
+            <p id="device-status" aria-live="polite">Loading the check.</p>
+            <div class="trial-actions">
+                <button type="button" class="trial-btn" id="btn-run">Check the clock step</button>
+                <button type="button" class="trial-btn trial-btn-ghost" id="btn-download">Download this report</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>Verdict</h2>
+            <div id="device-verdict" class="device-verdict is-idle" data-outcome="" aria-live="polite">
+                <span id="device-mark" class="device-mark" aria-hidden="true"></span>
+                <span class="device-verdict-copy">
+                    <span id="device-verdict-label" class="device-verdict-label">Not run yet</span>
+                    <span id="device-verdict-text" class="device-verdict-text">Run the check with this tab visible. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail.</span>
+                </span>
+            </div>
+        </section>
+
+        <section>
+            <h2>Numbers</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Median step</dt>
+                    <dd id="fact-median">not run yet</dd>
+                </div>
+                <div>
+                    <dt>Smallest step</dt>
+                    <dd id="fact-min">—</dd>
+                </div>
+                <div>
+                    <dt>Changes</dt>
+                    <dd id="fact-samples">—</dd>
+                </div>
+            </dl>
+            <p id="fact-note">Not run yet.</p>
+        </section>
+
+        <section>
+            <h2>Interpretation</h2>
+            <div id="device-interpretation">
+                <p><code>performance.now()</code> is a monotonic page clock. Its origin is this page load. A small step is not proof that a stimulus lasted that many milliseconds on screen. Stimulus timing is still limited by the display and by <code>setTimeout</code>.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>This browser</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Browser</dt>
+                    <dd id="fact-browser">Waiting for the page script.</dd>
+                </div>
+                <div>
+                    <dt>Language</dt>
+                    <dd id="fact-language">—</dd>
+                </div>
+                <div>
+                    <dt>CPU hint</dt>
+                    <dd id="fact-cores">—</dd>
+                </div>
+                <div>
+                    <dt>Memory hint</dt>
+                    <dd id="fact-memory">—</dd>
+                </div>
+                <div>
+                    <dt>Pixel ratio</dt>
+                    <dd id="fact-dpr">—</dd>
+                </div>
+                <div>
+                    <dt>Screen</dt>
+                    <dd id="fact-screen">—</dd>
+                </div>
+                <div>
+                    <dt>Viewport</dt>
+                    <dd id="fact-viewport">—</dd>
+                </div>
+                <div>
+                    <dt>Tab</dt>
+                    <dd id="fact-visibility">—</dd>
+                </div>
+                <div>
+                    <dt>Local storage</dt>
+                    <dd id="fact-storage">—</dd>
+                </div>
+                <div>
+                    <dt>Animation frame</dt>
+                    <dd id="fact-raf">—</dd>
+                </div>
+            </dl>
+            <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+        </section>
+
+        <section>
+            <h2>What this page can and cannot stand behind</h2>
+            <ul id="device-limits">
+                <li><code>performance.now()</code> is a monotonic page clock. Its origin is this page load. A small step is not proof that a stimulus lasted that many milliseconds on screen.</li>
+                <li>A background tab, a busy processor, or a low-power setting can move other timers on this site. Repeat the check on the machine and the browser you will actually use.</li>
+                <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
+            </ul>
+            <noscript>
+                <p>JavaScript is off, so the measurement cannot run. The browser clock is not a lab rig.</p>
+            </noscript>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="diagnostics.html">All checks</a>
+            <a class="trial-btn trial-btn-ghost" href="researchers.html">For researchers</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+
+    <script src="assets/site-meta.js"></script>
+    <script src="assets/device-check.js"></script>
+    <script src="assets/site-footer.js"></script>
+</body>
+</html>
