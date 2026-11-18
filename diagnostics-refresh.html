@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refresh estimate · Device check · Project Trial</title>
+    <link rel="stylesheet" href="assets/trial-theme.css">
+    <link rel="stylesheet" href="assets/device-check.css">
+    <link rel="stylesheet" href="assets/site-footer.css" data-site-footer-css>
+</head>
+<body class="trial-app" data-device-check="refresh">
+    <main class="trial-doc">
+        <header>
+            <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
+            <p class="trial-kicker">Device check</p>
+            <h1>Refresh estimate</h1>
+            <p class="lede">How often <code>requestAnimationFrame</code> called back while this tab was visible. A support step on this tab. It is not a study. It is not a photodiode or light-sensor validation. Nothing is uploaded.</p>
+            <p class="trial-toc">
+                <a href="diagnostics.html">All checks</a>
+                · <a href="diagnostics-refresh.html" aria-current="page">Refresh</a>
+                · <a href="diagnostics-timers.html">Timers</a>
+                · <a href="diagnostics-clock.html">Clock step</a>
+                · <a href="diagnostics-page-clock.html">Page clock</a>
+            </p>
+        </header>
+
+        <section>
+            <h2>The rule on this page</h2>
+            <p>These are conservative rules of thumb for a browser tab, not a lab certificate. The same thresholds are written into the JSON.</p>
+            <ul>
+                <li>Pass if this tab stayed visible and the estimated rate is within ±5 Hz of a common rate: 50, 60, 75, 90, 120, 144, or 165 Hz.</li>
+                <li>Fail if the estimate completed and is not within ±5 Hz of one of those rates. An estimated rate below 45 Hz fails.</li>
+                <li>Could not run if this tab was hidden during the sample, or if the browser has no <code>requestAnimationFrame</code>. The hidden-tab sample is discarded. Could not run is not a machine fail.</li>
+            </ul>
+            <p>The sample asks for 120 animation frames. The first 5 intervals are left out. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail. Could not run is a dash icon and those words.</p>
+        </section>
+
+        <section>
+            <h2>Run this check</h2>
+            <p>Leave this tab visible until the estimate finishes. Download writes a JSON file on this computer. The schema is <code>project-trial.device-check.v2</code>. Nothing is uploaded.</p>
+            <p id="device-status" aria-live="polite">Loading the check.</p>
+            <div class="trial-actions">
+                <button type="button" class="trial-btn" id="btn-run">Estimate refresh</button>
+                <button type="button" class="trial-btn trial-btn-ghost" id="btn-download">Download this report</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>Verdict</h2>
+            <div id="device-verdict" class="device-verdict is-idle" data-outcome="" aria-live="polite">
+                <span id="device-mark" class="device-mark" aria-hidden="true"></span>
+                <span class="device-verdict-copy">
+                    <span id="device-verdict-label" class="device-verdict-label">Not run yet</span>
+                    <span id="device-verdict-text" class="device-verdict-text">Run the check with this tab visible. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail.</span>
+                </span>
+            </div>
+        </section>
+
+        <section>
+            <h2>Numbers</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Estimated rate</dt>
+                    <dd id="fact-hz">not run yet</dd>
+                </div>
+                <div>
+                    <dt>Median interval</dt>
+                    <dd id="fact-median">—</dd>
+                </div>
+                <div>
+                    <dt>Shortest interval</dt>
+                    <dd id="fact-min">—</dd>
+                </div>
+                <div>
+                    <dt>Longest interval</dt>
+                    <dd id="fact-max">—</dd>
+                </div>
+                <div>
+                    <dt>Long intervals</dt>
+                    <dd id="fact-long">—</dd>
+                </div>
+                <div>
+                    <dt>Sample</dt>
+                    <dd id="fact-sample">—</dd>
+                </div>
+            </dl>
+            <p id="fact-note">Not run yet.</p>
+        </section>
+
+        <section>
+            <h2>Interpretation</h2>
+            <div id="device-interpretation">
+                <p>This is the animation-callback rate, which can be lower than the rate printed on the monitor, and is not when the pixels changed. A light sensor on the glass would be required to time the pixels. This page does not use one.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>This browser</h2>
+            <dl class="trial-defs">
+                <div>
+                    <dt>Browser</dt>
+                    <dd id="fact-browser">Waiting for the page script.</dd>
+                </div>
+                <div>
+                    <dt>Language</dt>
+                    <dd id="fact-language">—</dd>
+                </div>
+                <div>
+                    <dt>CPU hint</dt>
+                    <dd id="fact-cores">—</dd>
+                </div>
+                <div>
+                    <dt>Memory hint</dt>
+                    <dd id="fact-memory">—</dd>
+                </div>
+                <div>
+                    <dt>Pixel ratio</dt>
+                    <dd id="fact-dpr">—</dd>
+                </div>
+                <div>
+                    <dt>Screen</dt>
+                    <dd id="fact-screen">—</dd>
+                </div>
+                <div>
+                    <dt>Viewport</dt>
+                    <dd id="fact-viewport">—</dd>
+                </div>
+                <div>
+                    <dt>Tab</dt>
+                    <dd id="fact-visibility">—</dd>
+                </div>
+                <div>
+                    <dt>Local storage</dt>
+                    <dd id="fact-storage">—</dd>
+                </div>
+                <div>
+                    <dt>Animation frame</dt>
+                    <dd id="fact-raf">—</dd>
+                </div>
+            </dl>
+            <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+        </section>
+
+        <section>
+            <h2>What this page can and cannot stand behind</h2>
+            <ul id="device-limits">
+                <li>The refresh estimate is how often <code>requestAnimationFrame</code> ran while this tab was visible. It can be lower than the rate printed on the monitor. It is not when the pixels changed. A light sensor on the glass would be required to time the pixels. This page does not use one.</li>
+                <li>A background tab, a busy processor, or a low-power setting can move this number. Repeat the check on the machine and the browser you will actually use.</li>
+                <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
+            </ul>
+            <noscript>
+                <p>JavaScript is off, so the measurement cannot run. The browser clock is not a lab rig.</p>
+            </noscript>
+        </section>
+
+        <div class="trial-actions">
+            <a class="trial-btn" href="diagnostics.html">All checks</a>
+            <a class="trial-btn trial-btn-ghost" href="researchers.html">For researchers</a>
+            <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
+        </div>
+    </main>
+
+    <script src="assets/site-meta.js"></script>
+    <script src="assets/device-check.js"></script>
+    <script src="assets/site-footer.js"></script>
+</body>
+</html>
