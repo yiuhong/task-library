@@ -34,7 +34,7 @@
           <span class="text-slate-400">TRIAL:</span>
           <span id="hud-trial" class="text-slate-100 font-bold ml-1">0 / 0</span>
         </div>
-        <div data-shell-arcade>
+        <div data-shell-arcade data-shell-live>
           <span class="text-slate-400">SCORE:</span>
           <span id="hud-score" class="text-yellow-500 font-bold ml-1">0 PTS</span>
         </div>
@@ -328,7 +328,10 @@
         </button>
 
         <button id="btn-download-csv" type="button" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black font-mono font-bold text-xs sm:text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
-          ⬇ Download CSV (bandit_reversal_data.csv)
+          Download CSV
+        </button>
+        <button id="btn-download-json" type="button" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black font-mono font-bold text-xs sm:text-sm uppercase tracking-wider transition shadow-lg shadow-yellow-500/20">
+          Download JSON
         </button>
       </div>
       <div class="mt-3 flex justify-center gap-2">
@@ -344,6 +347,7 @@
     Project Trial Cognitive Battery • High-Prob (80% +10 PTS) / Low-Prob (20% +10 PTS) • Keys: [A / ←] Left, [L / →] Right
   </footer>
 
+  <script src="assets/trial-export.js"></script>
   <script src="assets/tasks/bandit.js"></script>
   <script>
     (function () {

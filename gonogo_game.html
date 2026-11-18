@@ -210,7 +210,10 @@
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
           </svg>
-          <span>Download CSV Log</span>
+          <span>Download CSV</span>
+        </button>
+        <button id="btn-download-json" class="flex-1 py-3 px-5 rounded-xl bg-goLime hover:bg-lime-400 text-slate-950 font-bold text-sm uppercase tracking-wider transition">
+          Download JSON
         </button>
         <button id="btn-restart" class="shell-primary py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs uppercase tracking-wider transition border border-slate-700">
           Run New Session
@@ -224,6 +227,7 @@
 
   </main>
 
+  <script src="assets/trial-export.js"></script>
   <script src="assets/tasks/gonogo.js"></script>
   <script>
     (function () {

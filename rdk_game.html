@@ -215,7 +215,14 @@
           type="button"
           class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
         >
-          ⬇ Download Trial CSV
+          Download CSV
+        </button>
+        <button
+          id="btn-download-json"
+          type="button"
+          class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20"
+        >
+          Download JSON
         </button>
         <button
           id="btn-restart"
@@ -296,6 +303,7 @@
 
   <!-- SELF-CONTAINED EXPERIMENT LOGIC -->
   <script src="assets/trial-audio.js"></script>
+  <script src="assets/trial-export.js"></script>
   <script src="assets/tasks/rdk.js"></script>
   <script>
     (function () {

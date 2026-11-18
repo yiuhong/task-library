@@ -82,9 +82,15 @@
         </section>
 
         <section>
+            <h2>Methods note</h2>
+            <p>Both shells share the 6 practice trials, the 36 main trials, and the dot field. After the choice is stored, the gamified shell shows CORRECT, INCORRECT, or TOO SLOW, and the response time, for the 400 ms hold. Classical practice shows one word. Classical main shows no word. The hold and the 350 ms blank still run. Running accuracy and mean RT are hidden in both shells. The status line can name the coherence while the dots are up, in both shells. That line is not a score. For a main block without the outcome word, use classical.</p>
+            <p>The download is the shared export on <a href="researchers.html#rdk">For researchers</a>. <code>rt_ms</code> starts when the dots start. A timeout leaves it blank and sets <code>timed_out</code> to 1. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+        </section>
+
+        <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_rdk_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control. The payload gains a <code>mode</code> field, <code>gamified</code> or <code>classical</code>.</p>
-            <p>Download Trial CSV writes the current run as a file on the device. Columns are trial, block, coherence_pct, direction, response, correct, rt_ms, timestamp, and mode (<code>gamified</code> or <code>classical</code>). Mode is the last column. The columns before it stay in this order. The file name is <code>rdk_motion_data_</code> plus a timestamp. The page does not log orientation turns.</p>
+            <p>Download CSV and Download JSON write the current run, practice and main. The JSON schema is <code>project-trial.export.v1</code>. The task id is <code>rdk</code>. <code>condition</code> is the coherence percent. Task columns are coherence_pct, direction, and timed_out. <code>summary</code> repeats accuracy, mean RT, median RT, and the coherence breakdown. File names start with <code>rdk_motion_data_</code>. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">

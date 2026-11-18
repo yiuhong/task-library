@@ -409,8 +409,8 @@
       <a-plane width="3.2" height="0.5" color="#091326" material="shader: flat; opacity: 0.92; transparent: true">
         <a-text value="ORBITAL ENERGY SORTER" color="#72efdd" align="center" position="0 0.14 0.01" width="2.8"></a-text>
         <a-text id="hudTrialText" value="Trial: 0 / 30" color="#FFFFFF" align="left" position="-1.45 -0.06 0.01" width="3.4"></a-text>
-        <a-text id="hudScoreText" value="Score: 0000" color="#00F5D4" align="center" position="0 -0.06 0.01" width="3.6"></a-text>
-        <a-text id="hudStreakText" value="Streak: 0" color="#FFD166" align="right" position="1.45 -0.06 0.01" width="3.4"></a-text>
+        <a-text id="hudScoreText" value="" color="#00F5D4" align="center" position="0 -0.06 0.01" width="3.6"></a-text>
+        <a-text id="hudStreakText" value="" color="#FFD166" align="right" position="1.45 -0.06 0.01" width="3.4"></a-text>
       </a-plane>
       <a-plane id="worldSfxBtn" position="1.15 -0.4 0.02" width="0.86" height="0.24" color="#0e3a4a" material="shader: flat" visible="false"></a-plane>
       <a-text id="worldSfxText" value="SFX: ON" color="#00F5D4" align="center" position="1.15 -0.4 0.03" width="2.5" visible="false"></a-text>
@@ -444,10 +444,12 @@
         <a-text value="SESSION COMPLETE" color="#00F5D4" align="center" position="0 1.12 0.01" width="3.2"></a-text>
         <a-text id="resultsSummaryText" value="Loading metrics..." color="#FFFFFF" align="center" position="0 0.28 0.01" width="3.05" line-height="52"></a-text>
         <a-text id="storageConfirmText" value="Responses stay on this device." color="#72efdd" align="center" position="0 -0.62 0.01" width="2.8"></a-text>
-        <a-plane id="downloadCsvBtn" position="-0.78 -1.05 0.03" width="1.35" height="0.3" color="#FFD166" material="shader: flat"></a-plane>
-        <a-text value="DOWNLOAD CSV" color="#050814" align="center" position="-0.78 -1.05 0.04" width="2.6"></a-text>
-        <a-plane id="playAgainBtn" position="0.78 -1.05 0.03" width="1.35" height="0.3" color="#00F5D4" material="shader: flat"></a-plane>
-        <a-text value="PLAY AGAIN" color="#050814" align="center" position="0.78 -1.05 0.04" width="2.6"></a-text>
+        <a-plane id="downloadCsvBtn" position="-1.05 -1.05 0.03" width="0.95" height="0.28" color="#FFD166" material="shader: flat"></a-plane>
+        <a-text value="DOWNLOAD CSV" color="#050814" align="center" position="-1.05 -1.05 0.04" width="2.2"></a-text>
+        <a-plane id="downloadJsonBtn" position="0 -1.05 0.03" width="0.95" height="0.28" color="#FFD166" material="shader: flat"></a-plane>
+        <a-text value="DOWNLOAD JSON" color="#050814" align="center" position="0 -1.05 0.04" width="2.3"></a-text>
+        <a-plane id="playAgainBtn" position="1.05 -1.05 0.03" width="0.95" height="0.28" color="#00F5D4" material="shader: flat"></a-plane>
+        <a-text value="PLAY AGAIN" color="#050814" align="center" position="1.05 -1.05 0.04" width="2.2"></a-text>
       </a-plane>
     </a-entity>
 
@@ -465,7 +467,7 @@
       <a href="index.html">Hub</a>
       <a href="orbital_gonogo-info.html">Parameters</a>
       <p class="wordmark">Spatial Go/No-Go<span>Orbital Energy Sorter</span></p>
-      <p class="html-hud" id="htmlHud" aria-live="polite">Trial 0 / 30 · Score 0000 · Streak 0</p>
+      <p class="html-hud" id="htmlHud" aria-live="polite">Trial 0 / 30</p>
       <button id="sfxToggle" class="sfx-btn" type="button" aria-label="Toggle sound effects" aria-pressed="true">SFX: ON</button>
       <p class="device-note">Responses stay on this device. WebXR, tested on VIVE Focus 3. A headset is optional.</p>
     </header>
@@ -537,6 +539,7 @@
         <p id="storageNote">Responses stay on this device.</p>
         <div class="actions">
           <button id="htmlCsv" class="ghost" type="button">Download CSV</button>
+          <button id="htmlJson" class="ghost" type="button">Download JSON</button>
           <button id="htmlAgain" class="primary" type="button">Play again</button>
         </div>
         <div class="links">
@@ -549,6 +552,7 @@
 
   <script src="assets/trial-audio.js"></script>
   <script src="assets/orbital-gonogo.js"></script>
+  <script src="assets/trial-export.js"></script>
   <script>
     (function () {
       'use strict';
@@ -574,6 +578,49 @@
       var currentStreak = 0;
       var sessionLogs = [];
       var hudTrialLabel = 'Trial: 0 / ' + TOTAL;
+      var lastSummary = null;
+
+      function presentationMode() {
+        var query = new URLSearchParams(window.location.search).get('mode');
+        if (query && String(query).toLowerCase() === 'classical') return 'classical';
+        return 'gamified';
+      }
+
+      var mode = presentationMode();
+
+      if (!window.TrialExport) {
+        throw new Error('Spatial Go/No-Go requires assets/trial-export.js');
+      }
+
+      var exportLog = window.TrialExport.session({
+        taskId: 'orbital_gonogo',
+        mode: mode,
+        params: function () {
+          return {
+            trials: plan.TOTAL_TRIALS,
+            goPerPlane: plan.GO_PER_PLANE,
+            nogoPerPlane: plan.NOGO_PER_PLANE,
+            stimulusTimeoutMs: plan.STIMULUS_TIMEOUT_MS,
+            itiMinMs: plan.ITI_MIN_MS,
+            itiMaxMs: plan.ITI_MAX_MS,
+            targetRadiusM: plan.TARGET_RADIUS_M,
+            azimuthDeg: plan.AZIMUTH_DEG,
+            elevationDeg: plan.ELEVATION_DEG,
+            fixationDistanceM: plan.FIXATION_DISTANCE_M,
+            sizeMode: sessionSizeMode,
+            fixationMode: sessionFixationMode,
+            practice: sessionPractice ? 1 : 0,
+            presentation: {
+              shell: 'webxr',
+              sceneChangesWithMode: false,
+              readsStoredMode: false,
+              outcomeWords: mode !== 'classical',
+              liveScore: false
+            }
+          };
+        },
+        summary: function () { return lastSummary; }
+      });
 
       var activeStimulusEl = null;
       var trialTimerId = null;
@@ -606,6 +653,7 @@
       var resultsSummaryText = document.getElementById('resultsSummaryText');
       var storageConfirmText = document.getElementById('storageConfirmText');
       var downloadCsvBtnEl = document.getElementById('downloadCsvBtn');
+      var downloadJsonBtnEl = document.getElementById('downloadJsonBtn');
       var playAgainBtnEl = document.getElementById('playAgainBtn');
       var fixationCrossEl = document.getElementById('fixationCross');
       var stimulusContainerEl = document.getElementById('stimulusContainer');
@@ -615,6 +663,7 @@
       var htmlStart = document.getElementById('htmlStart');
       var htmlAgain = document.getElementById('htmlAgain');
       var htmlCsv = document.getElementById('htmlCsv');
+      var htmlJson = document.getElementById('htmlJson');
       var sfxToggle = document.getElementById('sfxToggle');
       var startSheet = document.getElementById('startSheet');
       var resultsSheet = document.getElementById('resultsSheet');
@@ -777,7 +826,7 @@
         var showStart = immersive && phase === 'start' && sceneReady;
         var showResults = immersive && phase === 'results';
         setPanel(startPanelEl, [startBtnEl, sizeModeBtnEl, fixModeBtnEl, practiceModeBtnEl], showStart);
-        setPanel(resultsPanelEl, [downloadCsvBtnEl, playAgainBtnEl], showResults);
+        setPanel(resultsPanelEl, [downloadCsvBtnEl, downloadJsonBtnEl, playAgainBtnEl], showResults);
         worldSfxBtn.setAttribute('visible', immersive ? 'true' : 'false');
         worldSfxText.setAttribute('visible', immersive ? 'true' : 'false');
         if (immersive) worldSfxBtn.classList.add('clickable');
@@ -790,9 +839,15 @@
 
       function updateDashboardHUD() {
         hudTrialText.setAttribute('value', hudTrialLabel);
-        hudScoreText.setAttribute('value', 'Score: ' + formatScore(scoreTotal));
-        hudStreakText.setAttribute('value', 'Streak: ' + currentStreak);
-        htmlHud.textContent = hudTrialLabel.replace(': ', ' ') + ' · Score ' + formatScore(scoreTotal) + ' · Streak ' + currentStreak;
+        hudScoreText.setAttribute('value', '');
+        hudStreakText.setAttribute('value', '');
+        htmlHud.textContent = hudTrialLabel;
+      }
+
+      function showOutcome(text, color, pos, soundName) {
+        if (mode === 'classical') return;
+        if (soundName) playSound(soundName);
+        spawnFloatingFeedback(text, color, pos);
       }
 
       function spawnFloatingFeedback(text, color, positionObj) {
@@ -827,13 +882,49 @@
       }
 
       function recordTrialOutcome(fields) {
-        sessionLogs.push(plan.buildTrialRow(currentTrialMeta, {
+        var row = plan.buildTrialRow(currentTrialMeta, {
           response_made: fields.response_made,
           outcome: fields.outcome,
           rt_ms: fields.rt_ms,
           score_total: scoreTotal,
           streak: currentStreak
-        }));
+        });
+        sessionLogs.push(row);
+        var accurate = fields.outcome === 'HIT' || fields.outcome === 'CORRECT_REJECTION';
+        exportLog.record({
+          trialIndex: sessionLogs.length,
+          block: row.block,
+          stimulus: row.trial_type + ' ' + row.depth_plane,
+          condition: row.trial_type,
+          response: fields.response_made ? 'trigger' : 'none',
+          accuracy: accurate ? 1 : 0,
+          rtMs: fields.rt_ms === '' ? null : fields.rt_ms,
+          timestamp: new Date().toISOString(),
+          onsetPerfMs: currentTrialMeta.spawnTime,
+          responsePerfMs: fields.responsePerf,
+          extra: {
+            trial_in_block: row.trial_num,
+            depth_plane: row.depth_plane,
+            plane_distance_m: row.plane_distance_m,
+            distance_m: row.distance_m,
+            visual_angle_deg: row.visual_angle_deg,
+            angle_h_deg: row.angle_h_deg,
+            angle_v_deg: row.angle_v_deg,
+            iti_ms: row.iti_ms,
+            x_pos: row.x_pos,
+            y_pos: row.y_pos,
+            z_pos: row.z_pos,
+            eccentricity_deg: row.eccentricity_deg,
+            stimulus_radius_m: row.stimulus_radius_m,
+            response_made: row.response_made,
+            outcome: row.outcome,
+            score_total: row.score_total,
+            streak: row.streak,
+            size_mode: row.size_mode,
+            fixation_mode: row.fixation_mode,
+            fixation_occluded: row.fixation_occluded
+          }
+        });
       }
 
       function stampTrial(trial, block, fixationMode) {
@@ -882,6 +973,8 @@
         scoreTotal = 0;
         currentStreak = 0;
         sessionLogs = [];
+        lastSummary = null;
+        exportLog.clear();
         phase = 'run';
         hudTrialLabel = sessionPractice
           ? ('Practice: 0 / ' + practice.length)
@@ -1017,7 +1110,8 @@
         clearTimeout(trialTimerId);
         audio.ensureContext();
 
-        var rtMs = Math.max(1, Math.round(performance.now() - currentTrialMeta.spawnTime));
+        var responsePerf = performance.now();
+        var rtMs = Math.max(1, Math.round(responsePerf - currentTrialMeta.spawnTime));
         var pos = {
           x: currentTrialMeta.x_pos,
           y: currentTrialMeta.y_pos,
@@ -1033,17 +1127,25 @@
             scoreTotal += pointsEarned;
             currentStreak += 1;
           }
-          playSound('hit');
-          spawnFloatingFeedback(practice ? 'PRACTICE HIT' : ('+' + pointsEarned + ' (' + rtMs + 'ms)'), '#00F5D4', pos);
-          recordTrialOutcome({ response_made: 1, outcome: 'HIT', rt_ms: rtMs });
+          recordTrialOutcome({
+            response_made: 1,
+            outcome: 'HIT',
+            rt_ms: rtMs,
+            responsePerf: responsePerf
+          });
+          showOutcome(practice ? 'PRACTICE HIT' : ('+' + pointsEarned + ' (' + rtMs + 'ms)'), '#00F5D4', pos, 'hit');
         } else {
           if (!practice) {
             scoreTotal -= 150;
             currentStreak = 0;
           }
-          playSound('error');
-          spawnFloatingFeedback(practice ? 'PRACTICE FA' : 'FALSE ALARM! -150', '#FF2A85', pos);
-          recordTrialOutcome({ response_made: 1, outcome: 'FALSE_ALARM', rt_ms: rtMs });
+          recordTrialOutcome({
+            response_made: 1,
+            outcome: 'FALSE_ALARM',
+            rt_ms: rtMs,
+            responsePerf: responsePerf
+          });
+          showOutcome(practice ? 'PRACTICE FA' : 'FALSE ALARM! -150', '#FF2A85', pos, 'error');
         }
 
         advanceTrial();
@@ -1061,16 +1163,25 @@
         var practice = currentTrialMeta.block === plan.BLOCK_PRACTICE;
         clearActiveStimulus();
 
+        var responsePerf = performance.now();
         if (currentTrialMeta.trial_type === 'GO') {
           if (!practice) currentStreak = 0;
-          playSound('error');
-          spawnFloatingFeedback(practice ? 'PRACTICE MISS' : 'TOO SLOW!', '#FFD166', pos);
-          recordTrialOutcome({ response_made: 0, outcome: 'MISS', rt_ms: '' });
+          recordTrialOutcome({
+            response_made: 0,
+            outcome: 'MISS',
+            rt_ms: '',
+            responsePerf: responsePerf
+          });
+          showOutcome(practice ? 'PRACTICE MISS' : 'TOO SLOW!', '#FFD166', pos, 'error');
         } else {
           if (!practice) scoreTotal += 50;
-          playSound('cr');
-          spawnFloatingFeedback(practice ? 'PRACTICE HOLD' : 'HOLD OK +50', '#72EFDD', pos);
-          recordTrialOutcome({ response_made: 0, outcome: 'CORRECT_REJECTION', rt_ms: '' });
+          recordTrialOutcome({
+            response_made: 0,
+            outcome: 'CORRECT_REJECTION',
+            rt_ms: '',
+            responsePerf: responsePerf
+          });
+          showOutcome(practice ? 'PRACTICE HOLD' : 'HOLD OK +50', '#72EFDD', pos, 'cr');
         }
 
         advanceTrial();
@@ -1161,25 +1272,38 @@
         } catch (err) {
           savedText = 'Could not save on this device. Responses stay on this device.';
         }
+        lastSummary = {
+          finalScore: scoreTotal,
+          go_n: summary.go_n,
+          nogo_n: summary.nogo_n,
+          go_hits: summary.go_hits,
+          go_hit_rate_pct: summary.go_hit_rate_pct,
+          nogo_false_alarms: summary.nogo_false_alarms,
+          nogo_fa_rate_pct: summary.nogo_fa_rate_pct,
+          mean_go_rt_ms: summary.mean_go_rt_ms,
+          sd_go_rt_ms: summary.sd_go_rt_ms,
+          by_depth: summary.by_depth
+        };
         fillResults(summary, savedText);
         phase = 'results';
         updateDashboardHUD();
         syncChrome();
       }
 
+      function exportStamp() {
+        return new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      }
+
       function downloadSessionCsv() {
         if (!sessionLogs.length) return;
         if (sceneEl && sceneEl.is && sceneEl.is('vr-mode')) sceneEl.exitVR();
-        var blob = new Blob([plan.toCsv(sessionLogs)], { type: 'text/csv;charset=utf-8;' });
-        var url = URL.createObjectURL(blob);
-        var link = document.createElement('a');
-        var stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'projectTrial_orbital_gonogo_' + stamp + '.csv');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        exportLog.downloadCsv('projectTrial_orbital_gonogo_' + exportStamp() + '.csv');
+      }
+
+      function downloadSessionJson() {
+        if (!sessionLogs.length) return;
+        if (sceneEl && sceneEl.is && sceneEl.is('vr-mode')) sceneEl.exitVR();
+        exportLog.downloadJson('projectTrial_orbital_gonogo_' + exportStamp() + '.json');
       }
 
       function hitStimulus(clientX, clientY) {
@@ -1235,6 +1359,11 @@
         playSound('cr');
         downloadSessionCsv();
       });
+      bindUiButton(downloadJsonBtnEl, function () {
+        audio.ensureContext();
+        playSound('cr');
+        downloadSessionJson();
+      });
       bindUiButton(playAgainBtnEl, startExperiment);
       bindUiButton(worldSfxBtn, function () {
         var next = !audio.isEnabled();
@@ -1255,6 +1384,11 @@
         audio.ensureContext();
         playSound('cr');
         downloadSessionCsv();
+      });
+      htmlJson.addEventListener('click', function () {
+        audio.ensureContext();
+        playSound('cr');
+        downloadSessionJson();
       });
 
       sceneEl.addEventListener('enter-vr', function () {

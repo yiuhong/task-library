@@ -95,9 +95,15 @@
         </section>
 
         <section>
+            <h2>Methods note</h2>
+            <p>Both shells share the 40 trials and the confidence rating. Neither shell says whether the choice was right, and there is no practice block. The gamified shell can play a tone after the choice is stored. It is not a correct or incorrect word. For a run without those tones, use classical. The trial counter stays. There is no running score.</p>
+            <p>The results buttons are the shared export on <a href="researchers.html#brightness">For researchers</a>. <code>rt_ms</code> is the rounded choice time and is blank on a timeout. <code>confidence_rt_ms</code> is the rating. A timeout stores confidence <code>missed</code> and skips the rating. Nothing is uploaded.</p>
+        </section>
+
+        <section>
             <h2>Data</h2>
             <p>Each run is saved in this browser under the <code>localStorage</code> key <code>project-trial:brightness</code>. Refreshing, leaving, or closing the tab keeps it. Recalibrate, then start again, appends another session and does not resume an unfinished one. Nothing is uploaded. The browser keeps the newest 100 sessions for this task.</p>
-            <p>Download CSV writes every saved session as a file on the device. Columns are trialNum, condId, leftColor, rightColor, correctKey, responseKey, rt, isCorrect, confidence, confidenceKey, confidenceRT, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, record, sessionId, startedAt, endedAt, complete, and mode (<code>gamified</code> or <code>classical</code>; blank on sessions saved before that field). There is no <code>block</code> column. Trial rows use <code>record</code> = <code>trial</code>. The file name is still <code>luma_clash_data_</code> plus a timestamp. Session columns are appended after the original trial columns.</p>
+            <p>On the results screen, Download CSV and Download JSON write this run. The JSON schema is <code>project-trial.export.v1</code>. The task id is <code>brightness</code>. Every row is block <code>main</code>. <code>condition</code> is LL, LH, HL, or HH. Task columns are left_color, right_color, correct_key, confidence, confidence_key, confidence_rt_ms, and the orientation at the response. File names start with <code>luma_clash_</code>. The welcome button Saved sessions CSV is the older log of saved sessions. Clear saved still removes <code>project-trial:brightness</code>.</p>
             <p>Portrait and landscape both run. The page never locks the device direction. Each trial row stores the orientation at the moment the trial is saved. Extra CSV rows with <code>record</code> = <code>orientation</code> are the session turns: <code>start</code>, each <code>change</code>, and <code>end</code>, with ISO time and <code>orientationTMs</code> (milliseconds from <code>performance.now()</code>). A short note appears if you rotate, and the task keeps going. The same list is kept on the session as <code>orientationEvents</code>.</p>
             <p>Clear saved removes <code>project-trial:brightness</code> from this browser. It asks for a second click. The on-screen summary stays until you leave the results screen. Download before you clear if you still want the file.</p>
         </section>

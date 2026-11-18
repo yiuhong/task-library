@@ -12,9 +12,8 @@
   Partial-feedback exception: the per-trial +10 or +0 stays visible on
   practice and on the main block in both modes. That payoff is the
   reward the participant learns from. It is not replaced with Correct
-  or Incorrect, and it is not arcade chrome. Classical hides the live
-  point total (policy.score is false; the page marks that HUD
-  data-shell-arcade). The practice screen total and the end screen stay.
+  or Incorrect, and it is not arcade chrome. The live point total is
+  hidden in both shells. The practice screen total and the end screen stay.
   The task is silent, so both policies set audio false.
 
   Saved runs still replace localStorage["projectTrial_bandit_v1"].
@@ -66,6 +65,40 @@
     var options = host || {};
     var mode = options.mode === "classical" ? "classical" : "gamified";
     var policy = FEEDBACK[mode];
+    var lastSummary = null;
+
+    if (!global.TrialExport) {
+      throw new Error("Reversal learning requires assets/trial-export.js");
+    }
+
+    var exportLog = global.TrialExport.session({
+      taskId: "bandit",
+      mode: mode,
+      params: function () {
+        return {
+          practiceTrials: CONFIG.practiceTrials,
+          mainTrials: CONFIG.mainTrials,
+          highProbReward: CONFIG.highProbReward,
+          lowProbReward: CONFIG.lowProbReward,
+          winPoints: CONFIG.winPoints,
+          lossPoints: CONFIG.lossPoints,
+          feedbackDurationMs: CONFIG.feedbackDurationMs,
+          itiDurationMs: CONFIG.itiDurationMs,
+          minIntervalReversal: CONFIG.minIntervalReversal,
+          maxIntervalReversal: CONFIG.maxIntervalReversal,
+          reversalMode: state.reversalMode,
+          stimulusMapping: state.stimulusMapping,
+          presentation: {
+            policyId: policy.id,
+            trialFeedback: true,
+            payoffOnEveryTrial: true,
+            audio: false,
+            liveScore: false
+          }
+        };
+      },
+      summary: function () { return lastSummary; }
+    });
 
     var required = [
       "hud-phase-badge", "hud-trial", "hud-score",
@@ -211,7 +244,8 @@
       telemetryTbody: document.getElementById('telemetry-tbody'),
 
       btnRestart: document.getElementById('btn-restart'),
-      btnDownloadCsv: document.getElementById('btn-download-csv')
+      btnDownloadCsv: document.getElementById('btn-download-csv'),
+      btnDownloadJson: document.getElementById('btn-download-json')
     };
 
     /* =========================================================================
@@ -273,6 +307,8 @@
         state.practiceScore = 0;
         state.globalTrialIndex = 0;
         state.logs = [];
+        lastSummary = null;
+        exportLog.clear();
       } else {
         state.totalBlockTrials = CONFIG.mainTrials;
         // Reset score for main experimental block so score reflects main task performance
@@ -397,7 +433,8 @@
       if (!state.acceptingInput) return;
       state.acceptingInput = false;
 
-      const rtMs = Math.max(1, Math.round(performance.now() - state.trialStartPerfTime));
+      const responsePerf = performance.now();
+      const rtMs = Math.max(1, Math.round(responsePerf - state.trialStartPerfTime));
       const choseOptimal = (choiceSide === state.currentHighProbSide) ? 1 : 0;
 
       // Determine probabilistic reward outcome (80% if optimal, 20% if suboptimal)
@@ -436,6 +473,30 @@
         timestamp: new Date().toISOString()
       };
       state.logs.push(trialRecord);
+      exportLog.record({
+        trialIndex: state.logs.length,
+        block: state.blockName,
+        stimulus: state.leftSymbolKey + '/' + state.rightSymbolKey,
+        condition: 'phase-' + state.reversalPhase,
+        response: choiceSide,
+        accuracy: choseOptimal,
+        rtMs: rtMs,
+        timestamp: trialRecord.timestamp,
+        onsetPerfMs: state.trialStartPerfTime,
+        responsePerfMs: responsePerf,
+        extra: {
+          trial_in_block: state.currentTrialIndex,
+          reversal_phase: state.reversalPhase,
+          high_prob_side: state.currentHighProbSide,
+          choice_side: choiceSide,
+          chose_optimal: choseOptimal,
+          reward: rewardPts,
+          left_symbol: state.leftSymbolKey,
+          right_symbol: state.rightSymbolKey,
+          stimulus_mapping: state.stimulusMapping,
+          reversal_mode: state.reversalMode
+        }
+      });
 
       updateHud();
       presentOutcomeFeedback(rewardPts);
@@ -651,6 +712,21 @@
         trials: state.logs,
         mode: mode
       };
+      lastSummary = {
+        totalScore: metrics.totalScore,
+        rewardRatePct: metrics.rewardRatePct,
+        optimalCount: metrics.optimalCount,
+        optimalPct: metrics.optimalPct,
+        winStayPct: metrics.winStayPct,
+        winStayNum: metrics.winStayNum,
+        winStayDenom: metrics.winStayDenom,
+        loseShiftPct: metrics.loseShiftPct,
+        loseShiftNum: metrics.loseShiftNum,
+        loseShiftDenom: metrics.loseShiftDenom,
+        perseverativeErrors: metrics.perseverativeErrors,
+        reversalsCount: metrics.reversalsCount,
+        meanRtMs: metrics.meanRtMs
+      };
 
       try {
         localStorage.setItem(CONFIG.storageKey, JSON.stringify(payload));
@@ -659,52 +735,16 @@
       }
     }
 
-    function generateCsvString() {
-      const headers = [
-        'trial',
-        'block',
-        'reversal_phase',
-        'high_prob_side',
-        'choice_side',
-        'chose_optimal',
-        'reward',
-        'rt_ms',
-        'timestamp',
-        'mode'
-      ];
-      const rows = [headers.join(',')];
-
-      state.logs.forEach((r) => {
-        const line = [
-          r.trial,
-          r.block,
-          r.reversal_phase,
-          r.high_prob_side,
-          r.choice_side,
-          r.chose_optimal,
-          r.reward,
-          r.rt_ms,
-          `"${r.timestamp}"`,
-          mode
-        ].join(',');
-        rows.push(line);
-      });
-
-      return rows.join('\n');
+    function exportStamp() {
+      return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     }
 
     function downloadCsv() {
-      const csvContent = generateCsvString();
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-      a.href = url;
-      a.setAttribute('download', `bandit_reversal_${ts}.csv`);
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      exportLog.downloadCsv('bandit_reversal_' + exportStamp() + '.csv');
+    }
+
+    function downloadJson() {
+      exportLog.downloadJson('bandit_reversal_' + exportStamp() + '.json');
     }
 
     /* =========================================================================
@@ -728,6 +768,7 @@
     });
 
     dom.btnDownloadCsv.addEventListener('click', downloadCsv);
+    dom.btnDownloadJson.addEventListener('click', downloadJson);
 
     // Large Left / Right Touch Pads via pointerdown for sub-millisecond responsiveness
     dom.padLeft.addEventListener('pointerdown', (e) => {

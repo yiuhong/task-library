@@ -65,6 +65,44 @@
     var options = host || {};
     var mode = options.mode === 'classical' ? 'classical' : 'gamified';
     var policy = FEEDBACK[mode];
+    var lastSummary = null;
+
+    if (!global.TrialExport) {
+      throw new Error('RDK requires assets/trial-export.js');
+    }
+
+    var exportLog = global.TrialExport.session({
+      taskId: 'rdk',
+      mode: mode,
+      params: function () {
+        return {
+          numDots: CONFIG.numDots,
+          dotRadiusPx: CONFIG.dotRadiusPx,
+          apertureRadiusPx: CONFIG.apertureRadiusPx,
+          canvasSizePx: CONFIG.canvasSizePx,
+          dotSpeedPxPerSec: CONFIG.dotSpeedPxPerSec,
+          dotLifetimeFrames: CONFIG.dotLifetimeFrames,
+          fixationMs: CONFIG.fixationMs,
+          stimulusDisplayMs: CONFIG.stimulusDisplayMs,
+          stimulusMaxMs: CONFIG.stimulusMaxMs,
+          feedbackMs: CONFIG.feedbackMs,
+          itiMs: CONFIG.itiMs,
+          coherenceLevels: CONFIG.coherenceLevels.map(function (level) {
+            return { label: level.label, pct: level.pct, proportion: level.proportion };
+          }),
+          practiceTrials: CONFIG.practiceTrials,
+          mainTrials: CONFIG.mainTrials,
+          presentation: {
+            policyId: policy.id,
+            trialFeedback: !!policy.trialFeedback,
+            practiceFeedback: !!policy.practiceFeedback,
+            audio: !!policy.audio,
+            score: false
+          }
+        };
+      },
+      summary: function () { return lastSummary; }
+    });
 
     /**
      * Task cues. The shell passes a TrialAudio session only when this mode
@@ -130,6 +168,7 @@
       btnRepeatPractice: document.getElementById('btn-repeat-practice'),
       btnStartMain: document.getElementById('btn-start-main'),
       btnDownloadCsv: document.getElementById('btn-download-csv'),
+      btnDownloadJson: document.getElementById('btn-download-json'),
       btnRestart: document.getElementById('btn-restart'),
 
       pracAcc: document.getElementById('prac-acc'),
@@ -332,6 +371,8 @@
 
       if (blockType === 'PRACTICE') {
         state.trialLogs = [];
+        lastSummary = null;
+        exportLog.clear();
       }
 
       dom.screenStart.classList.add('hidden');
@@ -409,9 +450,10 @@
       state.awaitingResponse = false;
       clearTimers();
 
+      const responsePerf = performance.now();
       const rtMs = customRt !== null
         ? Math.round(customRt)
-        : Math.max(1, Math.round(performance.now() - state.stimulusOnsetPerf));
+        : Math.max(1, Math.round(responsePerf - state.stimulusOnsetPerf));
 
       const trial = state.currentTrial;
       const isTimeout = choiceDirection === 'TIMEOUT';
@@ -429,6 +471,23 @@
         timestamp: new Date().toISOString()
       };
       state.trialLogs.push(record);
+      exportLog.record({
+        trialIndex: record.trial,
+        block: record.block,
+        stimulus: trial.direction + ' ' + trial.coherence_pct + '%',
+        condition: String(trial.coherence_pct),
+        response: choiceDirection,
+        accuracy: isCorrect,
+        rtMs: isTimeout ? null : rtMs,
+        timestamp: record.timestamp,
+        onsetPerfMs: state.stimulusOnsetPerf,
+        responsePerfMs: responsePerf,
+        extra: {
+          coherence_pct: trial.coherence_pct,
+          direction: trial.direction,
+          timed_out: isTimeout ? 1 : 0
+        }
+      });
 
       // Visual & Audio Feedback (400 ms)
       state.phase = 'FEEDBACK';
@@ -609,6 +668,13 @@
         trials: state.trialLogs,
         mode: mode
       };
+      lastSummary = {
+        accuracy_pct: payload.overall.accuracy_pct,
+        mean_rt_ms: payload.overall.mean_rt_ms,
+        median_rt_ms: payload.overall.median_rt_ms,
+        total_main_trials: payload.overall.total_main_trials,
+        coherence_breakdown: byCoherence
+      };
 
       try {
         localStorage.setItem(CONFIG.storageKey, JSON.stringify(payload));
@@ -622,32 +688,16 @@
     /**
      * CSV EXPORT
      */
-    function downloadCsv() {
-      const headers = [
-        'trial',
-        'block',
-        'coherence_pct',
-        'direction',
-        'response',
-        'correct',
-        'rt_ms',
-        'timestamp',
-        'mode'
-      ];
-      const rows = state.trialLogs.map(r =>
-        headers.map(h => (h === 'mode' ? mode : (r[h] !== undefined ? r[h] : ''))).join(',')
-      );
-      const csvContent = [headers.join(','), ...rows].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
+    function exportStamp() {
+      return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    }
 
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `rdk_motion_data_${Date.now()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+    function downloadCsv() {
+      exportLog.downloadCsv('rdk_motion_data_' + exportStamp() + '.csv');
+    }
+
+    function downloadJson() {
+      exportLog.downloadJson('rdk_motion_data_' + exportStamp() + '.json');
     }
 
     function clearTimers() {
@@ -728,6 +778,10 @@
 
     dom.btnDownloadCsv.addEventListener('click', () => {
       downloadCsv();
+    });
+
+    dom.btnDownloadJson.addEventListener('click', () => {
+      downloadJson();
     });
 
     dom.btnRestart.addEventListener('click', () => {

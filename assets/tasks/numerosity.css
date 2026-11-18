@@ -164,3 +164,13 @@ html[data-trial-mode="classical"] .response-pad.pad-pressed {
     border-color: #111111;
     box-shadow: none;
 }
+
+
+/*
+  Experiment use. Running accuracy, mean RT, and a live score stay off
+  in both shells. The results screen still reports them after the block.
+  A trial counter may stay.
+*/
+[data-shell-live] {
+  display: none !important;
+}

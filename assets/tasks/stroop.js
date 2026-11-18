@@ -13,8 +13,12 @@
   Arcade scoring and tones are the gamified policy: speed bonus
   max(0, 1000 − rounded RT) plus combo × 100, with combo incremented
   before that bonus. Classical shows a short Correct / Incorrect / No
-  response only during practice. The main block has no per-trial words,
-  and no live accuracy or RT. The 400 ms hold and 300 ms blank still run.
+  response only during practice. The main block has no per-trial words.
+  Live score, combo, accuracy, and mean RT stay off in both shells.
+  The colored word is not set on fire, and the page background is not
+  tinted by combo, so that cue does not sit on the next trial. The
+  400 ms hold and 300 ms blank still run. Download CSV and Download
+  JSON use TrialExport for the current run.
 */
 (function (global) {
     var CONFIG = {
@@ -66,6 +70,38 @@
         var mode = options.mode === "classical" ? "classical" : "gamified";
         var policy = FEEDBACK[mode];
         var audio = options.audio || null;
+        var lastSummary = null;
+
+        if (!global.TrialExport) {
+            throw new Error("Stroop requires assets/trial-export.js");
+        }
+
+        var exportLog = global.TrialExport.session({
+            taskId: "stroop",
+            mode: mode,
+            params: function () {
+                return {
+                    trials: CONFIG.trials,
+                    colors: CONFIG.colors.map(function (color) {
+                        return { name: color.name, hex: color.hex, key: color.key };
+                    }),
+                    timing: {
+                        fixation: CONFIG.timing.fixation,
+                        timeout: CONFIG.timing.timeout,
+                        isi: CONFIG.timing.isi,
+                        feedback: CONFIG.timing.feedback
+                    },
+                    practiceTrials: policy.practiceTrials,
+                    presentation: {
+                        policyId: policy.id,
+                        trialFeedback: !!policy.trialFeedback,
+                        audio: !!policy.audio,
+                        score: !!policy.score
+                    }
+                };
+            },
+            summary: function () { return lastSummary; }
+        });
 
         var required = [
             "screen-welcome", "screen-task", "screen-results",
@@ -214,8 +250,6 @@
             }
             if (policy.combo) {
                 document.getElementById("stat-combo").textContent = "x" + state.combo;
-                var hue = 220 + (state.combo * 10);
-                document.body.style.backgroundColor = "hsl(" + hue + ", 45%, 8%)";
             }
             if (policy.id === "arcade") {
                 var stats = runningStats();
@@ -278,7 +312,6 @@
                 if (state.currentTrialIndex >= state.trials.length) return;
                 display.textContent = trial.text;
                 display.style.color = trial.inkColor;
-                if (policy.fire && state.combo > 5) display.classList.add("fire-effect");
                 state.startTime = performance.now();
                 state.isAcceptingInput = true;
                 state.timeoutId = global.setTimeout(function () {
@@ -292,7 +325,8 @@
             global.clearTimeout(state.timeoutId);
             state.isAcceptingInput = false;
 
-            var rt = performance.now() - state.startTime;
+            var responsePerf = performance.now();
+            var rt = responsePerf - state.startTime;
             var trial = state.trials[state.currentTrialIndex];
             var isCorrect = key === trial.correctKey;
 
@@ -306,21 +340,13 @@
                     var speedBonus = Math.max(0, 1000 - Math.round(rt));
                     state.score += speedBonus + (state.combo * 100);
                 }
-                if (policy.id === "arcade") showFeedback("PERFECT!", "text-cyan-400");
-                else showFeedback("Correct", "is-quiet");
             } else {
                 if (policy.audio) tones.incorrect();
                 if (policy.score || policy.combo) state.combo = 0;
-                if (policy.id === "arcade") showFeedback(key === null ? "TOO SLOW!" : "OOF!", "text-red-500");
-                else showFeedback(key === null ? "No response" : "Incorrect", "is-quiet");
-                if (policy.shake) {
-                    var container = document.getElementById("stimulus-container");
-                    container.classList.add("shake");
-                    global.setTimeout(function () { container.classList.remove("shake"); }, 200);
-                }
             }
 
-            state.results.push(Object.assign({
+            var orient = orientation.fields("response");
+            var stored = Object.assign({
                 record: "trial",
                 trialNum: state.currentTrialIndex + 1,
                 type: trial.type,
@@ -329,8 +355,45 @@
                 isCorrect: isCorrect,
                 mode: mode,
                 block: state.block
-            }, orientation.fields("response")));
-            store.commitTrial(state.results[state.results.length - 1], orientation.events);
+            }, orient);
+            state.results.push(stored);
+            store.commitTrial(stored, orientation.events);
+            exportLog.record({
+                trialIndex: state.results.length,
+                block: state.block,
+                stimulus: trial.text + "/" + trial.inkColor,
+                condition: trial.type,
+                response: key || "timeout",
+                accuracy: isCorrect ? 1 : 0,
+                rtMs: rt,
+                timestamp: new Date().toISOString(),
+                onsetPerfMs: state.startTime,
+                responsePerfMs: responsePerf,
+                extra: {
+                    trial_in_block: state.currentTrialIndex + 1,
+                    word: trial.text,
+                    ink: trial.inkColor,
+                    correct_key: trial.correctKey,
+                    orientation_type: orient.orientationType,
+                    orientation_angle: orient.orientationAngle,
+                    orientation_at: orient.orientationAt,
+                    orientation_t_ms: orient.orientationTMs,
+                    orientation_reason: orient.orientationReason
+                }
+            });
+
+            if (isCorrect) {
+                if (policy.id === "arcade") showFeedback("PERFECT!", "text-cyan-400");
+                else showFeedback("Correct", "is-quiet");
+            } else {
+                if (policy.id === "arcade") showFeedback(key === null ? "TOO SLOW!" : "OOF!", "text-red-500");
+                else showFeedback(key === null ? "No response" : "Incorrect", "is-quiet");
+                if (policy.shake) {
+                    var container = document.getElementById("stimulus-container");
+                    container.classList.add("shake");
+                    global.setTimeout(function () { container.classList.remove("shake"); }, 200);
+                }
+            }
             updateUI();
 
             global.setTimeout(function () {
@@ -394,6 +457,24 @@
 
             if (policy.id === "arcade") message += " Max Combo: " + state.maxCombo + ".";
             document.getElementById("interpretation-text").textContent = message;
+            var interferenceMs = (buckets.congruent.n && buckets.incongruent.n)
+                ? buckets.incongruent.avg - buckets.congruent.avg
+                : null;
+            lastSummary = {
+                accuracyPct: stats.acc,
+                meanCorrectRtMs: stats.avgRt,
+                congruentMeanRtMs: buckets.congruent.avg,
+                congruentCorrectN: buckets.congruent.n,
+                incongruentMeanRtMs: buckets.incongruent.avg,
+                incongruentCorrectN: buckets.incongruent.n,
+                interferenceMs: interferenceMs,
+                score: policy.score ? state.score : null,
+                maxCombo: (policy.score || policy.combo) ? state.maxCombo : null
+            };
+        }
+
+        function exportStamp() {
+            return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
         }
 
         function flashPad(el) {
@@ -443,6 +524,8 @@
             state.combo = 0;
             state.maxCombo = 0;
             state.results = [];
+            lastSummary = null;
+            exportLog.clear();
             state.queue = [];
             if (policy.practiceTrials) {
                 state.queue.push({
@@ -470,6 +553,13 @@
             document.body.style.backgroundColor = "";
             screens.results.classList.add("hidden");
             screens.welcome.classList.remove("hidden");
+        });
+
+        document.getElementById("btn-download-csv").addEventListener("click", function () {
+            exportLog.downloadCsv("stroop_dash_" + exportStamp() + ".csv");
+        });
+        document.getElementById("btn-download-json").addEventListener("click", function () {
+            exportLog.downloadJson("stroop_dash_" + exportStamp() + ".json");
         });
 
         var api = {

@@ -57,7 +57,7 @@
         <div class="trial-data">
             <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
             <div class="trial-data-actions">
-                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" class="trial-data-btn" data-trial-store-download disabled>Saved sessions CSV</button>
                 <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
             </div>
         </div>
@@ -204,7 +204,8 @@
         <div class="trial-data">
             <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
             <div class="trial-data-actions">
-                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" id="btn-download-csv" class="trial-data-btn">Download CSV</button>
+                <button type="button" id="btn-download-json" class="trial-data-btn">Download JSON</button>
                 <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
             </div>
         </div>
@@ -222,6 +223,7 @@
 
     <script src="assets/trial-orientation.js"></script>
     <script src="assets/trial-store.js"></script>
+    <script src="assets/trial-export.js"></script>
     <script src="assets/trial-audio.js"></script>
     <script src="assets/tasks/brightness.js"></script>
     <script>

@@ -68,6 +68,41 @@
     var options = host || {};
     var mode = options.mode === 'classical' ? 'classical' : 'gamified';
     var policy = FEEDBACK[mode];
+    var lastSummary = null;
+
+    if (!global.TrialExport) {
+      throw new Error('Numerosity requires assets/trial-export.js');
+    }
+
+    var exportLog = global.TrialExport.session({
+      taskId: 'numerosity',
+      mode: mode,
+      params: function () {
+        return {
+          fixationMs: CONFIG.fixationMs,
+          stimulusMs: CONFIG.stimulusMs,
+          maskMs: CONFIG.maskMs,
+          feedbackMs: CONFIG.feedbackMs,
+          itiMs: CONFIG.itiMs,
+          responseTimeoutMs: CONFIG.responseTimeoutMs,
+          practiceTrials: CONFIG.practiceTrials,
+          mainTrials: CONFIG.mainTrials,
+          baseCounts: CONFIG.baseCounts.slice(),
+          difficultyLevels: CONFIG.difficultyLevels.map(function (level) {
+            return { id: level.id, label: level.label, deltas: level.deltas.slice() };
+          }),
+          dotRadius: CONFIG.dotRadius,
+          presentation: {
+            policyId: policy.id,
+            trialFeedback: !!policy.trialFeedback,
+            practiceFeedback: !!policy.practiceFeedback,
+            audio: !!policy.audio,
+            score: false
+          }
+        };
+      },
+      summary: function () { return lastSummary; }
+    });
 
       // Application State
       const state = {
@@ -104,6 +139,7 @@
         btnStartPractice: document.getElementById('btnStartPractice'),
         btnStartMain: document.getElementById('btnStartMain'),
         btnDownloadCSV: document.getElementById('btnDownloadCSV'),
+        btnDownloadJSON: document.getElementById('btnDownloadJSON'),
         btnRestartTask: document.getElementById('btnRestartTask'),
 
         arenaPhaseLabel: document.getElementById('arenaPhaseLabel'),
@@ -514,6 +550,27 @@
           timestamp: new Date().toISOString()
         };
         state.allResults.push(trialRecord);
+        exportLog.record({
+          trialIndex: trialRecord.trial,
+          block: trialRecord.block,
+          stimulus: 'L' + trialRecord.left_n + ' R' + trialRecord.right_n,
+          condition: trialRecord.difficulty,
+          response: choice,
+          accuracy: isCorrect,
+          rtMs: rtMs,
+          timestamp: trialRecord.timestamp,
+          onsetPerfMs: state.responseOpenTime,
+          responsePerfMs: now,
+          extra: {
+            trial_in_block: trialRecord.block_trial,
+            difficulty: trialRecord.difficulty,
+            left_n: trialRecord.left_n,
+            right_n: trialRecord.right_n,
+            delta_n: trialRecord.delta_n,
+            correct_side: trialRecord.correct_side,
+            timed_out: isTimeout ? 1 : 0
+          }
+        });
 
         // Render Non-Color-Only Accessible Feedback.
         // Classical practice is one word and no tone. Classical main leaves
@@ -683,6 +740,7 @@
           trials: state.allResults,
           mode: mode
         };
+        lastSummary = summaryPayload.summary;
 
         try {
           localStorage.setItem(CONFIG.storageKey, JSON.stringify(summaryPayload));
@@ -694,48 +752,16 @@
       /**
        * Generate and Trigger CSV Download of Trial-Level Data
        */
+      function exportStamp() {
+        return new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      }
+
       function downloadCSV() {
-        const headers = [
-          'trial',
-          'block',
-          'left_n',
-          'right_n',
-          'correct_side',
-          'response',
-          'correct',
-          'rt_ms',
-          'timestamp',
-          'mode'
-        ];
+        exportLog.downloadCsv('projectTrial_numerosity_' + exportStamp() + '.csv');
+      }
 
-        const rows = state.allResults.map((r) => [
-          r.trial,
-          r.block,
-          r.left_n,
-          r.right_n,
-          r.correct_side,
-          r.response,
-          r.correct,
-          r.rt_ms !== null ? r.rt_ms : '',
-          r.timestamp,
-          mode
-        ]);
-
-        const csvContent = [
-          headers.join(','),
-          ...rows.map((row) => row.join(','))
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        const dateStamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-        link.setAttribute('href', url);
-        link.setAttribute('download', `projectTrial_numerosity_${dateStamp}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+      function downloadJSON() {
+        exportLog.downloadJson('projectTrial_numerosity_' + exportStamp() + '.json');
       }
 
       /**
@@ -779,8 +805,14 @@
         downloadCSV();
       });
 
+      el.btnDownloadJSON.addEventListener('click', () => {
+        downloadJSON();
+      });
+
       el.btnRestartTask.addEventListener('click', () => {
         state.allResults = [];
+        lastSummary = null;
+        exportLog.clear();
         state.currentTrialIndex = 0;
         el.hudProgressBar.style.width = '0%';
         startBlock('practice');

@@ -79,9 +79,15 @@
         </section>
 
         <section>
+            <h2>Methods note</h2>
+            <p>Both shells share the 8 practice trials and the 40 main trials. After the response is stored, the gamified shell shows HIT, WRONG SIDE, FALSE ALARM!, TOO SLOW!, or WITHHELD for the 400 ms hold. Classical practice uses Correct, Incorrect, or No response. Classical main shows no word. The hold and the jittered blank still run. The GO badge, the NO-GO mark, and the deadline bar stay in both shells. The header shows the block and the trial count, not a running score. For a main block without the word, use classical.</p>
+            <p>The download is the shared export on <a href="researchers.html#gonogo">For researchers</a>. <code>rt_ms</code> is blank when the window closes with no press. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+        </section>
+
+        <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_gonogo_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
-            <p>Download CSV Log writes the current run, practice and main. Columns are trial, block, trial_type (<code>GO</code> or <code>NOGO</code>), target_side, response, correct, rt_ms, timestamp, and mode (<code>gamified</code> or <code>classical</code>). The saved payload includes the same trailing <code>mode</code> field. The file name is <code>projectTrial_gonogo_</code> plus a timestamp. The page does not log orientation turns.</p>
+            <p>Download CSV and Download JSON write the current run, practice and main. The JSON schema is <code>project-trial.export.v1</code>. The task id is <code>gonogo</code>. <code>condition</code> is <code>GO</code> or <code>NOGO</code>. Task columns are trial_in_block and target_side. <code>summary</code> repeats go accuracy, mean go RT, commission, and omission. File names start with <code>projectTrial_gonogo_</code>. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">
