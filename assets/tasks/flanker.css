@@ -116,3 +116,11 @@ html[data-trial-mode="classical"] header div:not(#progress-bar) {
   background-color: #7f7f7f;
   box-shadow: none;
 }
+
+/*
+  Experiment use. Running accuracy and mean RT stay off in both shells.
+  The results screen still reports them after the block. Trial count stays.
+*/
+[data-shell-live] {
+  display: none !important;
+}

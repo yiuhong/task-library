@@ -39,11 +39,11 @@
           <span class="text-slate-500">TRIAL</span>
           <span id="hud-trial" class="ml-1 text-slate-200 font-semibold">0 / 0</span>
         </div>
-        <div data-shell-live>
+        <div data-shell-live hidden>
           <span class="text-slate-500">ACC</span>
           <span id="hud-acc" class="ml-1 text-slate-200 font-semibold">--%</span>
         </div>
-        <div class="hidden sm:block" data-shell-live>
+        <div class="hidden sm:block" data-shell-live hidden>
           <span class="text-slate-500">MEAN RT</span>
           <span id="hud-rt" class="ml-1 text-slate-200 font-semibold">-- ms</span>
         </div>
@@ -194,8 +194,11 @@
 
       <!-- Actions -->
       <div class="flex flex-col sm:flex-row gap-3">
-        <button id="btn-download-csv" class="flex-1 py-3 px-5 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold text-sm tracking-wide transition neon-glow cursor-pointer">
+        <button id="btn-download-csv" type="button" class="flex-1 py-3 px-5 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold text-sm tracking-wide transition neon-glow cursor-pointer">
           Download Trial CSV
+        </button>
+        <button id="btn-download-json" type="button" class="flex-1 py-3 px-5 rounded-xl bg-accent hover:bg-accentHover text-white font-semibold text-sm tracking-wide transition neon-glow cursor-pointer">
+          Download Trial JSON
         </button>
         <button id="btn-restart" class="shell-primary py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm tracking-wide transition cursor-pointer">
           Run Again
@@ -238,6 +241,7 @@
     </div>
   </footer>
 
+  <script src="assets/trial-export.js"></script>
   <script src="assets/tasks/flanker.js"></script>
   <script>
     (function () {

@@ -17,6 +17,11 @@
   The end screen keeps accuracy, mean RT, hit rate, false alarms,
   Cowan's K, and Pashler's K. There is no arcade score.
 
+  Download CSV and Download JSON use TrialExport. Cowan's K and
+  Pashler's K in the file are the set-size values this core already
+  computes for the results screen. Trial counts, colors, timings, and
+  those formulas stay as they are.
+
   CONFIG is frozen. Nothing assigns to it.
 */
 (function (global) {
@@ -80,8 +85,59 @@
         var mode = options.mode === "classical" ? "classical" : "gamified";
         var policy = FEEDBACK[mode];
         var audio = options.audio || null;
+        var lastSummary = null;
 
-        var requiredIds = ["hud-block-val", "hud-trial-val", "btn-probe-mode", "probe-mode-label", "select-probe-type", "screen-intro", "screen-transition", "screen-arena", "screen-results", "practice-summary-text", "phase-indicator", "feedback-badge", "vwm-canvas", "pad-same", "pad-diff", "response-footer", "btn-start-practice", "btn-skip-to-main", "btn-start-main", "btn-download-csv", "btn-restart", "stat-acc", "stat-rt", "stat-hit", "stat-fa", "stat-k-mean", "table-setsize-body", "storage-status"];
+        if (!global.TrialExport) {
+            throw new Error("VWM requires assets/trial-export.js");
+        }
+
+        function round3(n) {
+            return Math.round(n * 1000) / 1000;
+        }
+
+        function colorNameFor(hex) {
+            var i;
+            for (i = 0; i < CONFIG.palette.length; i++) {
+                if (CONFIG.palette[i].hex === hex) return CONFIG.palette[i].name;
+            }
+            return "";
+        }
+
+        var exportLog = global.TrialExport.session({
+            taskId: "vwm",
+            mode: mode,
+            params: function () {
+                return {
+                    storageKey: CONFIG.storageKey,
+                    canvasSize: CONFIG.canvasSize,
+                    arenaMargin: CONFIG.arenaMargin,
+                    minCenterDist: CONFIG.minCenterDist,
+                    minItemDist: CONFIG.minItemDist,
+                    squareSize: CONFIG.squareSize,
+                    fixationMs: CONFIG.fixationMs,
+                    sampleMs: CONFIG.sampleMs,
+                    delayMs: CONFIG.delayMs,
+                    itiMs: CONFIG.itiMs,
+                    setSizes: CONFIG.setSizes.slice(),
+                    palette: CONFIG.palette.map(function (swatch) {
+                        return { name: swatch.name, hex: swatch.hex };
+                    }),
+                    probeModeAtExport: STATE.probeMode,
+                    presentation: {
+                        policyId: policy.id,
+                        practiceFeedback: policy.practiceFeedback,
+                        mainFeedback: policy.mainFeedback,
+                        audio: false,
+                        score: false
+                    }
+                };
+            },
+            summary: function () {
+                return lastSummary;
+            }
+        });
+
+        var requiredIds = ["hud-block-val", "hud-trial-val", "btn-probe-mode", "probe-mode-label", "select-probe-type", "screen-intro", "screen-transition", "screen-arena", "screen-results", "practice-summary-text", "phase-indicator", "feedback-badge", "vwm-canvas", "pad-same", "pad-diff", "response-footer", "btn-start-practice", "btn-skip-to-main", "btn-start-main", "btn-download-csv", "btn-download-json", "btn-restart", "stat-acc", "stat-rt", "stat-hit", "stat-fa", "stat-k-mean", "table-setsize-body", "storage-status"];
         for (var rid = 0; rid < requiredIds.length; rid++) {
             if (!document.getElementById(requiredIds[rid])) {
                 throw new Error("VWM shell is missing #" + requiredIds[rid]);
@@ -137,6 +193,7 @@
           btnSkipToMain: document.getElementById('btn-skip-to-main'),
           btnStartMain: document.getElementById('btn-start-main'),
           btnDownloadCsv: document.getElementById('btn-download-csv'),
+          btnDownloadJson: document.getElementById('btn-download-json'),
           btnRestart: document.getElementById('btn-restart'),
 
           statAcc: document.getElementById('stat-acc'),
@@ -392,6 +449,8 @@
 
           if (blockType === 'PRACTICE') {
             STATE.allLogs = [];
+            exportLog.clear();
+            lastSummary = null;
             STATE.trialQueue = buildBlockTrials('practice', 1); // 6 trials
           } else {
             STATE.trialQueue = buildBlockTrials('main', 6);     // 36 trials
@@ -449,6 +508,7 @@
               schedule(() => {
                 // PHASE 4: Test Probe (Until Response)
                 el.phaseIndicator.textContent = 'TEST PROBE — SAME OR DIFFERENT?';
+                STATE.currentTrial.presentedProbeMode = STATE.probeMode;
                 renderProbeArray(STATE.currentTrial);
                 STATE.probeOnsetTime = performance.now();
                 STATE.awaitingResponse = true;
@@ -463,7 +523,8 @@
         function handleResponse(responseChoice) {
           if (!STATE.awaitingResponse || !STATE.currentTrial) return;
 
-          const rtMs = Math.round(performance.now() - STATE.probeOnsetTime);
+          const responsePerf = performance.now();
+          const rtMs = Math.round(responsePerf - STATE.probeOnsetTime);
           STATE.awaitingResponse = false;
           setPadsEnabled(false);
 
@@ -473,6 +534,20 @@
           setTimeout(() => padEl.classList.remove('active-key'), 140);
 
           const isCorrect = (responseChoice === STATE.currentTrial.trialType) ? 1 : 0;
+          const sampleItem = STATE.currentTrial.items[STATE.currentTrial.probeIndex];
+          const probeModeShown = STATE.currentTrial.presentedProbeMode || STATE.probeMode;
+          const itemsExport = STATE.currentTrial.items.map(function (item) {
+            return {
+              x: round3(item.x),
+              y: round3(item.y),
+              color: item.color,
+              colorName: item.colorName
+            };
+          });
+          const hit = STATE.currentTrial.trialType === 'DIFFERENT' && responseChoice === 'DIFFERENT' ? 1 : 0;
+          const falseAlarm = STATE.currentTrial.trialType === 'SAME' && responseChoice === 'DIFFERENT' ? 1 : 0;
+          const miss = STATE.currentTrial.trialType === 'DIFFERENT' && responseChoice === 'SAME' ? 1 : 0;
+          const correctRejection = STATE.currentTrial.trialType === 'SAME' && responseChoice === 'SAME' ? 1 : 0;
 
           // Log trial record
           const record = {
@@ -483,9 +558,43 @@
             response: responseChoice,
             correct: isCorrect,
             rt_ms: rtMs,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            mode: mode,
+            probe_mode: probeModeShown,
+            probe_index: STATE.currentTrial.probeIndex,
+            sample_color: sampleItem.color,
+            probe_color: STATE.currentTrial.probeColor,
+            onset_perf_ms: STATE.probeOnsetTime,
+            response_perf_ms: responsePerf
           };
           STATE.allLogs.push(record);
+          exportLog.record({
+            trialIndex: record.trial,
+            block: record.block,
+            stimulus: 'N=' + STATE.currentTrial.setSize + ' ' + STATE.currentTrial.trialType + ' ' + probeModeShown + ' sample=' + sampleItem.color + ' probe=' + STATE.currentTrial.probeColor,
+            condition: STATE.currentTrial.trialType,
+            response: responseChoice,
+            accuracy: isCorrect,
+            rtMs: rtMs,
+            timestamp: record.timestamp,
+            onsetPerfMs: STATE.probeOnsetTime,
+            responsePerfMs: responsePerf,
+            extra: {
+              trial_in_block: STATE.currentTrial.trialNumber,
+              set_size: STATE.currentTrial.setSize,
+              trial_type: STATE.currentTrial.trialType,
+              probe_mode: probeModeShown,
+              probe_index: STATE.currentTrial.probeIndex,
+              sample_color: sampleItem.color,
+              probe_color: STATE.currentTrial.probeColor,
+              probe_color_name: colorNameFor(STATE.currentTrial.probeColor),
+              items_json: itemsExport,
+              hit: hit,
+              false_alarm: falseAlarm,
+              miss: miss,
+              correct_rejection: correctRejection
+            }
+          });
 
           // Persist immediately to localStorage
           saveToLocalStorage();
@@ -579,6 +688,16 @@
           }));
 
           const meanCowanK = bySetSize.reduce((acc, s) => acc + s.cowanK, 0) / bySetSize.length;
+          const kBySize = {};
+          bySetSize.forEach(function (row) { kBySize[row.n] = row; });
+          const scoredBlock = mainTrials.length > 0 ? 'main' : '';
+          exportLog.stamp(function (row) {
+            if (scoredBlock && row.block !== scoredBlock) return {};
+            const stats = kBySize[row.extra.set_size];
+            if (!stats) return {};
+            return { cowan_k: stats.cowanK, pashler_k: stats.pashlerK };
+          });
+          lastSummary = { overall: overall, bySetSize: bySetSize, meanCowanK: meanCowanK };
 
           // Populate top KPI cards
           el.statAcc.textContent = `${overall.acc.toFixed(1)}%`;
@@ -600,7 +719,7 @@
             </tr>
           `).join('');
 
-          saveToLocalStorage( { overall, bySetSize, meanCowanK } );
+          saveToLocalStorage(lastSummary);
           setScreen('RESULTS');
         }
 
@@ -626,22 +745,16 @@
           }
         }
 
-        function downloadCSV() {
-          const headers = ['trial', 'block', 'set_size', 'trial_type', 'response', 'correct', 'rt_ms', 'timestamp', 'mode'];
-          const rows = STATE.allLogs.map(r =>
-            headers.map(h => (h === 'mode' ? mode : r[h])).join(',')
-          );
-          const csvContent = [headers.join(','), ...rows].join('\n');
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
+        function exportStamp() {
+          return new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        }
 
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', `vWM_change_detection_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+        function downloadCSV() {
+          exportLog.downloadCsv('vWM_change_detection_' + exportStamp() + '.csv');
+        }
+
+        function downloadJSON() {
+          exportLog.downloadJson('vWM_change_detection_' + exportStamp() + '.json');
         }
 
         /********************************************************************
@@ -665,13 +778,19 @@
         el.btnStartPractice.addEventListener('click', () => startBlock('PRACTICE'));
         el.btnSkipToMain.addEventListener('click', () => {
           STATE.allLogs = [];
+          exportLog.clear();
+          lastSummary = null;
           startBlock('MAIN');
         });
         el.btnStartMain.addEventListener('click', () => startBlock('MAIN'));
         el.btnDownloadCsv.addEventListener('click', downloadCSV);
+        el.btnDownloadJson.addEventListener('click', downloadJSON);
         el.btnRestart.addEventListener('click', () => {
           clearTimers();
           STATE.block = 'IDLE';
+          STATE.allLogs = [];
+          exportLog.clear();
+          lastSummary = null;
           el.hudBlockVal.textContent = 'READY';
           el.hudTrialVal.textContent = '0 / 0';
           setPadsEnabled(false);

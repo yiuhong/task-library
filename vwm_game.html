@@ -168,9 +168,12 @@
           <span class="text-xs font-mono uppercase tracking-widest text-sky-400">SESSION COMPLETE // DATA LOGGED</span>
           <h2 class="text-2xl font-bold text-slate-100">Visual Working Memory Profile</h2>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btn-download-csv" class="px-4 py-2 rounded-lg bg-[#38bdf8] hover:bg-sky-300 text-slate-950 font-bold text-xs font-mono tracking-wider transition shadow-[0_0_15px_rgba(56,189,248,0.3)] cursor-pointer">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-download-csv" type="button" class="px-4 py-2 rounded-lg bg-[#38bdf8] hover:bg-sky-300 text-slate-950 font-bold text-xs font-mono tracking-wider transition shadow-[0_0_15px_rgba(56,189,248,0.3)] cursor-pointer">
             DOWNLOAD CSV
+          </button>
+          <button id="btn-download-json" type="button" class="px-4 py-2 rounded-lg bg-[#38bdf8] hover:bg-sky-300 text-slate-950 font-bold text-xs font-mono tracking-wider transition shadow-[0_0_15px_rgba(56,189,248,0.3)] cursor-pointer">
+            DOWNLOAD JSON
           </button>
           <button id="btn-restart" class="shell-primary px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-mono transition cursor-pointer">
             RESTART
@@ -260,6 +263,7 @@
     </div>
   </footer>
 
+  <script src="assets/trial-export.js"></script>
   <script src="assets/tasks/vwm.js"></script>
   <script>
     (function () {

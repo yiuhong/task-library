@@ -152,9 +152,11 @@ html[data-trial-mode="classical"] .response-pad.active-key {
 html[data-trial-mode="classical"] #btn-start-practice,
 html[data-trial-mode="classical"] #btn-start-main,
 html[data-trial-mode="classical"] #btn-download-csv,
+html[data-trial-mode="classical"] #btn-download-json,
 html[data-trial-mode="classical"] #btn-start-practice *,
 html[data-trial-mode="classical"] #btn-start-main *,
-html[data-trial-mode="classical"] #btn-download-csv * {
+html[data-trial-mode="classical"] #btn-download-csv *,
+html[data-trial-mode="classical"] #btn-download-json * {
   background-color: #292524;
   color: #fafaf9;
   border-color: #292524;
@@ -163,7 +165,8 @@ html[data-trial-mode="classical"] #btn-download-csv * {
 
 html[data-trial-mode="classical"] #btn-start-practice:hover,
 html[data-trial-mode="classical"] #btn-start-main:hover,
-html[data-trial-mode="classical"] #btn-download-csv:hover {
+html[data-trial-mode="classical"] #btn-download-csv:hover,
+html[data-trial-mode="classical"] #btn-download-json:hover {
   background-color: #1c1917;
   color: #fafaf9;
 }

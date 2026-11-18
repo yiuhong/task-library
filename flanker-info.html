@@ -65,7 +65,13 @@
         <section>
             <h2>Shells</h2>
             <p>The same flanker core runs in two shells. <a href="flanker_game.html">Eriksen Flanker</a> is the gamified shell. <a href="flanker_game.html?mode=classical">Classical Flanker</a> is the quiet lab shell on a mid-gray canvas. Both use one trial list: 6 practice trials and 36 main trials, with the same arrays, keys, and timings. Neither shell plays sound or keeps a score.</p>
-            <p>The gamified shell shows TOO SLOW, ✓ CORRECT, or ✕ INCORRECT after every practice trial and every main trial, with the response time or the target side underneath. Classical practice keeps a short word for the 400 ms hold only: Correct, Incorrect, or No response. It does not show the response time or that subtitle. The classical main block writes no words. The feedback line is cleared, and the 400 ms hold and 350 ms blank still run, so the time from one trial to the next does not change. The end screen is the same in both shells: main-block accuracy, mean correct response time, and the conflict effect. Practice is not part of those totals.</p>
+            <p>The gamified shell shows TOO SLOW, ✓ CORRECT, or ✕ INCORRECT after every practice trial and every main trial, with the response time or the target side underneath. Classical practice keeps a short word for the 400 ms hold only: Correct, Incorrect, or No response. It does not show the response time or that subtitle. The classical main block writes no words. The feedback line is cleared, and the 400 ms hold and 350 ms blank still run, so the time from one trial to the next does not change. The end screen is the same in both shells: main-block accuracy, mean correct response time, and the conflict effect. Practice is not part of those totals. The header slots for a running accuracy and a running mean RT are hidden in both shells. The trial counter and the progress bar stay.</p>
+        </section>
+
+        <section>
+            <h2>Methods note</h2>
+            <p>Both shells share one trial list, one response window, and one score. The word on the gamified shell is drawn after <code>rt_ms</code> is stored, during the 400 ms hold that classical also waits through. A correct gamified trial shows that response time. An error shows the target side. That cue can change the next response. It does not change the array, the key, or the conflict effect. For a main block without the word, use classical.</p>
+            <p>The download is the shared export described on <a href="researchers.html#flanker">For researchers</a>. <code>fixation_ms</code> is the fixation that was drawn. Response time starts at the array, so fixation is outside <code>rt_ms</code>. A timeout leaves <code>rt_ms</code> blank, sets <code>timed_out</code> to 1, and counts as incorrect. The mean on the results screen still uses correct trials only. The conflict effect is still incongruent mean correct RT minus congruent mean correct RT. Browser timing limits, and a device check you can run on your own machine, are on <a href="researchers.html">For researchers</a> and the <a href="diagnostics.html">device check</a>. Nothing is uploaded.</p>
         </section>
 
         <section>
@@ -81,12 +87,14 @@
         <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_flanker_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
-            <p>Download Trial CSV writes the current run, practice and main, as a file on the device. Columns are trial, block, condition, target_dir, flanker_dir, response, correct, rt_ms, timestamp, and mode (<code>gamified</code> or <code>classical</code>). The saved payload includes the same trailing <code>mode</code> field. The file name is <code>flanker_conflict_</code> plus a timestamp. The page does not log orientation turns.</p>
+            <p>Download Trial CSV and Download Trial JSON write the current run, practice and main, when you press the button. The JSON schema is <code>project-trial.export.v1</code>. It carries the task id <code>flanker</code>, the mode, a parameter snapshot, the results-screen summary (overall accuracy, mean correct RT, the conflict effect, and the three conditions), and one object per trial. The CSV repeats that snapshot in <code>params_json</code> on every row.</p>
+            <p>Shared columns are task_id, mode, params_json, trial_index, block, stimulus, condition, response, accuracy, rt_ms, timestamp, onset_perf_ms, and response_perf_ms. Flanker columns after those are trial_in_block, target_dir, flanker_dir, fixation_ms, and timed_out. <code>condition</code> is congruent, incongruent, or neutral. <code>stimulus</code> is the five-character array. <code>accuracy</code> is 1 or 0. The saved payload keeps the same summary and the trial rows, including mode. File names start with <code>flanker_conflict_</code>. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="flanker_game.html">Play Eriksen Flanker</a>
             <a class="trial-btn trial-btn-ghost" href="flanker_game.html?mode=classical">Classical Flanker</a>
+            <a class="trial-btn trial-btn-ghost" href="researchers.html#flanker">For researchers</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>
     </main>
