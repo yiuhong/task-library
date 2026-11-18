@@ -57,7 +57,7 @@
         <div class="trial-data">
             <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
             <div class="trial-data-actions">
-                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" class="trial-data-btn" data-trial-store-download disabled>Saved sessions CSV</button>
                 <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
             </div>
         </div>
@@ -68,7 +68,7 @@
 
         <!-- DASHBOARD -->
         <div id="hud" class="trial-hud absolute top-0 w-full flex justify-between z-10">
-            <div class="flex flex-col" data-shell-arcade>
+            <div class="flex flex-col" data-shell-arcade data-shell-live>
                 <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Score</span>
                 <span id="stat-score" class="score-readout trial-readout font-bold" data-trial-stat="score">00000</span>
             </div>
@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col items-end" data-shell-arcade>
+            <div class="flex flex-col items-end" data-shell-arcade data-shell-live>
                 <span class="text-[10px] text-orange-400 font-bold uppercase tracking-widest">Combo</span>
                 <span id="stat-combo" class="combo-readout trial-readout font-bold combo-text text-orange-500" data-trial-stat="combo">x0</span>
             </div>
@@ -160,7 +160,8 @@
         <div class="trial-data">
             <p class="trial-data-note" data-trial-store-note role="status" aria-live="polite"></p>
             <div class="trial-data-actions">
-                <button type="button" class="trial-data-btn" data-trial-store-download disabled>DOWNLOAD CSV</button>
+                <button type="button" id="btn-download-csv" class="trial-data-btn">Download CSV</button>
+                <button type="button" id="btn-download-json" class="trial-data-btn">Download JSON</button>
                 <button type="button" class="trial-data-btn trial-data-clear" data-trial-store-clear disabled>CLEAR SAVED</button>
             </div>
         </div>
@@ -178,6 +179,7 @@
 
     <script src="assets/trial-orientation.js"></script>
     <script src="assets/trial-store.js"></script>
+    <script src="assets/trial-export.js"></script>
     <script src="assets/trial-audio.js"></script>
     <script src="assets/tasks/stroop.js"></script>
     <script>

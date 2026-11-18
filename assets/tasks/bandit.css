@@ -274,3 +274,13 @@ html[data-trial-mode="classical"] ::-webkit-scrollbar-thumb {
 html[data-trial-mode="classical"] ::-webkit-scrollbar-thumb:hover {
   background: #222222;
 }
+
+
+/*
+  Experiment use. Running accuracy, mean RT, and a live score stay off
+  in both shells. The results screen still reports them after the block.
+  A trial counter may stay.
+*/
+[data-shell-live] {
+  display: none !important;
+}

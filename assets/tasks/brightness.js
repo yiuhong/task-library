@@ -14,6 +14,8 @@
   and a low buzz when a trial times out. Classical passes no audio, and
   playTone does nothing. Missed trials still skip the confidence rating.
   The end screen is the condition cards and the same interpretation sentence.
+  Download CSV and Download JSON use TrialExport for the current run.
+  There is no practice block and no correctness word in either shell.
 */
 (function (global) {
     var CONFIG = {
@@ -59,6 +61,41 @@
         var mode = options.mode === "classical" ? "classical" : "gamified";
         var policy = FEEDBACK[mode];
         var audio = options.audio || null;
+        var lastSummary = null;
+
+        if (!global.TrialExport) {
+            throw new Error("Brightness requires assets/trial-export.js");
+        }
+
+        var exportLog = global.TrialExport.session({
+            taskId: "brightness",
+            mode: mode,
+            params: function () {
+                return {
+                    trialsPerCondition: CONFIG.trialsPerCondition,
+                    timing: {
+                        fixation: CONFIG.timing.fixation,
+                        timeout: CONFIG.timing.timeout,
+                        isi: CONFIG.timing.isi
+                    },
+                    conditions: CONFIG.conditions.map(function (cond) {
+                        return {
+                            id: cond.id,
+                            diff: cond.diff,
+                            abs: cond.abs,
+                            vals: cond.vals.slice()
+                        };
+                    }),
+                    presentation: {
+                        policyId: policy.id,
+                        trialFeedback: false,
+                        audio: !!policy.audio,
+                        score: false
+                    }
+                };
+            },
+            summary: function () { return lastSummary; }
+        });
 
         var required = [
             "screen-welcome", "screen-task", "screen-results",
@@ -227,7 +264,8 @@
                 global.clearTimeout(state.timeoutId);
                 state.isAcceptingInput = false;
 
-                var rt = performance.now() - state.startTime;
+                var responsePerf = performance.now();
+                var rt = responsePerf - state.startTime;
                 var trial = state.trials[state.currentTrialIndex];
                 var isCorrect = false;
                 if (key !== null) {
@@ -242,7 +280,9 @@
                     correctKey: trial.correctKey,
                     responseKey: key || "timeout",
                     rt: key ? Math.round(rt) : null,
-                    isCorrect: isCorrect
+                    isCorrect: isCorrect,
+                    onsetPerf: state.startTime,
+                    responsePerf: responsePerf
                 };
 
                 document.getElementById("square-left").classList.add("invisible");
@@ -298,9 +338,35 @@
         }
 
         function commitTrial(result) {
-            Object.assign(result, orientation.fields("response"), { record: "trial", mode: mode });
+            var orient = orientation.fields("response");
+            Object.assign(result, orient, { record: "trial", mode: mode, block: "main" });
             state.results.push(result);
             store.commitTrial(result, orientation.events);
+            exportLog.record({
+                trialIndex: state.results.length,
+                block: "main",
+                stimulus: "L" + result.leftColor + "/R" + result.rightColor,
+                condition: result.condId,
+                response: result.responseKey,
+                accuracy: result.isCorrect ? 1 : 0,
+                rtMs: result.rt,
+                timestamp: new Date().toISOString(),
+                onsetPerfMs: result.onsetPerf,
+                responsePerfMs: result.responsePerf,
+                extra: {
+                    left_color: result.leftColor,
+                    right_color: result.rightColor,
+                    correct_key: result.correctKey,
+                    confidence: result.confidence,
+                    confidence_key: result.confidenceKey,
+                    confidence_rt_ms: result.confidenceRT,
+                    orientation_type: orient.orientationType,
+                    orientation_angle: orient.orientationAngle,
+                    orientation_at: orient.orientationAt,
+                    orientation_t_ms: orient.orientationTMs,
+                    orientation_reason: orient.orientationReason
+                }
+            });
         }
 
         function finishGame() {
@@ -338,6 +404,26 @@
             message += "Each card counts correct and wrong responses in that condition, and the share of each that was rated high confidence. This page does not compute d′. ";
             message += "Low-difference pairs are 20 gray levels apart. High-difference pairs are 80 apart.";
             document.getElementById("interpretation-text").textContent = message;
+            var byCondition = {};
+            CONFIG.conditions.forEach(function (cond) {
+                byCondition[cond.id] = {
+                    correctN: Number(document.getElementById("res-" + cond.id + "-corr-count").textContent),
+                    correctHighConfidencePct: document.getElementById("res-" + cond.id + "-corr-conf").textContent,
+                    wrongN: Number(document.getElementById("res-" + cond.id + "-wrong-count").textContent),
+                    wrongHighConfidencePct: document.getElementById("res-" + cond.id + "-wrong-conf").textContent
+                };
+            });
+            lastSummary = {
+                accuracyPct: overallAcc,
+                respondedN: responded.length,
+                correctN: totalCorrect,
+                missedN: missed,
+                byCondition: byCondition
+            };
+        }
+
+        function exportStamp() {
+            return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
         }
 
         function setFooterActive(active) {
@@ -394,6 +480,8 @@
             AudioEngine.start();
             state.currentTrialIndex = 0;
             state.results = [];
+            lastSummary = null;
+            exportLog.clear();
             state.trials = generateTrials();
             orientation.start();
             store.begin(orientation.events, { mode: mode });
@@ -405,6 +493,13 @@
         document.getElementById("btn-restart").addEventListener("click", function () {
             screens.results.classList.add("hidden");
             screens.welcome.classList.remove("hidden");
+        });
+
+        document.getElementById("btn-download-csv").addEventListener("click", function () {
+            exportLog.downloadCsv("luma_clash_" + exportStamp() + ".csv");
+        });
+        document.getElementById("btn-download-json").addEventListener("click", function () {
+            exportLog.downloadJson("luma_clash_" + exportStamp() + ".json");
         });
 
         var api = {

@@ -22,8 +22,17 @@
                 · <a href="#gamified">Gamified mode</a>
                 · <a href="#vwm">Visual working memory</a>
                 · <a href="#flanker">Eriksen flanker</a>
+                · <a href="#stroop">Stroop</a>
+                · <a href="#oddball">Oddball</a>
+                · <a href="#gonogo">Go / No-Go</a>
+                · <a href="#spatial">Spatial Go/No-Go</a>
+                · <a href="#brightness">Brightness</a>
+                · <a href="#numerosity">Numerosity</a>
+                · <a href="#rdk">RDK</a>
+                · <a href="#corsi">Corsi</a>
+                · <a href="#reversal">Reversal learning</a>
                 · <a href="#roadmap">Validation roadmap</a>
-                · <a href="#later">Later tasks</a>
+                · <a href="#later">Not on this export</a>
             </p>
         </header>
 
@@ -40,7 +49,7 @@
                 <li>Open the <a href="diagnostics.html">device check</a> on the computer you will use. Leave the tab visible while it runs. Download the report if you want a record of that browser. This site does not keep it.</li>
                 <li>Open the task. Choose classical or gamified on the welcome screen before the scored block.</li>
                 <li>Read the methods note for that task. Classical is the quieter main block. Gamified runs the same trials and the same scoring, and it can show a brief outcome after the response has been stored.</li>
-                <li>Practice rows are marked <code>practice</code>. On visual working memory, Skip to Main drops the practice log and starts the 36. Flanker practice is excluded from the results-screen totals and included in the file.</li>
+                <li>Practice rows are marked <code>practice</code> and stay in the file. They are left out of the results-screen totals. On visual working memory, Skip to Main drops the practice log and starts the 36. Brightness has no practice block. Spatial Go/No-Go includes practice only when that option is on.</li>
                 <li>Finish the main block. On the results screen, press Download CSV and Download JSON. The file is written because you pressed the button.</li>
                 <li>The browser also keeps the latest finished run in <code>localStorage</code> on this device. A later finished run replaces it. Take the download with you. Clearing site data in the browser removes the local copy.</li>
             </ol>
@@ -63,7 +72,7 @@
                     <tbody>
                         <tr>
                             <th scope="row">task_id</th>
-                            <td><code>vwm</code> or <code>flanker</code> for the tasks wired here.</td>
+                            <td>The task id: <code>vwm</code>, <code>flanker</code>, <code>stroop</code>, <code>oddball</code>, <code>gonogo</code>, <code>orbital_gonogo</code>, <code>brightness</code>, <code>numerosity</code>, <code>rdk</code>, <code>corsi</code>, or <code>bandit</code>.</td>
                         </tr>
                         <tr>
                             <th scope="row">mode</th>
@@ -91,7 +100,7 @@
                         </tr>
                         <tr>
                             <th scope="row">response</th>
-                            <td>The choice, or <code>timeout</code> on a flanker trial that passed the window.</td>
+                            <td>The choice. A flanker or numerosity or RDK trial that passed the window stores <code>timeout</code>. An oddball withhold stores <code>withhold</code>. A go / no-go trial with no press stores <code>NONE</code>.</td>
                         </tr>
                         <tr>
                             <th scope="row">accuracy</th>
@@ -99,7 +108,7 @@
                         </tr>
                         <tr>
                             <th scope="row">rt_ms</th>
-                            <td>The millisecond value that task already averages, rounded the same way. Blank on a flanker timeout, in JSON <code>null</code>.</td>
+                            <td>The millisecond value that task already averages, rounded the same way. Blank, and JSON <code>null</code>, when that task already leaves the time blank. The task note says which trials those are.</td>
                         </tr>
                         <tr>
                             <th scope="row">timestamp</th>
@@ -111,7 +120,7 @@
                         </tr>
                         <tr>
                             <th scope="row">response_perf_ms</th>
-                            <td><code>performance.now()</code> when the response was stored, or when a flanker window closed.</td>
+                            <td><code>performance.now()</code> when the response was stored, or when the response window closed.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -147,6 +156,68 @@
             <p>The header slots for running accuracy and mean RT are hidden in both shells. The trial counter and the progress bar stay. They are not a score. After the response is stored, the gamified shell shows TOO SLOW, CORRECT, or INCORRECT for the 400 ms hold, with the response time or the target side underneath. Classical practice shows a short word and no response time. Classical main shows no word. The hold and the 350 ms blank still run, so the gap from one array to the next is the same. The gamified word can affect the next trial. For a main block without it, use classical.</p>
         </section>
 
+        <section id="stroop">
+            <h2>Stroop Dash</h2>
+            <p>Play from <a href="stroop_game.html">the gamified shell</a> or <a href="stroop_game.html?mode=classical">the classical shell</a>. The colored color-word, the Stroop (1935) note, <a href="https://doi.org/10.1037/h0054651">doi:10.1037/h0054651</a>, and the counts are on the <a href="stroop-info.html">parameters page</a>. The main block is 20 trials in both shells. Classical adds 8 practice trials with the same builder.</p>
+            <p><code>condition</code> is <code>congruent</code> or <code>incongruent</code>. <code>stimulus</code> is the word and the ink, such as <code>RED/#44ff44</code>. <code>rt_ms</code> is the unrounded time from the colored word, including a timeout. The mean on the screen still uses correct trials only. <code>accuracy</code> is 1 or 0. Task columns are <code>trial_in_block</code>, <code>word</code>, <code>ink</code>, <code>correct_key</code>, and the orientation at the response. <code>summary</code> repeats accuracy, the two condition means, and the interference difference the sentence uses. The gamified score and max combo are included when that shell computed them.</p>
+            <p>After the row is stored, the gamified shell shows PERFECT!, OOF!, or TOO SLOW! for the existing 400 ms hold. Classical practice shows Correct, Incorrect, or No response. Classical main shows no word. The hold and the 300 ms blank still run. Live score, combo, accuracy, and mean RT are hidden in both shells. The word is not set on fire, and the page is not recolored from the combo. For a main block without the word, use classical. The welcome button Saved sessions CSV is the older multi-session log. The results buttons are this run.</p>
+        </section>
+
+        <section id="oddball">
+            <h2>Oddball</h2>
+            <p>Play from <a href="oddball_game.html">the gamified shell</a> or <a href="oddball_game.html?mode=classical">the classical shell</a>. Counts and timings are on the <a href="oddball-info.html">parameters page</a>. The main block is 30 trials in both shells. Classical adds 10 practice trials from the same generator. No new citation was added for this task.</p>
+            <p><code>condition</code> is <code>standard</code> or <code>oddball</code>. <code>stimulus</code> is <code>O</code> or <code>X</code>. A withhold stores <code>response</code> <code>withhold</code> and a blank <code>rt_ms</code>. A press stores <code>j</code> and the unrounded time. <code>summary</code> repeats standard accuracy, overall accuracy, and the mean time of oddball hits. The gamified score is included when that shell computed it.</p>
+            <p>After the row is stored, the gamified shell shows CAUGHT IT!, GOOD, MISS!, or FALSE ALARM! for the existing 300 ms hold. Classical practice shows Correct, Incorrect, or No response. Classical main shows no word. Live score, combo, accuracy, and mean RT are hidden in both shells. The shape is not set on fire. For a main block without the word, use classical.</p>
+        </section>
+
+        <section id="gonogo">
+            <h2>Go / No-Go</h2>
+            <p>Play from <a href="gonogo_game.html">the gamified shell</a> or <a href="gonogo_game.html?mode=classical">the classical shell</a>. The 8 practice trials, the 40 main trials, and the windows are on the <a href="gonogo-info.html">parameters page</a>. No additional citation was added.</p>
+            <p><code>condition</code> is <code>GO</code> or <code>NOGO</code>. <code>stimulus</code> is <code>GO LEFT</code>, <code>GO RIGHT</code>, or <code>NOGO</code>. <code>response</code> is <code>LEFT</code>, <code>RIGHT</code>, or <code>NONE</code>. <code>rt_ms</code> is the rounded time on a press and blank when the window closes with no press. <code>accuracy</code> is the correct flag the results screen already uses. <code>summary</code> repeats go accuracy, mean go RT, commission, and omission for the main block. The GO badge, the NO-GO mark, and the shrinking deadline bar stay. They are the stimulus, not a score. The header shows the block and the trial count.</p>
+            <p>After the row is stored, the gamified shell shows HIT, WRONG SIDE, FALSE ALARM!, TOO SLOW!, or WITHHELD for the existing 400 ms hold, with the subtitle it already used. Classical practice maps those to Correct, Incorrect, or No response. Classical main shows no word. The hold and the blank from 250 ms through 450 ms still run. For a main block without the word, use classical.</p>
+        </section>
+
+        <section id="spatial">
+            <h2>Spatial Go/No-Go</h2>
+            <p>Play from <a href="orbital_gonogo.html">the WebXR page</a>. This task is not on the shared shell. The hub card has no Classical link, and the page does not read or write <code>project-trial:mode</code>. <code>?mode=classical</code> does not restyle the scene, the timings, or the score. It turns off the floating outcome words and their sounds. Any other address, including no mode, keeps those words. Counts, planes, and the size and fixation choices are on the <a href="orbital_gonogo-info.html">parameters page</a>. No citation was added, and no light-sensor check was added.</p>
+            <p>The file uses task id <code>orbital_gonogo</code> and <code>mode</code> <code>gamified</code> unless the address is <code>?mode=classical</code>. <code>condition</code> is <code>GO</code> or <code>NOGO</code>. <code>stimulus</code> is the type and the plane, such as <code>GO near</code>. <code>accuracy</code> is 1 for a hit or a correct rejection and 0 for a false alarm or a miss. <code>rt_ms</code> is the rounded time on a trigger and blank when the window closes with no trigger. A click that misses the object is not a response. <code>onset_perf_ms</code> is when the page asks A-Frame to add the target. That is earlier than the pixels and earlier than the light. In a headset it is also earlier than the frame that shows the object. The 1200 ms window is <code>setTimeout</code>. Task columns keep the fields the old CSV already stored, including depth, position, radius, outcome, and the running score after that trial. <code>summary</code> repeats the hit rate, false-alarm rate, mean go RT, and the by-depth table from the results screen, plus the final score.</p>
+            <p>The running score and streak are hidden during the run. The trial counter stays. The floating word is drawn after the row is stored, during the existing 800–1400 ms gap before the next target. It can affect the next trial. <code>?mode=classical</code> is how to leave that word, and its sound, off. Practice rows stay in the file when practice is on, and they are marked <code>practice</code>. They are not in the rates on the screen.</p>
+        </section>
+
+        <section id="brightness">
+            <h2>Brightness detection</h2>
+            <p>Play from <a href="brightness_game.html">the gamified shell</a> or <a href="brightness_game.html?mode=classical">the classical shell</a>. The 40 trials and the four conditions are on the <a href="brightness-info.html">parameters page</a>. There is no practice block, and neither shell says whether the choice was right. No citation was added.</p>
+            <p><code>condition</code> is <code>LL</code>, <code>LH</code>, <code>HL</code>, or <code>HH</code>. <code>stimulus</code> is the two gray levels. <code>rt_ms</code> is the rounded choice time, blank on a timeout. <code>confidence</code>, <code>confidence_key</code>, and <code>confidence_rt_ms</code> are the rating the trial already stored. A timeout skips the rating and stores confidence <code>missed</code>. <code>summary</code> repeats the accuracy sentence and the four cards. The gamified shell can play a tone after the choice is stored. It does not say correct or incorrect. For a run without those tones, use classical.</p>
+        </section>
+
+        <section id="numerosity">
+            <h2>Numerosity comparison</h2>
+            <p>Play from <a href="numerosity_game.html">the gamified shell</a> or <a href="numerosity_game.html?mode=classical">the classical shell</a>. The 6 practice trials, the 36 main trials, and the dot rules are on the <a href="numerosity-info.html">parameters page</a>. No citation was added. The screen does not compute a Weber fraction. The breakdown is accuracy and mean time by the difficulty labels it already uses.</p>
+            <p><code>condition</code> is <code>hard</code>, <code>medium</code>, or <code>easy</code>. <code>stimulus</code> is the two counts. <code>rt_ms</code> starts when the dots are drawn. A timeout leaves it blank and sets <code>timed_out</code> to 1. Task columns also include <code>left_n</code>, <code>right_n</code>, <code>delta_n</code>, and <code>correct_side</code>. <code>summary</code> repeats accuracy, mean RT, median RT, and the difficulty breakdown.</p>
+            <p>After the row is stored, the gamified shell shows CORRECT, INCORRECT, or TOO SLOW, and the response time, for the existing 450 ms hold. Classical practice shows one word and no time. Classical main shows no word. Running accuracy and mean RT are hidden in both shells. The trial counter stays. For a main block without the word, use classical.</p>
+        </section>
+
+        <section id="rdk">
+            <h2>RDK motion coherence</h2>
+            <p>Play from <a href="rdk_game.html">the gamified shell</a> or <a href="rdk_game.html?mode=classical">the classical shell</a>. The 6 practice trials, the 36 main trials, and the dot field are on the <a href="rdk-info.html">parameters page</a>. No citation was added. Dot count, coherence, speed, and the aperture stay the same in both shells.</p>
+            <p><code>condition</code> is the coherence percent, <code>40</code>, <code>20</code>, or <code>8</code>. <code>stimulus</code> is the direction and that percent. <code>rt_ms</code> starts when the dots start. A timeout leaves it blank and sets <code>timed_out</code> to 1. The results screen still leaves that trial out of the mean and counts it incorrect. <code>summary</code> repeats accuracy, mean RT, median RT, and the coherence breakdown. The status line can name the coherence while the dots are up, in both shells. That line is not a score.</p>
+            <p>After the row is stored, the gamified shell shows CORRECT, INCORRECT, or TOO SLOW, and the response time, for the existing 400 ms hold. Classical practice shows one word. Classical main shows no word. Running accuracy and mean RT are hidden in both shells. For a main block without the word, use classical.</p>
+        </section>
+
+        <section id="corsi">
+            <h2>Corsi span</h2>
+            <p>Play from <a href="corsi_game.html">the gamified shell</a> or <a href="corsi_game.html?mode=classical">the classical shell</a>. The warmup, the staircase, and the flash timings are on the <a href="corsi-info.html">parameters page</a>. No citation was added. The span counter and the trial counter stay. There is no running accuracy.</p>
+            <p><code>condition</code> is the span, such as <code>span-3</code>. <code>stimulus</code> is the target sequence. <code>response</code> is the tapped sequence. <code>rt_ms</code> is the mean inter-tap latency the results screen already averages. <code>total_rt_ms</code> is the last tap minus the go cue. <code>summary</code> repeats max span, correct sequences, block score, the product, and that mean. Practice rows use block <code>practice</code>.</p>
+            <p>After the sequence is stored, the gamified shell shows CORRECT SEQUENCE or INCORRECT SEQUENCE during the existing 900 ms pause. Classical practice shows Correct or Incorrect. Classical main shows no banner. For a main block without the banner, use classical. Sequence tones stay off in classical, as they already were.</p>
+        </section>
+
+        <section id="reversal">
+            <h2>Reversal learning</h2>
+            <p>Play from <a href="bandit_game.html">the gamified shell</a> or <a href="bandit_game.html?mode=classical">the classical shell</a>. The 6 practice trials, the 48 main trials, and the reversal rules are on the <a href="bandit-info.html">parameters page</a>. No citation was added.</p>
+            <p><code>accuracy</code> copies <code>chose_optimal</code>. It is the better-option flag on that trial, not a Correct or Incorrect judgment. A rewarded suboptimal trial is accuracy 0 and <code>reward</code> 10. <code>condition</code> is the reversal phase, such as <code>phase-0</code>. <code>stimulus</code> is the left and right symbols. <code>response</code> is <code>left</code> or <code>right</code>. <code>rt_ms</code> is the rounded time from the cards. <code>summary</code> repeats the points, reward rate, better-option rate, win-stay, lose-shift, perseverative count, reversals, and mean RT from the results screen.</p>
+            <p>The payoff is shown after the choice is stored, during the existing 750 ms feedback, on practice and on the main block, in both shells. It is +10 or +0. That number is the reward, so neither shell removes it. The live point total is hidden in both shells. The trial counter stays. There is no shell that turns the payoff off.</p>
+        </section>
+
         <section id="roadmap">
             <h2>Validation roadmap</h2>
             <p>First, the machine. Run the <a href="diagnostics.html">device check</a> on every computer you mean to use, with the tab visible, and keep the JSON with your protocol notes. It reports the animation-callback rate, how late <code>setTimeout</code> was relative to the delay the page asked for, the smallest step this page saw from <code>performance.now()</code>, and, if you run the flashes, the page clock from the color change to your own key or click. That file supports a decision about whether the machine is worth using. It does not clear the machine for a methods section on its own.</p>
@@ -154,15 +225,17 @@
         </section>
 
         <section id="later">
-            <h2>Later tasks</h2>
-            <p>Stroop, Oddball, Brightness, Numerosity, RDK, Go / No-Go, Corsi, Reversal Learning, and Spatial Go/No-Go keep the download they already had. They are not on <code>project-trial.export.v1</code> yet.</p>
-            <p>A later task can load <code>assets/trial-export.js</code> before its core, open <code>TrialExport.session</code> with the task id, the mode, and a parameter snapshot, call <code>record</code> once per finished trial, and put Download CSV and Download JSON on the results screen. Those buttons are the only path off the device. The trial list and the scoring stay in the core. The methods note for that task goes on its parameters page, including what the gamified shell shows after a trial. The hook is written out in <code>assets/trial-export.js</code> and in <code>assets/SHELL_CONTRACT.md</code>.</p>
+            <h2>Not on this export</h2>
+            <p><a href="noematachograph.html">noematachograph.html</a> is a phonautograph illustration. It draws a scrolling trace. It does not run a trial list, score a response, or finish on a results screen, so it does not load <code>assets/trial-export.js</code>.</p>
         </section>
 
         <div class="trial-actions">
             <a class="trial-btn" href="diagnostics.html">Device check</a>
             <a class="trial-btn trial-btn-ghost" href="vwm-info.html">Visual working memory</a>
             <a class="trial-btn trial-btn-ghost" href="flanker-info.html">Eriksen flanker</a>
+            <a class="trial-btn trial-btn-ghost" href="stroop-info.html">Stroop</a>
+            <a class="trial-btn trial-btn-ghost" href="gonogo-info.html">Go / No-Go</a>
+            <a class="trial-btn trial-btn-ghost" href="orbital_gonogo-info.html">Spatial Go/No-Go</a>
             <a class="trial-btn trial-btn-ghost" href="about.html">About these demos</a>
             <a class="trial-btn trial-btn-ghost" href="index.html">Back to hub</a>
         </div>

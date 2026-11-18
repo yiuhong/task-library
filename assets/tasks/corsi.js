@@ -89,8 +89,41 @@
         var mode = options.mode === "classical" ? "classical" : "gamified";
         var policy = FEEDBACK[mode];
         var audio = options.audio || null;
+        var lastSummary = null;
 
-        var requiredIds = ["view-welcome", "view-arena", "view-results", "hud-telemetry", "hud-phase", "hud-span", "hud-trial", "select-mode", "toggle-sound", "btn-start-practice", "corsi-arena", "arena-overlay", "overlay-badge", "overlay-title", "overlay-subtitle", "overlay-btn", "status-dot", "status-text", "tap-progress", "tap-count-label", "btn-clear-seq", "metric-max-span", "metric-total-correct", "metric-total-trials-sub", "metric-block-score", "metric-product-sub", "metric-mean-rt", "results-table-body", "btn-download-csv", "btn-restart", "saved-storage-indicator"];
+        if (!global.TrialExport) {
+            throw new Error("Corsi requires assets/trial-export.js");
+        }
+
+        var exportLog = global.TrialExport.session({
+            taskId: "corsi",
+            mode: mode,
+            params: function () {
+                return {
+                    preTrialDelayMs: CONFIG.preTrialDelayMs,
+                    flashDurationMs: CONFIG.flashDurationMs,
+                    interBlockGapMs: CONFIG.interBlockGapMs,
+                    postSequenceGoDelayMs: CONFIG.postSequenceGoDelayMs,
+                    interTrialIntervalMs: CONFIG.interTrialIntervalMs,
+                    practiceSpan: CONFIG.practiceSpan,
+                    practiceTrials: CONFIG.practiceTrials,
+                    minSpan: CONFIG.minSpan,
+                    maxSpan: CONFIG.maxSpan,
+                    trialsPerSpan: CONFIG.trialsPerSpan,
+                    progressionMode: CONFIG.progressionMode,
+                    presentation: {
+                        policyId: policy.id,
+                        practiceFeedback: policy.practiceFeedback,
+                        mainFeedback: policy.mainFeedback,
+                        audio: !!policy.audio,
+                        score: false
+                    }
+                };
+            },
+            summary: function () { return lastSummary; }
+        });
+
+        var requiredIds = ["view-welcome", "view-arena", "view-results", "hud-telemetry", "hud-phase", "hud-span", "hud-trial", "select-mode", "toggle-sound", "btn-start-practice", "corsi-arena", "arena-overlay", "overlay-badge", "overlay-title", "overlay-subtitle", "overlay-btn", "status-dot", "status-text", "tap-progress", "tap-count-label", "btn-clear-seq", "metric-max-span", "metric-total-correct", "metric-total-trials-sub", "metric-block-score", "metric-product-sub", "metric-mean-rt", "results-table-body", "btn-download-csv", "btn-download-json", "btn-restart", "saved-storage-indicator"];
         for (var rid = 0; rid < requiredIds.length; rid++) {
             if (!document.getElementById(requiredIds[rid])) {
                 throw new Error("Corsi shell is missing #" + requiredIds[rid]);
@@ -152,6 +185,7 @@
           metricMeanRt: document.getElementById('metric-mean-rt'),
           resultsTableBody: document.getElementById('results-table-body'),
           btnDownloadCsv: document.getElementById('btn-download-csv'),
+          btnDownloadJson: document.getElementById('btn-download-json'),
           btnRestart: document.getElementById('btn-restart'),
           savedStorageIndicator: document.getElementById('saved-storage-indicator')
         };
@@ -452,6 +486,25 @@
           };
 
           STATE.trialLogs.push(trialRecord);
+          exportLog.record({
+            trialIndex: trialRecord.trial,
+            block: String(STATE.phase).toLowerCase(),
+            stimulus: trialRecord.target_seq,
+            condition: 'span-' + trialRecord.span_length,
+            response: trialRecord.user_seq,
+            accuracy: trialRecord.correct,
+            rtMs: meanTapRtMs,
+            timestamp: trialRecord.timestamp,
+            onsetPerfMs: STATE.goCueTimestamp,
+            responsePerfMs: lastTapTime,
+            extra: {
+              span_length: trialRecord.span_length,
+              target_seq: trialRecord.target_seq,
+              user_seq: trialRecord.user_seq,
+              total_rt_ms: totalRtMs,
+              mean_tap_rt_ms: meanTapRtMs
+            }
+          });
 
           if (isCorrect) {
             STATE.correctInCurrentSpan += 1;
@@ -537,6 +590,8 @@
           STATE.correctInCurrentSpan = 0;
           STATE.globalTrialIndex = 0;
           STATE.trialLogs = [];
+          lastSummary = null;
+          exportLog.clear();
 
           DOM.viewWelcome.classList.add('hidden');
           DOM.viewResults.classList.add('hidden');
@@ -607,6 +662,7 @@
             },
             trials: STATE.trialLogs
           };
+          lastSummary = sessionSummary.summary;
 
           try {
             const existingRaw = localStorage.getItem(CONFIG.storageKey);
@@ -661,45 +717,16 @@
          * Export CSV with exact required columns:
          * trial, block, span_length, target_seq, user_seq, correct, total_rt_ms, mean_tap_rt_ms, timestamp
          */
+        function exportStamp() {
+          return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        }
+
         function downloadCsv() {
-          const headers = [
-            'trial',
-            'block',
-            'span_length',
-            'target_seq',
-            'user_seq',
-            'correct',
-            'total_rt_ms',
-            'mean_tap_rt_ms',
-            'timestamp',
-            'mode'
-          ];
+          exportLog.downloadCsv('projectTrial_corsi_span_' + exportStamp() + '.csv');
+        }
 
-          const rows = STATE.trialLogs.map(r => [
-            r.trial,
-            r.block,
-            r.span_length,
-            `"${r.target_seq}"`,
-            `"${r.user_seq}"`,
-            r.correct,
-            r.total_rt_ms,
-            r.mean_tap_rt_ms,
-            `"${r.timestamp}"`,
-            mode
-          ]);
-
-          const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-
-          const link = document.createElement('a');
-          const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-          link.setAttribute('href', url);
-          link.setAttribute('download', `projectTrial_corsi_span_${stamp}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+        function downloadJson() {
+          exportLog.downloadJson('projectTrial_corsi_span_' + exportStamp() + '.json');
         }
 
         /**
@@ -712,6 +739,7 @@
         DOM.btnStartPractice.addEventListener('click', startPracticePhase);
         DOM.btnClearSeq.addEventListener('click', handleClearInput);
         DOM.btnDownloadCsv.addEventListener('click', downloadCsv);
+        DOM.btnDownloadJson.addEventListener('click', downloadJson);
         DOM.btnRestart.addEventListener('click', () => {
           DOM.viewResults.classList.add('hidden');
           DOM.viewWelcome.classList.remove('hidden');

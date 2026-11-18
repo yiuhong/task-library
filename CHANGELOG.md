@@ -6,6 +6,7 @@ Version numbers for Project Trial start at 0.1.0. There is no earlier release an
 
 - Added For researchers (`researchers.html`) and a device check (`diagnostics.html`). The check estimates this tab’s animation callback, `setTimeout` lateness, and the page clock from a color change to a key or a click. It does not upload anything, and it is not a light-sensor validation.
 - Visual working memory and Eriksen flanker download trial-by-trial JSON and CSV from `assets/trial-export.js` on the results screen. Both shells use the same trial loop. Flanker hides the running accuracy and mean RT header in both shells. The public version stays 0.1.0 until a later release note folds this in.
+- Stroop, Oddball, Go / No-Go, Brightness, Numerosity, RDK, Corsi, and Reversal Learning use that same download. Practice rows stay in the file and are marked practice. A running score and a running mean RT stay off during a trial in both shells. Spatial Go/No-Go uses the same schema on its one WebXR scene. `?mode=classical` there turns off the floating outcome words and does not restyle the scene. `noematachograph.html` is unchanged. The public version stays 0.1.0.
 
 ## 0.1.0 — 17 November 2026
 

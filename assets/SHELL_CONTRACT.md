@@ -31,7 +31,7 @@ The welcome screen and the results screen each have a Gamified | Classical contr
 `TrialShell.apply(mode)` does five things:
 
 1. Sets `data-trial-mode` on `<html>` and `<body>`.
-2. Hides `[data-shell-arcade]` in the classical shell. Score, combo, reward tones controls, and other game chrome use this attribute. `[data-shell-live]` (running accuracy and mean RT) is hidden by classical CSS. Eriksen Flanker hides those nodes in both shells.
+2. Hides `[data-shell-arcade]` in the classical shell. Score, combo, reward tones controls, and other game chrome use this attribute. `[data-shell-live]` (running accuracy, mean RT, and a live score) is hidden by classical CSS. A wired task also hides those nodes in the gamified shell. The results screen can still report them after the block. A trial counter may stay.
 3. Shows `[data-shell-summary]` only in the classical shell. Lab-only instructions use this attribute.
 4. Writes `[data-shell-copy]` text from `data-gamified` or `data-classical`. If `data-gamified` is omitted, the element's text is the gamified string.
 5. Fills each `[data-shell-toggle]` with the segmented control.
@@ -104,7 +104,7 @@ The head `apply` stamps `data-trial-mode` before CSS, so the classical theme is 
 
 ## Experiment export
 
-`assets/trial-export.js` is the shared trial download. Visual working memory and Eriksen flanker load it. Other tasks keep the download they already had until they take this hook.
+`assets/trial-export.js` is the shared trial download. Visual working memory, Eriksen flanker, Stroop, Oddball, Go / No-Go, Brightness, Numerosity, RDK, Corsi, and Reversal Learning load it. Spatial Go/No-Go (`orbital_gonogo.html`) loads it on the WebXR page. It is one scene, not two shells. `?mode=classical` on that page turns off the floating outcome words and their sounds. It does not restyle the scene, and the page does not read or write `project-trial:mode`. `noematachograph.html` is a phonautograph illustration, not a trial loop, and it does not load this hook.
 
 A core that adopts it loads the script before the task script. Inside `mount`:
 
@@ -156,10 +156,11 @@ Stroop feedback:
 
 | | Gamified `arcade` | Classical `summary` |
 | --- | --- | --- |
-| Live score, combo, accuracy, RT | yes | no |
+| Live score, combo, accuracy, RT | hidden | hidden |
 | Practice | none | 8 trials, brief Correct / Incorrect / No response |
 | Main-block words after a trial | `PERFECT!` / `OOF!` / `TOO SLOW!` | none |
-| Shake, fire, hue shift | yes | no |
+| Shake during the hold | yes | no |
+| Fire on the word, combo hue | no | no |
 | Reward, tick, start, and end tones | yes | no |
 | End screen | score, condition means, arcade sentence | main-block accuracy, mean RT, condition means |
 

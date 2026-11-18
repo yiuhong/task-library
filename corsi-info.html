@@ -83,9 +83,15 @@
         </section>
 
         <section>
+            <h2>Methods note</h2>
+            <p>Both shells share the sequences, the flash timings, and the staircase. After the sequence is stored, the gamified shell shows CORRECT SEQUENCE or INCORRECT SEQUENCE during the 900 ms pause. Classical practice shows Correct or Incorrect. Classical main shows no banner. The pause still runs. The span and trial counters stay. There is no running accuracy. For a main block without the banner, use classical.</p>
+            <p>The download is the shared export on <a href="researchers.html#corsi">For researchers</a>. <code>rt_ms</code> is the mean inter-tap latency the results screen already averages. <code>total_rt_ms</code> is the last tap minus the go cue. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+        </section>
+
+        <section>
             <h2>Data</h2>
             <p>When the main run finishes, this browser appends one session to a list under the <code>localStorage</code> key <code>projectTrial_corsi_v1</code>. Older finished runs stay in that list. Each saved session includes mode (<code>gamified</code> or <code>classical</code>). Nothing is uploaded. There is no Clear saved control.</p>
-            <p>Download CSV Log writes the current run only. Columns are trial, block, span_length, target_seq, user_seq, correct, total_rt_ms, mean_tap_rt_ms, timestamp, and mode. <code>mode</code> is <code>gamified</code> or <code>classical</code> and is the last column. The file name is <code>projectTrial_corsi_span_</code> plus a timestamp. The page does not log orientation turns.</p>
+            <p>Download CSV and Download JSON write the current run, practice and main. The JSON schema is <code>project-trial.export.v1</code>. The task id is <code>corsi</code>. <code>condition</code> is the span, such as <code>span-3</code>. <code>stimulus</code> is the target sequence. <code>response</code> is the tapped sequence. Task columns are span_length, target_seq, user_seq, total_rt_ms, and mean_tap_rt_ms. <code>summary</code> repeats max span, correct sequences, block score, the product, and mean tap time. File names start with <code>projectTrial_corsi_span_</code>. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">

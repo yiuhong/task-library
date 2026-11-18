@@ -10,7 +10,9 @@
   Incorrect, or No response on practice only, with no subtitle. The main
   block clears the feedback line. The 400 ms hold and the jittered blank
   still run. The GO / NO-GO badge and the deadline bar stay in both shells.
-  This task is silent: both policies set audio to false.
+  This task is silent: both policies set audio to false. The header
+  shows the block and the trial count, not a running score or mean RT.
+  Download CSV and Download JSON use TrialExport.
 */
 (function (global) {
   var CONFIG = {
@@ -48,6 +50,37 @@
     var mode = options.mode === "classical" ? "classical" : "gamified";
     var policy = FEEDBACK[mode];
     var audio = options.audio || null;
+    var lastSummary = null;
+
+    if (!global.TrialExport) {
+      throw new Error("Go/No-Go requires assets/trial-export.js");
+    }
+
+    var exportLog = global.TrialExport.session({
+      taskId: "gonogo",
+      mode: mode,
+      params: function () {
+        return {
+          practiceTrials: CONFIG.practiceTrials,
+          mainTrials: CONFIG.mainTrials,
+          goProbability: CONFIG.goProbability,
+          fixationMs: CONFIG.fixationMs,
+          goWindowMs: CONFIG.goWindowMs,
+          nogoWindowMs: CONFIG.nogoWindowMs,
+          feedbackMs: CONFIG.feedbackMs,
+          itiMinMs: CONFIG.itiMinMs,
+          itiMaxMs: CONFIG.itiMaxMs,
+          presentation: {
+            policyId: policy.id,
+            trialFeedback: !!policy.trialFeedback,
+            practiceFeedback: !!policy.practiceFeedback,
+            audio: false,
+            score: false
+          }
+        };
+      },
+      summary: function () { return lastSummary; }
+    });
 
     /**
      * STATE MANAGEMENT
@@ -89,6 +122,7 @@
       btnStartPractice: document.getElementById("btn-start-practice"),
       btnStartMain: document.getElementById("btn-start-main"),
       btnDownloadCsv: document.getElementById("btn-download-csv"),
+      btnDownloadJson: document.getElementById("btn-download-json"),
       btnRestart: document.getElementById("btn-restart"),
       resGoAcc: document.getElementById("res-go-acc"),
       resGoAccSub: document.getElementById("res-go-acc-sub"),
@@ -257,7 +291,8 @@
       state.awaitingResponse = false;
       clearTimeout(state.timeoutId);
 
-      const rtMs = Math.round(performance.now() - state.stimOnsetTime);
+      const responsePerf = performance.now();
+      const rtMs = Math.round(responsePerf - state.stimOnsetTime);
       const currentTrial = state.trialList[state.currentIndex];
 
       let isCorrect = 0;
@@ -283,7 +318,7 @@
         feedbackColor = "text-nogoCoral";
       }
 
-      recordTrialResult(currentTrial, chosenSide, isCorrect, rtMs);
+      recordTrialResult(currentTrial, chosenSide, isCorrect, rtMs, state.stimOnsetTime, responsePerf);
       showTrialFeedback(feedbackTitle, feedbackDetail, feedbackColor);
     }
 
@@ -292,6 +327,7 @@
      */
     function handleTimeout() {
       state.awaitingResponse = false;
+      const responsePerf = performance.now();
       const currentTrial = state.trialList[state.currentIndex];
 
       let isCorrect = 0;
@@ -313,7 +349,7 @@
         feedbackColor = "text-goLime";
       }
 
-      recordTrialResult(currentTrial, "NONE", isCorrect, "");
+      recordTrialResult(currentTrial, "NONE", isCorrect, "", state.stimOnsetTime, responsePerf);
       showTrialFeedback(feedbackTitle, feedbackDetail, feedbackColor);
     }
 
@@ -321,7 +357,7 @@
      * LOG TRIAL DATA ROW
      * Columns: trial, block, trial_type, target_side, response, correct, rt_ms, timestamp, mode
      */
-    function recordTrialResult(trialObj, responseSide, correctInt, rtValue) {
+    function recordTrialResult(trialObj, responseSide, correctInt, rtValue, onsetPerf, responsePerf) {
       const row = {
         trial: state.currentIndex + 1,
         block: state.blockName,
@@ -334,6 +370,29 @@
         mode: mode
       };
       state.allLogs.push(row);
+      var shown = trialObj.trial_type === "GO"
+        ? "GO " + trialObj.target_side
+        : "NOGO";
+      exportLog.record({
+        trialIndex: state.allLogs.length,
+        block: state.blockName,
+        stimulus: shown,
+        condition: trialObj.trial_type,
+        response: responseSide,
+        accuracy: correctInt,
+        rtMs: rtValue === "" ? null : rtValue,
+        timestamp: row.timestamp,
+        onsetPerfMs: onsetPerf,
+        responsePerfMs: responsePerf,
+        extra: {
+          trial_in_block: state.currentIndex + 1,
+          target_side: trialObj.target_side
+        }
+      });
+    }
+
+    function exportStamp() {
+      return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
     }
 
     /**
@@ -446,6 +505,7 @@
 
       el.resOmission.textContent = `${mainStats.omissionRate}%`;
       el.resOmissionSub.textContent = `${mainStats.goOmissionsCount} / ${mainStats.goCount} Missed Go`;
+      lastSummary = mainStats;
 
       // Save full session payload to localStorage["projectTrial_gonogo_v1"]
       const payload = {
@@ -473,34 +533,11 @@
      * Columns: trial, block, trial_type, target_side, response, correct, rt_ms, timestamp, mode
      */
     function downloadCsv() {
-      const headers = ["trial", "block", "trial_type", "target_side", "response", "correct", "rt_ms", "timestamp", "mode"];
-      const csvLines = [headers.join(",")];
+      exportLog.downloadCsv("projectTrial_gonogo_" + exportStamp() + ".csv");
+    }
 
-      for (const row of state.allLogs) {
-        const line = [
-          row.trial,
-          row.block,
-          row.trial_type,
-          row.target_side,
-          row.response,
-          row.correct,
-          row.rt_ms,
-          row.timestamp,
-          row.mode
-        ].join(",");
-        csvLines.push(line);
-      }
-
-      const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-      a.href = url;
-      a.download = `projectTrial_gonogo_${stamp}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+    function downloadJson() {
+      exportLog.downloadJson("projectTrial_gonogo_" + exportStamp() + ".json");
     }
 
     /**
@@ -539,6 +576,8 @@
 
     el.btnStartPractice.addEventListener("click", () => {
       state.allLogs = [];
+      lastSummary = null;
+      exportLog.clear();
       startBlock("practice");
     });
 
@@ -547,9 +586,12 @@
     });
 
     el.btnDownloadCsv.addEventListener("click", downloadCsv);
+    el.btnDownloadJson.addEventListener("click", downloadJson);
 
     el.btnRestart.addEventListener("click", () => {
       state.allLogs = [];
+      lastSummary = null;
+      exportLog.clear();
       showScreen(el.screenIntro);
     });
 

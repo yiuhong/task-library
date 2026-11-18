@@ -65,8 +65,7 @@
         <section>
             <h2>Shells</h2>
             <p>The same reversal core runs in two shells. <a href="bandit_game.html">Probabilistic Reversal Learning</a> is the gamified shell. <a href="bandit_game.html?mode=classical">Classical</a> is the quiet lab shell. Classical uses the same 6 practice trials and the same main reversal block: the same probabilities, payoffs, reversal rules, and timings.</p>
-            <p>Each trial still shows +10 or +0, on practice and on the main block, in both shells. That payoff is the reward, so classical does not hide it and does not replace it with Correct or Incorrect. Classical does not show a live point total during trials, and it does not add an extra Correct or Incorrect about which option is better. The practice screen still shows the point total from those 6 trials. The end screen still reports total points, the better-option rate, and reversals. Those end metrics are the summary.</p>
-            <p>The saved payload and the CSV gain a <code>mode</code> field, <code>gamified</code> or <code>classical</code>, at the end. The <code>localStorage</code> key stays <code>projectTrial_bandit_v1</code>. A later finished run still replaces that payload.</p>
+            <p>Each trial still shows +10 or +0, on practice and on the main block, in both shells. That payoff is the reward, so neither shell hides it or replaces it with Correct or Incorrect. The live point total is hidden during trials in both shells. The practice screen still shows the point total from those 6 trials. The end screen still reports total points, the better-option rate, and reversals. Those end metrics are the summary.</p>
         </section>
 
         <section>
@@ -79,9 +78,15 @@
         </section>
 
         <section>
+            <h2>Methods note</h2>
+            <p>Both shells share the 6 practice trials, the 48 main trials, and the reversal rules. The payoff is shown after the choice is stored, during the 750 ms feedback, on every trial in both shells. It is +10 or +0. That number is the reward, so neither shell removes it or replaces it with Correct or Incorrect. The live point total is hidden in both shells. The trial counter stays. There is no shell that turns the payoff off.</p>
+            <p>The download is the shared export on <a href="researchers.html#reversal">For researchers</a>. <code>accuracy</code> copies chose_optimal. It is the better-option flag, not a correctness judgment. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+        </section>
+
+        <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_bandit_v1</code>. A later finished run replaces that payload. Nothing is uploaded. There is no Clear saved control.</p>
-            <p>Download CSV writes the current run, practice and main. Columns are trial, block, reversal_phase, high_prob_side, choice_side, chose_optimal, reward, rt_ms, timestamp, and mode. <code>mode</code> is <code>gamified</code> or <code>classical</code> and is the last column. The file name is <code>bandit_reversal_</code> plus a timestamp. The page does not log orientation turns.</p>
+            <p>Download CSV and Download JSON write the current run, practice and main. The JSON schema is <code>project-trial.export.v1</code>. The task id is <code>bandit</code>. <code>condition</code> is the reversal phase, such as <code>phase-0</code>. Task columns are trial_in_block, reversal_phase, high_prob_side, choice_side, chose_optimal, reward, left_symbol, right_symbol, stimulus_mapping, and reversal_mode. <code>summary</code> repeats the points, rates, win-stay, lose-shift, perseverations, reversals, and mean RT from the results screen. File names start with <code>bandit_reversal_</code>. The page does not log orientation turns.</p>
         </section>
 
         <div class="trial-actions">

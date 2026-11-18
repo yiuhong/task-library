@@ -17,8 +17,10 @@
   withhold adds 50 * (1 + combo * 0.1). Both use the combo from before
   it increases. Classical shows Correct / Incorrect / No response only
   during practice. No response is a timeout on an oddball. The main
-  block has no per-trial words, and no live score, accuracy, RT, or
-  combo. The 300 ms hold and 400 ms blank still run.
+  block has no per-trial words. Live score, combo, accuracy, and mean
+  RT stay off in both shells. The shape is not set on fire. The 300 ms
+  hold and 400 ms blank still run. Download CSV and Download JSON use
+  TrialExport for the current run.
 */
 (function (global) {
     var CONFIG = {
@@ -69,6 +71,48 @@
         var mode = options.mode === "classical" ? "classical" : "gamified";
         var policy = FEEDBACK[mode];
         var audio = options.audio || null;
+        var lastSummary = null;
+
+        if (!global.TrialExport) {
+            throw new Error("Oddball requires assets/trial-export.js");
+        }
+
+        var exportLog = global.TrialExport.session({
+            taskId: "oddball",
+            mode: mode,
+            params: function () {
+                return {
+                    trials: CONFIG.trials,
+                    oddballRatio: CONFIG.oddballRatio,
+                    stimuli: {
+                        standard: {
+                            char: CONFIG.stimuli.standard.char,
+                            color: CONFIG.stimuli.standard.color,
+                            key: CONFIG.stimuli.standard.key
+                        },
+                        oddball: {
+                            char: CONFIG.stimuli.oddball.char,
+                            color: CONFIG.stimuli.oddball.color,
+                            key: CONFIG.stimuli.oddball.key
+                        }
+                    },
+                    timing: {
+                        fixation: CONFIG.timing.fixation,
+                        timeout: CONFIG.timing.timeout,
+                        isi: CONFIG.timing.isi,
+                        feedback: CONFIG.timing.feedback
+                    },
+                    practiceTrials: policy.practiceTrials,
+                    presentation: {
+                        policyId: policy.id,
+                        trialFeedback: !!policy.trialFeedback,
+                        audio: !!policy.audio,
+                        score: !!policy.score
+                    }
+                };
+            },
+            summary: function () { return lastSummary; }
+        });
 
         var required = [
             "screen-welcome", "screen-task", "screen-results",
@@ -313,7 +357,6 @@
                     display.style.textShadow = "none";
                 }
                 display.classList.add("scale-110");
-                if (policy.fire && state.combo > 10) display.classList.add("fire-effect");
 
                 state.startTime = performance.now();
                 state.isAcceptingInput = true;
@@ -328,7 +371,8 @@
             global.clearTimeout(state.timeoutId);
             state.isAcceptingInput = false;
 
-            var rt = performance.now() - state.startTime;
+            var responsePerf = performance.now();
+            var rt = responsePerf - state.startTime;
             var trial = state.trials[state.currentTrialIndex];
             var isCorrect = false;
 
@@ -345,15 +389,11 @@
                         var speedBonus = Math.max(0, CONFIG.timing.timeout - Math.round(rt));
                         state.score += (speedBonus + (500 * (1 + (state.combo * 0.1))));
                     }
-                    if (policy.id === "arcade") showFeedback("CAUGHT IT!", "text-pink-400");
-                    else showFeedback("Correct", "is-quiet");
                 } else {
                     if (policy.audio) tones.correct(state.combo, "standard");
                     if (policy.score) {
                         state.score += 50 * (1 + (state.combo * 0.1));
                     }
-                    if (policy.id === "arcade") showFeedback("GOOD", "text-cyan-400");
-                    else showFeedback("Correct", "is-quiet");
                 }
                 if (policy.score || policy.combo) {
                     state.combo += 1;
@@ -362,6 +402,51 @@
             } else {
                 if (policy.audio) tones.incorrect();
                 if (policy.score || policy.combo) state.combo = 0;
+            }
+
+            var orient = orientation.fields("response");
+            var storedRt = key ? rt : null;
+            var stored = Object.assign({
+                record: "trial",
+                trialNum: state.currentTrialIndex + 1,
+                type: trial.type,
+                responseKey: key || "withhold",
+                rt: storedRt,
+                isCorrect: isCorrect,
+                mode: mode,
+                block: state.block
+            }, orient);
+            state.results.push(stored);
+            store.commitTrial(stored, orientation.events);
+            exportLog.record({
+                trialIndex: state.results.length,
+                block: state.block,
+                stimulus: trial.char,
+                condition: trial.type,
+                response: key || "withhold",
+                accuracy: isCorrect ? 1 : 0,
+                rtMs: storedRt,
+                timestamp: new Date().toISOString(),
+                onsetPerfMs: state.startTime,
+                responsePerfMs: responsePerf,
+                extra: {
+                    trial_in_block: state.currentTrialIndex + 1,
+                    stimulus_color: trial.color,
+                    orientation_type: orient.orientationType,
+                    orientation_angle: orient.orientationAngle,
+                    orientation_at: orient.orientationAt,
+                    orientation_t_ms: orient.orientationTMs,
+                    orientation_reason: orient.orientationReason
+                }
+            });
+
+            if (isCorrect) {
+                if (key !== null) {
+                    if (policy.id === "arcade") showFeedback("CAUGHT IT!", "text-pink-400");
+                    else showFeedback("Correct", "is-quiet");
+                } else if (policy.id === "arcade") showFeedback("GOOD", "text-cyan-400");
+                else showFeedback("Correct", "is-quiet");
+            } else {
                 if (policy.id === "arcade") showFeedback(key === null ? "MISS!" : "FALSE ALARM!", "text-red-500");
                 else showFeedback(key === null ? "No response" : "Incorrect", "is-quiet");
                 if (policy.shake) {
@@ -370,18 +455,6 @@
                     global.setTimeout(function () { container.classList.remove("shake"); }, 200);
                 }
             }
-
-            state.results.push(Object.assign({
-                record: "trial",
-                trialNum: state.currentTrialIndex + 1,
-                type: trial.type,
-                responseKey: key || "withhold",
-                rt: key ? rt : null,
-                isCorrect: isCorrect,
-                mode: mode,
-                block: state.block
-            }, orientation.fields("response")));
-            store.commitTrial(state.results[state.results.length - 1], orientation.events);
             updateUI();
 
             global.setTimeout(function () {
@@ -440,6 +513,18 @@
                 message = "Accuracy was " + overallAcc + "%. Standard accuracy was " + standardAcc + "%. Mean response time on oddball hits was " + oddballSpeed + " ms.";
             }
             document.getElementById("interpretation-text").textContent = message;
+            lastSummary = {
+                accuracyPct: overallAcc,
+                standardAccuracyPct: standardAcc,
+                oddballHitMeanRtMs: oddballSpeed,
+                oddballHits: oddballHits.length,
+                score: policy.score ? Math.round(state.score) : null,
+                maxCombo: policy.id === "arcade" ? state.maxCombo : null
+            };
+        }
+
+        function exportStamp() {
+            return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
         }
 
         function flashPad(el) {
@@ -489,6 +574,8 @@
             state.combo = 0;
             state.maxCombo = 0;
             state.results = [];
+            lastSummary = null;
+            exportLog.clear();
             state.queue = [];
             if (policy.practiceTrials) {
                 state.queue.push({
@@ -515,6 +602,13 @@
         document.getElementById("btn-restart").addEventListener("click", function () {
             screens.results.classList.add("hidden");
             screens.welcome.classList.remove("hidden");
+        });
+
+        document.getElementById("btn-download-csv").addEventListener("click", function () {
+            exportLog.downloadCsv("oddball_dash_" + exportStamp() + ".csv");
+        });
+        document.getElementById("btn-download-json").addEventListener("click", function () {
+            exportLog.downloadJson("oddball_dash_" + exportStamp() + ".json");
         });
 
         var api = {

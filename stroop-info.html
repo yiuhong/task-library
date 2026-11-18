@@ -19,7 +19,7 @@
         <section>
             <h2>What it shows</h2>
             <p>On congruent trials the word and the ink match. On incongruent trials they do not. The results screen compares mean response time on correct trials. A slower incongruent mean is the interference contrast this demo is built to show.</p>
-            <p>The score, combo, and arcade wording are for the classroom demo. They are not a clinical or normed measure.</p>
+            <p>The results screen can still show the gamified score. A running score is not shown during a trial. This is not a clinical or normed measure.</p>
         </section>
 
         <section>
@@ -90,9 +90,15 @@
         </section>
 
         <section>
+            <h2>Methods note</h2>
+            <p>Both shells share the 20-trial main list, the colors, the keys, and the timings. Classical adds the 8 practice trials. After the response is stored, the gamified shell shows PERFECT!, OOF!, or TOO SLOW! for the 400 ms hold. Classical practice shows Correct, Incorrect, or No response. Classical main shows no word. The hold and the 300 ms blank still run. Live score, combo, accuracy, and mean RT stay off in both shells. The word is not set on fire, and the page is not recolored by the combo, so that cue does not sit on the next trial. For a main block without the word, use classical.</p>
+            <p>The results buttons are the shared export on <a href="researchers.html#stroop">For researchers</a>. <code>rt_ms</code> is the unrounded time from the colored word, including a timeout. The mean on the screen still uses correct trials only. Practice rows are marked <code>practice</code>. Nothing is uploaded. Browser timing limits are on <a href="researchers.html">For researchers</a> and the <a href="diagnostics.html">device check</a>.</p>
+        </section>
+
+        <section>
             <h2>Data</h2>
             <p>Each run is saved in this browser under the <code>localStorage</code> key <code>project-trial:stroop</code>. Refreshing, leaving, or closing the tab keeps it. Play again appends another session and does not resume an unfinished one. Nothing is uploaded. The browser keeps the newest 100 sessions for this task.</p>
-            <p>Download CSV writes every saved session as a file on the device. Columns are trialNum, type, responseKey (<code>r</code>, <code>g</code>, <code>b</code>, <code>y</code>, or <code>timeout</code>), rt, isCorrect, orientationType, orientationAngle, orientationAt, orientationTMs, orientationReason, record, sessionId, startedAt, endedAt, complete, and mode (<code>gamified</code> or <code>classical</code>; blank on sessions saved before that field). A classical download adds <code>block</code> (<code>practice</code> or <code>main</code>). Trial numbers restart at 1 in each block. The gamified download does not add that column. Trial rows use <code>record</code> = <code>trial</code>. The file name is <code>stroop_dash_data_</code> plus a timestamp.</p>
+            <p>On the results screen, Download CSV and Download JSON write this run, practice and main. The JSON schema is <code>project-trial.export.v1</code>. The task id is <code>stroop</code>. Shared columns come first. Task columns are trial_in_block, word, ink, correct_key, orientation_type, orientation_angle, orientation_at, orientation_t_ms, and orientation_reason. <code>condition</code> is congruent or incongruent. <code>response</code> is <code>r</code>, <code>g</code>, <code>b</code>, <code>y</code>, or <code>timeout</code>. <code>accuracy</code> is 1 or 0. File names start with <code>stroop_dash_</code>. The welcome button Saved sessions CSV is the older log of saved sessions, including orientation turns. Clear saved still removes <code>project-trial:stroop</code>.</p>
             <p>Portrait and landscape both run. The page never locks the device direction. Each trial row stores the orientation at the response. Extra CSV rows with <code>record</code> = <code>orientation</code> are the session turns: <code>start</code>, each <code>change</code>, and <code>end</code>, with ISO time (<code>orientationAt</code>) and <code>orientationTMs</code> (milliseconds from <code>performance.now()</code>). A short note appears if you rotate, and the task keeps going. The results screen reports the starting orientation and how many turns were logged.</p>
             <p>Clear saved removes <code>project-trial:stroop</code> from this browser. It asks for a second click. The on-screen summary stays until you leave the results screen. Download before you clear if you still want the file. Play again returns to the welcome screen, and the max combo resets.</p>
         </section>

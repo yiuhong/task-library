@@ -111,9 +111,15 @@
         </section>
 
         <section>
+            <h2>Methods note</h2>
+            <p>Both shells share the 6 practice trials and the 36 main trials. After the choice is stored, the gamified shell shows CORRECT, INCORRECT, or TOO SLOW, and the response time, for the 450 ms hold. Classical practice shows one word and no time. Classical main shows no word. The hold and the 350 ms blank still run. Running accuracy and mean RT are hidden in both shells. The trial counter stays. For a main block without the word, use classical. The screen does not compute a Weber fraction.</p>
+            <p>The download is the shared export on <a href="researchers.html#numerosity">For researchers</a>. <code>rt_ms</code> starts when the dots are drawn. A timeout leaves it blank. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+        </section>
+
+        <section>
             <h2>Data</h2>
             <p>When the main block finishes, this browser stores one payload under the <code>localStorage</code> key <code>projectTrial_numerosity_v1</code>. A later finished run replaces that payload. Refreshing, leaving, or closing the tab keeps the last finished run. An unfinished run is not resumed. Nothing is uploaded. There is no Clear saved control and no store of older sessions.</p>
-            <p>Download Trial CSV writes the current run, practice and main, as a file on the device. Columns are trial, block, left_n, right_n, correct_side, response (<code>left</code>, <code>right</code>, or <code>timeout</code>), correct (<code>1</code> or <code>0</code>), rt_ms, timestamp, and mode (<code>gamified</code> or <code>classical</code>). Mode is the last column. The columns before it stay in this order. The file name is <code>projectTrial_numerosity_</code> plus a timestamp. The saved payload also keeps block_trial, difficulty, delta_n, the timing config, and the main-block summary. Those fields are not CSV columns. The payload gains a <code>mode</code> field, <code>gamified</code> or <code>classical</code>.</p>
+            <p>Download CSV and Download JSON write the current run, practice and main. The JSON schema is <code>project-trial.export.v1</code>. The task id is <code>numerosity</code>. <code>condition</code> is hard, medium, or easy. Task columns are trial_in_block, difficulty, left_n, right_n, delta_n, correct_side, and timed_out. <code>summary</code> repeats accuracy, mean RT, median RT, and the difficulty breakdown. File names start with <code>projectTrial_numerosity_</code>.</p>
             <p>The page does not lock orientation and does not log portrait or landscape turns.</p>
         </section>
 
