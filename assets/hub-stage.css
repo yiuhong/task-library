@@ -136,11 +136,38 @@ html.js #task-hub-source {
     margin: 0 auto;
 }
 
+.stage-points {
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto 0.7rem;
+    padding: 0 0 0 1.15rem;
+    list-style: square outside;
+    text-align: left;
+}
+
+.stage-points li {
+    margin: 0;
+    padding: 0.08rem 0;
+    color: var(--trial-text);
+    font-family: var(--trial-font);
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+    text-transform: none;
+}
+
+.stage-points li::marker {
+    color: #22d3ee;
+    font-size: 0.72em;
+}
+
 .stage-lede {
     margin: 0 auto;
     max-width: 34rem;
     color: var(--trial-muted);
     font-size: 0.92rem;
+    font-weight: 400;
     line-height: 1.55;
 }
 
@@ -588,11 +615,48 @@ a.trial-task-play {
         z-index: 2;
         left: 50%;
         top: 50%;
-        width: min(24rem, 42%);
+        width: min(28rem, 48%);
         translate: -50% -50%;
         order: 0;
         grid-column: auto;
         padding: 0;
+    }
+
+    html.js .stage-points {
+        margin-bottom: 0.45rem;
+    }
+
+    html.js .stage-points li {
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+
+    /* Quieter shell line under the feature list. On a short orbit the
+       block tightens so it stays off the top and bottom tiles. */
+    html.js .stage-lede {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    @container stage (max-height: 44rem) {
+        html.js .stage-title {
+            margin-bottom: 0.4rem;
+        }
+
+        html.js .stage-points {
+            margin-bottom: 0.35rem;
+        }
+
+        html.js .stage-points li {
+            padding: 0;
+            font-size: 0.86rem;
+            line-height: 1.15;
+        }
+
+        html.js .stage-lede {
+            font-size: 0.74rem;
+            line-height: 1.35;
+        }
     }
 
     html.js .stage-title img {
