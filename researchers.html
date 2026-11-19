@@ -120,31 +120,56 @@
                         </tr>
                         <tr>
                             <th scope="row">response_perf_ms</th>
-                            <td><code>performance.now()</code> when the response was stored, or when the response window closed.</td>
+                            <td><code>performance.now()</code> when the response was stored, or the animation-frame timestamp when a frame-scheduled window closed. Same time origin as <code>onset_perf_ms</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">timing_method</th>
+                            <td><code>requestAnimationFrame</code> when that trial used the shared frame scheduler. Blank on tasks that still use <code>setTimeout</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">refresh_hz</th>
+                            <td>The refresh rate that trial used to choose whole-frame durations. Estimated from animation-frame deltas. Blank when the frame scheduler did not run.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">frame_ms</th>
+                            <td>The frame duration paired with <code>refresh_hz</code> for that trial.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">intended_durations_json</th>
+                            <td>The intended milliseconds by phase name, before whole-frame rounding. A phase with no deadline, such as the visual working memory probe, is JSON <code>null</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">phase_timing_json</th>
+                            <td>Each phase that was shown: intended milliseconds, the scheduled whole-frame length, the frame count, the onset and offset timestamps, and whether the phase ended on a frame or on a response.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">timing_flag</th>
+                            <td><code>hidden</code>, <code>throttled</code>, or <code>hidden+throttled</code> when the tab was hidden or a frame gap was long. Blank when that did not happen, or when the task did not run the frame scheduler. A blank flag is not a light-sensor clearance.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <p>Task columns follow those, in the order the task first records them. A missing task field is blank in the CSV and <code>null</code> in JSON. <code>onset_perf_ms</code> and <code>response_perf_ms</code> let you recompute the difference. <code>rt_ms</code> is the rounded difference the score uses, so the two can disagree by less than a millisecond.</p>
+            <p>Task columns follow those, in the order the task first records them. A missing task field is blank in the CSV and <code>null</code> in JSON. <code>onset_perf_ms</code> and <code>response_perf_ms</code> let you recompute the difference. <code>rt_ms</code> is the rounded difference the score uses, so the two can disagree by less than a millisecond. <code>params.timing</code> on a frame-scheduled task is the policy that ran, including the clock and the refresh estimate at download.</p>
         </section>
 
         <section id="timing">
             <h2>Browser timing</h2>
-            <p>These tasks schedule their intervals with <code>setTimeout</code>. That clock is not locked to the display. Response time is a difference of two <code>performance.now()</code> readings: one in the function that shows the scored stimulus, and one in the input handler. The first stamp is when the page asks for the paint. It is earlier than the moment the pixels change, and earlier than the light reaching the eye. The second stamp is when the handler runs. It is later than the switch in the keyboard or the finger on the glass.</p>
-            <p>A hidden tab can delay timers. Another monitor, another browser, or a busy machine can change the same protocol. The <a href="diagnostics.html">device check</a> reads this tab at this moment, one check per page. Each page states its rule of thumb and writes the same thresholds into the JSON. The reading stays with the person who downloads it. It does not transfer to the next machine, and it does not stand in for a light sensor or a calibrated button box.</p>
+            <p>Visual working memory, numerosity comparison, and Eriksen flanker schedule fixation, sample, mask, delay, stimulus display, the feedback hold, the blank between trials, and the end of a response window from <code>requestAnimationFrame</code>. The helper is <code>assets/trial-timing.js</code>. Each intended duration is the nearest whole frame at the refresh rate estimated from recent animation-frame deltas, and a positive duration is at least one frame. The download stores the intended milliseconds, the frame count, and the onset and offset timestamps. <code>onset_perf_ms</code> is the frame that showed the scored display: the probe, the dot arrays, or the arrows. <code>response_perf_ms</code> is <code>performance.now()</code> in the input handler, or that same frame timestamp when the scheduled window is the event that closes the trial. Both use the performance timeline. The frame stamp is when the page asks for the paint. It is earlier than the pixels and earlier than the light. The response stamp is when the handler runs. It is later than the switch or the finger.</p>
+            <p>If the tab is hidden, or a frame gap is longer than two and a half estimated frames after the rate has settled, <code>timing_flag</code> is set and a short note stays on the page. That run is not a clean timing run. The note does not clear when the tab is visible again. The other scored tasks still schedule their intervals with <code>setTimeout</code>, and their timing columns are blank. Spatial Go/No-Go still uses <code>setTimeout</code> for its 1200 ms window. A later slice moves the helper. The written rules are in <code>docs/rigor-standard.md</code>.</p>
+            <p>A hidden tab can delay frames and timers. Another monitor, another browser, or a busy machine can change the same protocol. The <a href="diagnostics.html">device check</a> reads this tab at this moment, one check per page. Run it on each machine and keep the JSON with your protocol notes. Each page states its rule of thumb and writes the same thresholds into the JSON. The reading stays with the person who downloads it. It does not transfer to the next machine, and it does not stand in for a light sensor or a calibrated button box.</p>
             <p>Report the numbers as browser measurements. A photodiode study, if you run one, is a separate record.</p>
         </section>
 
         <section id="gamified">
             <h2>Gamified mode</h2>
             <p>The gamified shell is the same trial loop in a different frame. It can be the right shell when a gray page would lose the person you need to test, or when the shell itself is what you want to study. The cost is an outcome cue after some trials. The cue is drawn after that trial’s response has been stored. It does not rewrite the trial list, the stimulus, or the score. It can change how the person meets the next trial.</p>
-            <p>Wired tasks keep a running score and a running mean RT off the screen during the trial, in both shells. A short word after the trial, or a summary after the block, can still appear. The notes below say which words appear. For a main block without those words, choose classical. The timer limits above apply to both shells.</p>
+            <p>Wired tasks keep a running score and a running mean RT off the screen during the trial, in both shells. A short word after the trial, or a summary after the block, can still appear. The notes below say which words appear. For a main block without those words, choose classical. The timing limits above apply to both shells. The shell does not change the scheduled intervals.</p>
         </section>
 
         <section id="vwm">
             <h2>Visual working memory</h2>
             <p>Play from <a href="vwm_game.html">the gamified shell</a> or <a href="vwm_game.html?mode=classical">the classical shell</a>. Colored squares with a same or different probe are the display in Luck and Vogel (1997), <a href="https://doi.org/10.1038/36846">doi:10.1038/36846</a>. Cowan's K follows Cowan (2001), <a href="https://doi.org/10.1017/S0140525X01003922">doi:10.1017/S0140525X01003922</a>. Pashler's K follows Pashler (1988), <a href="https://doi.org/10.3758/BF03210419">doi:10.3758/BF03210419</a>. Counts and timings are on the <a href="vwm-info.html">parameters page</a>. The download uses those formulas.</p>
-            <p>Response time starts when the probe is drawn. The 500 ms fixation, 250 ms sample, and 900 ms delay sit in the parameter snapshot, and they sit outside <code>rt_ms</code>. <code>condition</code> is <code>SAME</code> or <code>DIFFERENT</code>. <code>set_size</code> is 4, 6, or 8. <code>items_json</code> holds the squares. Positions in the file are rounded to 0.001 canvas unit. The canvas drew the unrounded values.</p>
+            <p>Response time starts when the probe frame is shown. The 500 ms fixation, 250 ms sample, and 900 ms delay are the intended durations. The scheduler keeps each one as the nearest whole frame. They sit in the parameter snapshot and in <code>phase_timing_json</code>, and they sit outside <code>rt_ms</code>. The probe has no deadline, so its intended duration is blank. The 500 ms after the choice is the <code>iti</code> phase. <code>condition</code> is <code>SAME</code> or <code>DIFFERENT</code>. <code>set_size</code> is 4, 6, or 8. <code>items_json</code> holds the squares. Positions in the file are rounded to 0.001 canvas unit. The canvas drew the unrounded values.</p>
             <p><code>hit</code>, <code>false_alarm</code>, <code>miss</code>, and <code>correct_rejection</code> follow the results screen: a different trial is the signal, and the answer “different” is a hit or a false alarm. <code>cowan_k</code> and <code>pashler_k</code> copy the set-size estimates from the main block onto each main trial of that set size. Practice rows leave them blank. A single trial does not receive its own K. The headline mean on the screen is <code>summary.meanCowanK</code>. The overall helper is called without a set size, so its own K fields stay 0. Use <code>bySetSize</code>.</p>
             <p>After the choice is stored, the gamified shell turns the fixation green or red and shows the word and the response time for the 500 ms interval. Classical keeps a dark fixation. Classical practice can show Correct or Incorrect, without the response time. Classical main shows no word. The interval is 500 ms in both shells. For a main block without the color and the word, use classical.</p>
         </section>
@@ -152,7 +177,7 @@
         <section id="flanker">
             <h2>Eriksen flanker</h2>
             <p>Play from <a href="flanker_game.html">the gamified shell</a> or <a href="flanker_game.html?mode=classical">the classical shell</a>. The arrow array, the 6 practice trials, the 36 main trials, and the Eriksen and Eriksen (1974) note, <a href="https://doi.org/10.3758/bf03203267">doi:10.3758/bf03203267</a>, are on the <a href="flanker-info.html">parameters page</a>. This demo already uses arrows. The download does not change that.</p>
-            <p><code>condition</code> is <code>congruent</code>, <code>incongruent</code>, or <code>neutral</code>. <code>stimulus</code> is the five-character array. <code>fixation_ms</code> is the fixation that was drawn, sampled from 400 ms through 600 ms. Response time starts at array onset and does not include fixation. A timeout stores a blank <code>rt_ms</code>, <code>timed_out</code> 1, and accuracy 0. The results screen still treats that trial as incorrect and leaves it out of the mean correct RT. The conflict effect in <code>summary</code> is still incongruent mean correct RT minus congruent mean correct RT.</p>
+            <p><code>condition</code> is <code>congruent</code>, <code>incongruent</code>, or <code>neutral</code>. <code>stimulus</code> is the five-character array. <code>fixation_ms</code> is the intended fixation that was drawn, sampled from 400 ms through 600 ms. The phase record has the whole-frame length that was scheduled. Response time starts at the array’s frame and does not include fixation. The 1500 ms window, the 400 ms hold, and the 350 ms blank are frame-scheduled. A timeout stores a blank <code>rt_ms</code>, <code>timed_out</code> 1, and accuracy 0. The results screen still treats that trial as incorrect and leaves it out of the mean correct RT. The conflict effect in <code>summary</code> is still incongruent mean correct RT minus congruent mean correct RT.</p>
             <p>The header slots for running accuracy and mean RT are hidden in both shells. The trial counter and the progress bar stay. They are not a score. After the response is stored, the gamified shell shows TOO SLOW, CORRECT, or INCORRECT for the 400 ms hold, with the response time or the target side underneath. Classical practice shows a short word and no response time. Classical main shows no word. The hold and the 350 ms blank still run, so the gap from one array to the next is the same. The gamified word can affect the next trial. For a main block without it, use classical.</p>
         </section>
 
@@ -193,7 +218,7 @@
         <section id="numerosity">
             <h2>Numerosity comparison</h2>
             <p>Play from <a href="numerosity_game.html">the gamified shell</a> or <a href="numerosity_game.html?mode=classical">the classical shell</a>. The 6 practice trials, the 36 main trials, and the dot rules are on the <a href="numerosity-info.html">parameters page</a>. No citation was added. The screen does not compute a Weber fraction. The breakdown is accuracy and mean time by the difficulty labels it already uses.</p>
-            <p><code>condition</code> is <code>hard</code>, <code>medium</code>, or <code>easy</code>. <code>stimulus</code> is the two counts. <code>rt_ms</code> starts when the dots are drawn. A timeout leaves it blank and sets <code>timed_out</code> to 1. Task columns also include <code>left_n</code>, <code>right_n</code>, <code>delta_n</code>, and <code>correct_side</code>. <code>summary</code> repeats accuracy, mean RT, median RT, and the difficulty breakdown.</p>
+            <p><code>condition</code> is <code>hard</code>, <code>medium</code>, or <code>easy</code>. <code>stimulus</code> is the two counts. <code>rt_ms</code> starts at the frame that draws the dots, not at the mask. The 500 ms fixation, 280 ms arrays, 80 ms mask, 4000 ms window after the mask, 450 ms hold, and 350 ms blank are the intended durations, each kept as the nearest whole frame. A timeout leaves <code>rt_ms</code> blank and sets <code>timed_out</code> to 1. Task columns also include <code>left_n</code>, <code>right_n</code>, <code>delta_n</code>, and <code>correct_side</code>. <code>summary</code> repeats accuracy, mean RT, median RT, and the difficulty breakdown.</p>
             <p>After the row is stored, the gamified shell shows CORRECT, INCORRECT, or TOO SLOW, and the response time, for the existing 450 ms hold. Classical practice shows one word and no time. Classical main shows no word. Running accuracy and mean RT are hidden in both shells. The trial counter stays. For a main block without the word, use classical.</p>
         </section>
 

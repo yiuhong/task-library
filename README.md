@@ -10,11 +10,13 @@ Cite the library from [Cite & reuse](cite.html). The license table is on [Licens
 
 ## Package conventions
 
-New tasks follow [`docs/package-conventions.md`](docs/package-conventions.md). The default for 2D is first-party canvas and the shared shells. Hub and task chrome load the compiled Tailwind CSS 3.4 sheet [`assets/tailwind.css`](assets/tailwind.css), with a Trial theme, and do not use the Play CDN. A-Frame 1.8 is the one 3D/WebXR package. The package set stays small, and plotting libraries stay out of this repo.
+New tasks follow [`docs/package-conventions.md`](docs/package-conventions.md). The rigor standard for a scored task is [`docs/rigor-standard.md`](docs/rigor-standard.md). The default for 2D is first-party canvas and the shared shells. Hub and task chrome load the compiled Tailwind CSS 3.4 sheet [`assets/tailwind.css`](assets/tailwind.css), with a Trial theme, and do not use the Play CDN. A-Frame 1.8 is the one 3D/WebXR package. The package set stays small, and plotting libraries stay out of this repo.
 
 ## Shells and task cores
 
 Each hub task is a shell plus a task core. The shell is chrome: frame, theme, HUD, and the Gamified | Classical control on the welcome and results screens. The core is the science: parameters, trial loop, stimuli, keys, and feedback policy. Gamified and classical load the same `assets/tasks/<id>.js`, so the trial list is not copied into a second page.
+
+Visual working memory, numerosity comparison, and Eriksen flanker schedule fixation, sample, mask, delay, stimulus display, and the end of a response window from display frames, through [`assets/trial-timing.js`](assets/trial-timing.js). The other two-dimensional tasks still use their existing timers. Spatial Go/No-Go is the WebXR special case. Noematachograph is not a scored trial task.
 
 The control stores the last choice in `localStorage` under `project-trial:mode`. With no stored choice, a task stays gamified unless the URL says `?mode=classical`. `?mode=gamified` and `?mode=classical` still open that shell and update the stored choice. The hub cards do not link a separate Classical entry. Classical runs on the mid-gray canvas, with no live score, accuracy, or mean RT. Practice feedback and a few task-specific exceptions are in [`assets/SHELL_CONTRACT.md`](assets/SHELL_CONTRACT.md). `noematachograph.html` and `orbital_gonogo.html` are not on the contract. `vr.html` redirects to `orbital_gonogo.html`.
 
