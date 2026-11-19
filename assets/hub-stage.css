@@ -588,11 +588,18 @@ a.trial-task-play {
         z-index: 2;
         left: 50%;
         top: 50%;
-        width: min(24rem, 42%);
+        width: min(28rem, 48%);
         translate: -50% -50%;
         order: 0;
         grid-column: auto;
         padding: 0;
+    }
+
+    /* The approved lede is longer. A slightly wider, tighter measure
+       stays inside the orbit instead of covering the top and bottom tiles. */
+    html.js .stage-lede {
+        font-size: 0.82rem;
+        line-height: 1.4;
     }
 
     html.js .stage-title img {
