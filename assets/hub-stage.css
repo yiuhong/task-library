@@ -7,9 +7,12 @@
   tablet sandwich, and the phone grid all follow that count.
 
   Landing:
-    wide   (>= 1080px)  centre wordmark, area tiles on an ellipse
-    tablet (700–1079)   two tiles, centre, remaining tiles
-    phone  (< 700)      centre first, then a two-column stage grid
+    wide   (>= 1080px)  centre wordmark, device-check card, area tiles on an ellipse
+    tablet (700–1079)   two tiles, centre (with the device-check card), remaining tiles
+    phone  (< 700)      centre first, including the device-check card, then a two-column stage grid
+
+  The device-check card lives in .stage-center. It is not a .trial-hub-section
+  and not a .trial-hub-card, so it never becomes an area tile or a task.
 */
 
 html.js #task-hub-source {
@@ -169,6 +172,59 @@ html.js #task-hub-source {
     font-size: 0.92rem;
     font-weight: 400;
     line-height: 1.55;
+}
+
+/* Utility link on the landing view. Neutral outline and mono type, so it
+   does not read as an area tile (art, display face, task count) or a task. */
+.stage-device {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.12rem;
+    width: min(100%, 26rem);
+    margin: 0.85rem auto 0;
+    padding: 0.55rem 0.75rem 0.6rem 0.7rem;
+    border: 1px solid var(--trial-line);
+    border-left: 3px solid rgba(34, 211, 238, 0.8);
+    border-radius: 0.7rem;
+    background: rgba(15, 23, 42, 0.45);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.stage-device-name {
+    color: var(--trial-text);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+}
+
+.stage-device-blurb {
+    color: var(--trial-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.35;
+    text-wrap: balance;
+}
+
+.stage-device:hover {
+    border-color: rgba(34, 211, 238, 0.45);
+    border-left-color: #22d3ee;
+}
+
+.stage-device:focus {
+    outline: none;
+}
+
+.stage-device:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
 }
 
 .stage-ring {
@@ -638,6 +694,21 @@ a.trial-task-play {
         line-height: 1.4;
     }
 
+    html.js .stage-device {
+        width: 100%;
+        margin-top: 0.45rem;
+        padding: 0.4rem 0.65rem 0.42rem 0.6rem;
+    }
+
+    @container stage (max-height: 48rem) {
+        /* The card sits under the lede, inside the orbit. Shorten the tiles
+           a little and pull them toward the edge so the card stays clear. */
+        html.js .stage-ring {
+            --tile-h: calc(var(--tile-w) * 0.64);
+            --ry: calc(50cqh - var(--tile-h) / 2 - 8px);
+        }
+    }
+
     @container stage (max-height: 44rem) {
         html.js .stage-title {
             margin-bottom: 0.4rem;
@@ -656,6 +727,21 @@ a.trial-task-play {
         html.js .stage-lede {
             font-size: 0.74rem;
             line-height: 1.35;
+        }
+
+        html.js .stage-device {
+            margin-top: 0.3rem;
+            padding: 0.28rem 0.55rem 0.3rem 0.5rem;
+        }
+
+        html.js .stage-device-blurb {
+            font-size: 0.7rem;
+            line-height: 1.3;
+        }
+
+        html.js .stage-ring {
+            --tile-h: calc(var(--tile-w) * 0.6);
+            --ry: calc(50cqh - var(--tile-h) / 2 - 4px);
         }
     }
 
