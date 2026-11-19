@@ -2,7 +2,7 @@
 
 This is the bar for a scored task in Project Trial. Architecture C stays: one task core, two shells. The shell is the frame, the type, and the buttons. The core is the trial list, the stimuli, the keys, the score, and the timings.
 
-Visual working memory, numerosity comparison, Eriksen flanker, Stroop, oddball, 2D go/no-go, brightness detection, RDK motion coherence, Corsi span, and reversal learning are on this standard. Spatial Go/No-Go is not: headset-frame timing is a later slice. Noematachograph is not a scored trial task.
+Visual working memory, numerosity comparison, Eriksen flanker, Stroop, oddball, 2D go/no-go, brightness detection, RDK motion coherence, Corsi span, and reversal learning are on this standard. Spatial Go/No-Go is on it as the WebXR special case: headset frames while an immersive-vr session is running, and the page animation frame on a flat preview. Noematachograph is not a scored trial task.
 
 ## 1. Frame-locked timing and a complete on-device export
 
@@ -28,7 +28,7 @@ Use the shared Device check (`diagnostics.html`) on each computer. Do not add a 
 
 It uses the shared timing helper (`assets/trial-timing.js`), the shared export fields, a methods note, and both shells. A documented special case can say why it does not.
 
-Spatial Go/No-Go is the WebXR special case. It is one scene, not two shells. Headset-frame timing is a later slice. This standard does not change that task.
+Spatial Go/No-Go is the WebXR special case. It is one scene, not two shells, and it does not use `assets/trial-timing.js`. The scheduler is `assets/webxr-frame-timing.js`, loaded only by that page. While `XRSession.requestAnimationFrame` is driving the scene, the gap before the target and the 1200 ms window are scheduled from that headset frame. The onset is the callback time of the frame that adds the target before the frame is submitted. `XRFrame.predictedDisplayTime` is stored on the phase and is not the onset. A flat preview, including a fullscreen Enter VR fallback with no immersive session, records `requestAnimationFrame` and is not labeled as a headset frame. The callback time is still earlier than the light at the eye. A hidden tab or a long frame gap still sets `timing_flag`. A blank flag is not a headset clearance.
 
 Noematachograph is not a scored trial task. It does not use the helper or the export.
 
