@@ -81,7 +81,7 @@
         <section>
             <h2>Methods note</h2>
             <p>Both shells share the 8 practice trials and the 40 main trials. After the response is stored, the gamified shell shows HIT, WRONG SIDE, FALSE ALARM!, TOO SLOW!, or WITHHELD for the 400 ms hold. Classical practice uses Correct, Incorrect, or No response. Classical main shows no word. The hold and the jittered blank still run. The GO badge, the NO-GO mark, and the deadline bar stay in both shells. The header shows the block and the trial count, not a running score. For a main block without the word, use classical.</p>
-            <p>The download is the shared export on <a href="researchers.html#gonogo">For researchers</a>. <code>rt_ms</code> is blank when the window closes with no press. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+            <p>The download is the shared export on <a href="researchers.html#gonogo">For researchers</a>. Fixation (400 ms), the 700 ms go window or the 800 ms no-go window, the 400 ms hold, and the blank from 250 ms through 450 ms are scheduled from display frames. Each sampled duration is the nearest whole frame. The deadline bar follows that same window. <code>rt_ms</code> is the rounded time from the frame that shows the target, and blank when the window closes with no press. <code>params.timing</code> is the frame scheduler that ran. If the tab was hidden or frames were delayed, the page says so and <code>timing_flag</code> is set. The frame stamp is when the page asks for the paint. It is earlier than the pixels and earlier than the light. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
         </section>
 
         <section>

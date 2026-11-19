@@ -85,7 +85,7 @@
         <section>
             <h2>Methods note</h2>
             <p>Both shells share the sequences, the flash timings, and the staircase. After the sequence is stored, the gamified shell shows CORRECT SEQUENCE or INCORRECT SEQUENCE during the 900 ms pause. Classical practice shows Correct or Incorrect. Classical main shows no banner. The pause still runs. The span and trial counters stay. There is no running accuracy. For a main block without the banner, use classical.</p>
-            <p>The download is the shared export on <a href="researchers.html#corsi">For researchers</a>. <code>rt_ms</code> is the mean inter-tap latency the results screen already averages. <code>total_rt_ms</code> is the last tap minus the go cue. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+            <p>The download is the shared export on <a href="researchers.html#corsi">For researchers</a>. The 650 ms before the first flash, each 500 ms highlight, each 250 ms gap, the 200 ms before the go cue, the 220 ms pause after the last tap, and the 900 ms feedback hold are scheduled from display frames. Each intended duration is the nearest whole frame. Recall has no deadline. <code>rt_ms</code> is the mean inter-tap latency the results screen already averages, from the frame that shows the go cue. <code>total_rt_ms</code> is the last tap minus that cue. <code>params.timing</code> is the frame scheduler that ran. If the tab was hidden or frames were delayed, the page says so and <code>timing_flag</code> is set. The frame stamp is when the page asks for the paint. It is earlier than the pixels and earlier than the light. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
         </section>
 
         <section>

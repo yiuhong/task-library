@@ -10,9 +10,14 @@
   Incorrect, or No response on practice only, with no subtitle. The main
   block clears the feedback line. The 400 ms hold and the jittered blank
   still run. The GO / NO-GO badge and the deadline bar stay in both shells.
-  This task is silent: both policies set audio to false. The header
+  This task is silent: both policies set audio to false.   The header
   shows the block and the trial count, not a running score or mean RT.
   Download CSV and Download JSON use TrialExport.
+
+  Fixation, the go or no-go window, the feedback hold, and the jittered
+  blank are scheduled by assets/trial-timing.js. The deadline bar tracks
+  that same window from animation frames. Response time starts when the
+  target is shown. A window that closes with no press stores a blank time.
 */
 (function (global) {
   var CONFIG = {
@@ -55,6 +60,18 @@
     if (!global.TrialExport) {
       throw new Error("Go/No-Go requires assets/trial-export.js");
     }
+    if (!global.TrialTiming) {
+      throw new Error("Go/No-Go requires assets/trial-timing.js");
+    }
+
+    var timing = global.TrialTiming.session();
+
+    function timingParams() {
+      var snapshot = timing.policy();
+      snapshot.responseOnset = "target";
+      snapshot.intervals = ["fixation", "stimulus", "feedback", "iti"];
+      return snapshot;
+    }
 
     var exportLog = global.TrialExport.session({
       taskId: "gonogo",
@@ -70,6 +87,7 @@
           feedbackMs: CONFIG.feedbackMs,
           itiMinMs: CONFIG.itiMinMs,
           itiMaxMs: CONFIG.itiMaxMs,
+          timing: timingParams(),
           presentation: {
             policyId: policy.id,
             trialFeedback: !!policy.trialFeedback,
@@ -92,7 +110,10 @@
       trialActive: false,
        awaitingResponse: false,
       stimOnsetTime: 0,
-      timeoutId: null,
+      barRaf: 0,
+      trialLog: null,
+      openPhase: null,
+      pendingExport: null,
       allLogs: []                 // Stores all rows: practice + main
     };
 
@@ -206,8 +227,31 @@
     /**
      * START BLOCK (Practice or Main)
      */
+    function stopDeadlineBar() {
+      if (state.barRaf) {
+        cancelAnimationFrame(state.barRaf);
+        state.barRaf = 0;
+      }
+    }
+
+    function startDeadlineBar(onsetTs, scheduledMs, isGo) {
+      stopDeadlineBar();
+      el.deadlineProgress.className = `h-full w-full origin-left ${isGo ? "bg-goLime" : "bg-nogoCoral"}`;
+      el.deadlineProgress.style.transition = "none";
+      el.deadlineProgress.style.transform = "scaleX(1)";
+      var span = scheduledMs > 0 ? scheduledMs : 1;
+      function tick(ts) {
+        if (!state.awaitingResponse) return;
+        var remain = Math.max(0, 1 - ((ts - onsetTs) / span));
+        el.deadlineProgress.style.transform = "scaleX(" + remain + ")";
+        state.barRaf = requestAnimationFrame(tick);
+      }
+      state.barRaf = requestAnimationFrame(tick);
+    }
+
     function startBlock(blockName) {
-      clearTimeout(state.timeoutId);
+      timing.cancelAll();
+      stopDeadlineBar();
       state.blockName = blockName;
       state.currentIndex = 0;
       const count = blockName === "practice" ? CONFIG.practiceTrials : CONFIG.mainTrials;
@@ -234,25 +278,30 @@
 
       const totalInBlock = state.trialList.length;
       el.hudTrial.textContent = `${state.currentIndex + 1} / ${totalInBlock}`;
-
-      // Reset arena visuals for Fixation phase
       state.trialActive = true;
       state.awaitingResponse = false;
-      el.stimulusFrame.className = "relative flex flex-col items-center justify-center my-auto w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-bgCard/90 border-2 border-slate-800 shadow-2xl";
-      el.stimTarget.classList.add("hidden");
-      el.stimFeedback.classList.add("hidden");
-      el.stimFixation.classList.remove("hidden");
 
-      // Reset deadline bar
-      el.deadlineProgress.style.transition = "none";
-      el.deadlineProgress.style.transform = "scaleX(0)";
+      timing.frame(function (ts) {
+        el.stimulusFrame.className = "relative flex flex-col items-center justify-center my-auto w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-bgCard/90 border-2 border-slate-800 shadow-2xl";
+        el.stimTarget.classList.add("hidden");
+        el.stimFeedback.classList.add("hidden");
+        el.stimFixation.classList.remove("hidden");
+        el.deadlineProgress.style.transition = "none";
+        el.deadlineProgress.style.transform = "scaleX(0)";
 
-      state.timeoutId = setTimeout(() => {
-        presentStimulus();
-      }, CONFIG.fixationMs);
+        var run = timing.trial();
+        state.trialLog = run;
+        state.pendingExport = null;
+        var fixation = run.open("fixation", CONFIG.fixationMs, ts);
+        state.openPhase = fixation;
+        run.after(ts, CONFIG.fixationMs, function (stimTs) {
+          fixation.close(stimTs, "frame");
+          presentStimulus(stimTs, run);
+        });
+      });
     }
 
-    function presentStimulus() {
+    function presentStimulus(onsetTs, run) {
       const currentTrial = state.trialList[state.currentIndex];
       const isGo = currentTrial.trial_type === "GO";
       const windowDuration = isGo ? CONFIG.goWindowMs : CONFIG.nogoWindowMs;
@@ -262,25 +311,18 @@
       el.stimTarget.classList.remove("hidden");
       el.stimTarget.classList.add("flex");
 
-      // Animate top deadline bar
-      el.deadlineProgress.className = `h-full w-full origin-left ${isGo ? "bg-goLime" : "bg-nogoCoral"}`;
-      el.deadlineProgress.style.transition = "none";
-      el.deadlineProgress.style.transform = "scaleX(1)";
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          el.deadlineProgress.style.transition = `transform ${windowDuration}ms linear`;
-          el.deadlineProgress.style.transform = "scaleX(0)";
-        });
-      });
-
       state.awaitingResponse = true;
-      state.stimOnsetTime = performance.now();
+      state.stimOnsetTime = onsetTs;
 
-      state.timeoutId = setTimeout(() => {
-        if (state.awaitingResponse) {
-          handleTimeout();
-        }
-      }, windowDuration);
+      var stimulus = run.open("stimulus", windowDuration, onsetTs);
+      state.openPhase = stimulus;
+      var job = run.after(onsetTs, windowDuration, function (endTs) {
+        if (!state.awaitingResponse) return;
+        stimulus.close(endTs, "frame");
+        state.openPhase = null;
+        handleTimeout(endTs);
+      });
+      startDeadlineBar(onsetTs, job.scheduledMs, isGo);
     }
 
     /**
@@ -289,9 +331,10 @@
     function handleResponse(chosenSide) {
       if (!state.awaitingResponse) return;
       state.awaitingResponse = false;
-      clearTimeout(state.timeoutId);
+      timing.cancelAll();
+      stopDeadlineBar();
 
-      const responsePerf = performance.now();
+      const responsePerf = timing.now();
       const rtMs = Math.round(responsePerf - state.stimOnsetTime);
       const currentTrial = state.trialList[state.currentIndex];
 
@@ -319,15 +362,17 @@
       }
 
       recordTrialResult(currentTrial, chosenSide, isCorrect, rtMs, state.stimOnsetTime, responsePerf);
-      showTrialFeedback(feedbackTitle, feedbackDetail, feedbackColor);
+      showTrialFeedback(feedbackTitle, feedbackDetail, feedbackColor, "response");
     }
 
     /**
      * HANDLE RESPONSE WINDOW EXPIRATION (No input before deadline)
      */
-    function handleTimeout() {
+    function handleTimeout(endTs) {
       state.awaitingResponse = false;
-      const responsePerf = performance.now();
+      timing.cancelAll();
+      stopDeadlineBar();
+      const responsePerf = endTs;
       const currentTrial = state.trialList[state.currentIndex];
 
       let isCorrect = 0;
@@ -350,7 +395,7 @@
       }
 
       recordTrialResult(currentTrial, "NONE", isCorrect, "", state.stimOnsetTime, responsePerf);
-      showTrialFeedback(feedbackTitle, feedbackDetail, feedbackColor);
+      showTrialFeedback(feedbackTitle, feedbackDetail, feedbackColor, "frame");
     }
 
     /**
@@ -373,7 +418,7 @@
       var shown = trialObj.trial_type === "GO"
         ? "GO " + trialObj.target_side
         : "NOGO";
-      exportLog.record({
+      state.pendingExport = {
         trialIndex: state.allLogs.length,
         block: state.blockName,
         stimulus: shown,
@@ -388,7 +433,21 @@
           trial_in_block: state.currentIndex + 1,
           target_side: trialObj.target_side
         }
-      });
+      };
+    }
+
+    function commitExport() {
+      if (!state.pendingExport || !state.trialLog) return;
+      var row = state.pendingExport;
+      var timingFields = state.trialLog.fields();
+      state.pendingExport = null;
+      row.timingMethod = timingFields.timingMethod;
+      row.refreshHz = timingFields.refreshHz;
+      row.frameMs = timingFields.frameMs;
+      row.intendedDurations = timingFields.intendedDurations;
+      row.phaseTiming = timingFields.phaseTiming;
+      row.timingFlag = timingFields.timingFlag;
+      exportLog.record(row);
     }
 
     function exportStamp() {
@@ -398,7 +457,7 @@
     /**
      * DISPLAY CRISP FEEDBACK (400 ms) THEN JITTERED ITI (250-450 ms)
      */
-    function showTrialFeedback(title, subtitle, colorClass) {
+    function showTrialFeedback(title, subtitle, colorClass, closedBy) {
       el.deadlineProgress.style.transition = "none";
       el.deadlineProgress.style.transform = "scaleX(0)";
 
@@ -427,15 +486,28 @@
         el.stimFeedback.classList.remove("flex");
       }
 
-      state.timeoutId = setTimeout(() => {
-        // Clear screen during Jittered ITI
-        el.stimFeedback.classList.add("hidden");
-        const jitteredIti = Math.floor(
-          CONFIG.itiMinMs + Math.random() * (CONFIG.itiMaxMs - CONFIG.itiMinMs + 1)
-        );
-        state.currentIndex += 1;
-        state.timeoutId = setTimeout(runNextTrial, jitteredIti);
-      }, CONFIG.feedbackMs);
+      var run = state.trialLog;
+      timing.frame(function (ts) {
+        if (state.openPhase && state.openPhase.isOpen()) {
+          state.openPhase.close(ts, closedBy || "response");
+        }
+        state.openPhase = null;
+        var feedback = run.open("feedback", CONFIG.feedbackMs, ts);
+        run.after(ts, CONFIG.feedbackMs, function (blankTs) {
+          feedback.close(blankTs, "frame");
+          el.stimFeedback.classList.add("hidden");
+          var jitteredIti = Math.floor(
+            CONFIG.itiMinMs + Math.random() * (CONFIG.itiMaxMs - CONFIG.itiMinMs + 1)
+          );
+          var iti = run.open("iti", jitteredIti, blankTs);
+          run.after(blankTs, jitteredIti, function (nextTs) {
+            iti.close(nextTs, "frame");
+            commitExport();
+            state.currentIndex += 1;
+            runNextTrial();
+          });
+        });
+      });
     }
 
     /**
@@ -575,6 +647,8 @@
     });
 
     el.btnStartPractice.addEventListener("click", () => {
+      timing.cancelAll();
+      stopDeadlineBar();
       state.allLogs = [];
       lastSummary = null;
       exportLog.clear();
@@ -589,6 +663,8 @@
     el.btnDownloadJson.addEventListener("click", downloadJson);
 
     el.btnRestart.addEventListener("click", () => {
+      timing.cancelAll();
+      stopDeadlineBar();
       state.allLogs = [];
       lastSummary = null;
       exportLog.clear();

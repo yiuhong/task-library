@@ -80,7 +80,7 @@
         <section>
             <h2>Methods note</h2>
             <p>Both shells share the 6 practice trials, the 48 main trials, and the reversal rules. The payoff is shown after the choice is stored, during the 750 ms feedback, on every trial in both shells. It is +10 or +0. That number is the reward, so neither shell removes it or replaces it with Correct or Incorrect. The live point total is hidden in both shells. The trial counter stays. There is no shell that turns the payoff off.</p>
-            <p>The download is the shared export on <a href="researchers.html#reversal">For researchers</a>. <code>accuracy</code> copies chose_optimal. It is the better-option flag, not a correctness judgment. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+            <p>The download is the shared export on <a href="researchers.html#reversal">For researchers</a>. The choice has no deadline. The 750 ms payoff and the 280 ms blank are scheduled from display frames. Each intended duration is the nearest whole frame. <code>rt_ms</code> is the rounded time from the frame that shows the cards. <code>accuracy</code> copies chose_optimal. It is the better-option flag, not a correctness judgment. <code>params.timing</code> is the frame scheduler that ran. If the tab was hidden or frames were delayed, the page says so and <code>timing_flag</code> is set. The frame stamp is when the page asks for the paint. It is earlier than the pixels and earlier than the light. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
         </section>
 
         <section>

@@ -18,6 +18,10 @@
 
   Saved runs still replace localStorage["projectTrial_bandit_v1"].
   The payload and the CSV gain mode ("gamified" or "classical") at the end.
+
+  The choice display has no deadline. The 750 ms payoff and the 280 ms
+  blank are scheduled by assets/trial-timing.js. Response time starts
+  when the cards are shown.
 */
 (function (global) {
   "use strict";
@@ -70,6 +74,18 @@
     if (!global.TrialExport) {
       throw new Error("Reversal learning requires assets/trial-export.js");
     }
+    if (!global.TrialTiming) {
+      throw new Error("Reversal learning requires assets/trial-timing.js");
+    }
+
+    var timing = global.TrialTiming.session();
+
+    function timingParams() {
+      var snapshot = timing.policy();
+      snapshot.responseOnset = "cards";
+      snapshot.intervals = ["choice", "feedback", "iti"];
+      return snapshot;
+    }
 
     var exportLog = global.TrialExport.session({
       taskId: "bandit",
@@ -86,6 +102,7 @@
           itiDurationMs: CONFIG.itiDurationMs,
           minIntervalReversal: CONFIG.minIntervalReversal,
           maxIntervalReversal: CONFIG.maxIntervalReversal,
+          timing: timingParams(),
           reversalMode: state.reversalMode,
           stimulusMapping: state.stimulusMapping,
           presentation: {
@@ -186,6 +203,9 @@
       practiceScore: 0,
       acceptingInput: false,
       trialStartPerfTime: 0,
+      trialLog: null,
+      openPhase: null,
+      pendingExport: null,
 
       logs: [] // Array of trial telemetry records
     };
@@ -413,27 +433,31 @@
       // Check whether a silent contingency reversal occurs prior to this trial
       checkAndApplyReversalIfDue();
 
-      // Render geometric stimuli
+      // Render geometric stimuli before the frame that shows the cards.
       assignStimuliForTrial();
-
-      // Reset visual card states
-      dom.cardLeft.classList.remove('selected', 'unselected-dim');
-      dom.cardRight.classList.remove('selected', 'unselected-dim');
-      dom.feedbackDisplay.classList.add('hidden');
-      dom.fixationCross.classList.remove('opacity-0');
-      dom.arenaPrompt.textContent = 'Select Left or Right Card';
-
       updateHud();
 
-      state.acceptingInput = true;
-      state.trialStartPerfTime = performance.now();
+      timing.frame(function (ts) {
+        var run = timing.trial();
+        state.trialLog = run;
+        state.pendingExport = null;
+        dom.cardLeft.classList.remove('selected', 'unselected-dim');
+        dom.cardRight.classList.remove('selected', 'unselected-dim');
+        dom.feedbackDisplay.classList.add('hidden');
+        dom.fixationCross.classList.remove('opacity-0');
+        dom.arenaPrompt.textContent = 'Select Left or Right Card';
+        state.acceptingInput = true;
+        state.trialStartPerfTime = ts;
+        state.openPhase = run.open('choice', null, ts);
+      });
     }
 
     function handleChoice(choiceSide) {
       if (!state.acceptingInput) return;
       state.acceptingInput = false;
+      timing.cancelAll();
 
-      const responsePerf = performance.now();
+      const responsePerf = timing.now();
       const rtMs = Math.max(1, Math.round(responsePerf - state.trialStartPerfTime));
       const choseOptimal = (choiceSide === state.currentHighProbSide) ? 1 : 0;
 
@@ -473,7 +497,7 @@
         timestamp: new Date().toISOString()
       };
       state.logs.push(trialRecord);
-      exportLog.record({
+      state.pendingExport = {
         trialIndex: state.logs.length,
         block: state.blockName,
         stimulus: state.leftSymbolKey + '/' + state.rightSymbolKey,
@@ -496,17 +520,43 @@
           stimulus_mapping: state.stimulusMapping,
           reversal_mode: state.reversalMode
         }
-      });
+      };
 
       updateHud();
       presentOutcomeFeedback(rewardPts);
 
-      setTimeout(() => {
-        dom.feedbackDisplay.classList.add('hidden');
-        setTimeout(() => {
-          startNextTrial();
-        }, CONFIG.itiDurationMs);
-      }, CONFIG.feedbackDurationMs);
+      var run = state.trialLog;
+      timing.frame(function (ts) {
+        if (state.openPhase && state.openPhase.isOpen()) {
+          state.openPhase.close(ts, 'response');
+        }
+        state.openPhase = null;
+        var feedback = run.open('feedback', CONFIG.feedbackDurationMs, ts);
+        run.after(ts, CONFIG.feedbackDurationMs, function (blankTs) {
+          feedback.close(blankTs, 'frame');
+          dom.feedbackDisplay.classList.add('hidden');
+          var iti = run.open('iti', CONFIG.itiDurationMs, blankTs);
+          run.after(blankTs, CONFIG.itiDurationMs, function (nextTs) {
+            iti.close(nextTs, 'frame');
+            commitExport();
+            startNextTrial();
+          });
+        });
+      });
+    }
+
+    function commitExport() {
+      if (!state.pendingExport || !state.trialLog) return;
+      var row = state.pendingExport;
+      var timingFields = state.trialLog.fields();
+      state.pendingExport = null;
+      row.timingMethod = timingFields.timingMethod;
+      row.refreshHz = timingFields.refreshHz;
+      row.frameMs = timingFields.frameMs;
+      row.intendedDurations = timingFields.intendedDurations;
+      row.phaseTiming = timingFields.phaseTiming;
+      row.timingFlag = timingFields.timingFlag;
+      exportLog.record(row);
     }
 
     function triggerPadVisual(padElem) {
@@ -751,6 +801,7 @@
        8. EVENT LISTENERS (POINTERDOWN + KEYBOARD A/L & ARROWS)
        ========================================================================= */
     dom.btnStartPractice.addEventListener('click', () => {
+      timing.cancelAll();
       initBlock('practice');
     });
 
@@ -759,6 +810,8 @@
     });
 
     dom.btnRestart.addEventListener('click', () => {
+      timing.cancelAll();
+      state.acceptingInput = false;
       state.phase = 'welcome';
       state.currentTrialIndex = 0;
       state.totalBlockTrials = 0;

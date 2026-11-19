@@ -2,7 +2,7 @@
 
 This is the bar for a scored task in Project Trial. Architecture C stays: one task core, two shells. The shell is the frame, the type, and the buttons. The core is the trial list, the stimuli, the keys, the score, and the timings.
 
-Visual working memory, numerosity comparison, and Eriksen flanker are on this standard. The other two-dimensional tasks are not yet. Later slices move the same helper onto those tasks, then tighten Spatial Go/No-Go headset-frame timing.
+Visual working memory, numerosity comparison, Eriksen flanker, Stroop, oddball, 2D go/no-go, brightness detection, RDK motion coherence, Corsi span, and reversal learning are on this standard. Spatial Go/No-Go is not: headset-frame timing is a later slice. Noematachograph is not a scored trial task.
 
 ## 1. Frame-locked timing and a complete on-device export
 

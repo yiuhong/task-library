@@ -16,6 +16,12 @@
   The end screen is the condition cards and the same interpretation sentence.
   Download CSV and Download JSON use TrialExport for the current run.
   There is no practice block and no correctness word in either shell.
+
+  Fixation, the response window, the pause before a confidence rating
+  accepts a key, and the blank between trials are scheduled by
+  assets/trial-timing.js. Choice time starts when the patches are shown.
+  Confidence time starts when the rating prompt is shown. A timeout
+  skips the rating.
 */
 (function (global) {
     var CONFIG = {
@@ -66,6 +72,19 @@
         if (!global.TrialExport) {
             throw new Error("Brightness requires assets/trial-export.js");
         }
+        if (!global.TrialTiming) {
+            throw new Error("Brightness requires assets/trial-timing.js");
+        }
+
+        var timing = global.TrialTiming.session();
+
+        function timingParams() {
+            var snapshot = timing.policy();
+            snapshot.responseOnset = "patches";
+            snapshot.confidenceOnset = "confidence prompt";
+            snapshot.intervals = ["fixation", "stimulus", "confidence-gate", "confidence", "iti"];
+            return snapshot;
+        }
 
         var exportLog = global.TrialExport.session({
             taskId: "brightness",
@@ -73,11 +92,11 @@
             params: function () {
                 return {
                     trialsPerCondition: CONFIG.trialsPerCondition,
-                    timing: {
-                        fixation: CONFIG.timing.fixation,
-                        timeout: CONFIG.timing.timeout,
-                        isi: CONFIG.timing.isi
-                    },
+                    fixationMs: CONFIG.timing.fixation,
+                    responseWindowMs: CONFIG.timing.timeout,
+                    confidenceGateMs: 250,
+                    itiMs: CONFIG.timing.isi,
+                    timing: timingParams(),
                     conditions: CONFIG.conditions.map(function (cond) {
                         return {
                             id: cond.id,
@@ -176,7 +195,9 @@
             startTime: null,
             confidenceStartTime: null,
             isAcceptingInput: false,
-            timeoutId: null,
+            trialLog: null,
+            openPhase: null,
+            pendingExport: null,
             confidenceMapping: { f: "high", j: "low" }
         };
 
@@ -217,54 +238,72 @@
                 return;
             }
 
-            var trial = state.trials[state.currentTrialIndex];
             document.getElementById("trial-counter").textContent = (state.currentTrialIndex + 1) + " / " + state.trials.length;
+            state.phase = "fixation";
+            state.isAcceptingInput = false;
 
-            state.phase = "stimulus";
-            document.getElementById("confidence-container").classList.add("hidden");
-            document.getElementById("square-left").classList.add("invisible");
-            document.getElementById("square-right").classList.add("invisible");
-            document.getElementById("fixation-cross").classList.remove("invisible");
-            document.getElementById("fixation-cross").classList.remove("opacity-20");
-            setFooterActive(true);
+            timing.frame(function (ts) {
+                document.getElementById("confidence-container").classList.add("hidden");
+                document.getElementById("square-left").classList.add("invisible");
+                document.getElementById("square-right").classList.add("invisible");
+                document.getElementById("fixation-cross").classList.remove("invisible");
+                document.getElementById("fixation-cross").classList.remove("opacity-20");
+                setFooterActive(true);
+                AudioEngine.tick();
 
-            AudioEngine.tick();
-            global.setTimeout(function () {
-                if (state.currentTrialIndex >= state.trials.length) return;
-                var sqLeft = document.getElementById("square-left");
-                var sqRight = document.getElementById("square-right");
-
-                sqLeft.style.backgroundColor = "rgb(" + trial.leftColor + ", " + trial.leftColor + ", " + trial.leftColor + ")";
-                sqRight.style.backgroundColor = "rgb(" + trial.rightColor + ", " + trial.rightColor + ", " + trial.rightColor + ")";
-
-                sqLeft.classList.remove("invisible");
-                sqRight.classList.remove("invisible");
-                document.getElementById("fixation-cross").classList.add("opacity-20");
-
-                sqLeft.classList.add("pop");
-                sqRight.classList.add("pop");
-                global.setTimeout(function () {
-                    sqLeft.classList.remove("pop");
-                    sqRight.classList.remove("pop");
-                }, 100);
-
-                state.startTime = performance.now();
-                state.isAcceptingInput = true;
-
-                state.timeoutId = global.setTimeout(function () {
-                    if (state.isAcceptingInput && state.phase === "stimulus") handleInput(null);
-                }, CONFIG.timing.timeout);
-            }, CONFIG.timing.fixation);
+                var run = timing.trial();
+                state.trialLog = run;
+                state.pendingExport = null;
+                var fixation = run.open("fixation", CONFIG.timing.fixation, ts);
+                state.openPhase = fixation;
+                run.after(ts, CONFIG.timing.fixation, function (stimTs) {
+                    fixation.close(stimTs, "frame");
+                    if (state.currentTrialIndex >= state.trials.length) return;
+                    presentPatches(stimTs, run);
+                });
+            });
         }
 
-        function handleInput(key) {
+        function presentPatches(onsetTs, run) {
+            var trial = state.trials[state.currentTrialIndex];
+            var sqLeft = document.getElementById("square-left");
+            var sqRight = document.getElementById("square-right");
+
+            sqLeft.style.backgroundColor = "rgb(" + trial.leftColor + ", " + trial.leftColor + ", " + trial.leftColor + ")";
+            sqRight.style.backgroundColor = "rgb(" + trial.rightColor + ", " + trial.rightColor + ", " + trial.rightColor + ")";
+
+            sqLeft.classList.remove("invisible");
+            sqRight.classList.remove("invisible");
+            document.getElementById("fixation-cross").classList.add("opacity-20");
+
+            sqLeft.classList.add("pop");
+            sqRight.classList.add("pop");
+            global.setTimeout(function () {
+                sqLeft.classList.remove("pop");
+                sqRight.classList.remove("pop");
+            }, 100);
+
+            state.startTime = onsetTs;
+            state.phase = "stimulus";
+            state.isAcceptingInput = true;
+            var stimulus = run.open("stimulus", CONFIG.timing.timeout, onsetTs);
+            state.openPhase = stimulus;
+            run.after(onsetTs, CONFIG.timing.timeout, function (endTs) {
+                if (!(state.isAcceptingInput && state.phase === "stimulus")) return;
+                stimulus.close(endTs, "frame");
+                state.openPhase = null;
+                handleInput(null, endTs);
+            });
+        }
+
+        function handleInput(key, scheduledTs) {
             if (!state.isAcceptingInput) return;
 
             if (state.phase === "stimulus") {
-                global.clearTimeout(state.timeoutId);
                 state.isAcceptingInput = false;
+                timing.cancelAll();
 
-                var responsePerf = performance.now();
+                var responsePerf = scheduledTs == null ? timing.now() : scheduledTs;
                 var rt = responsePerf - state.startTime;
                 var trial = state.trials[state.currentTrialIndex];
                 var isCorrect = false;
@@ -294,16 +333,12 @@
                     state.tempResult.confidenceRT = null;
                     commitTrial(state.tempResult);
                     AudioEngine.playTone(150, "sawtooth", 0.2, 0.1);
-
-                    global.setTimeout(function () {
-                        state.currentTrialIndex += 1;
-                        nextTrial();
-                    }, CONFIG.timing.isi);
+                    scheduleBlank(state.trialLog, "frame");
                     return;
                 }
 
                 AudioEngine.boop();
-                promptConfidence();
+                promptConfidence(state.trialLog);
             } else if (state.phase === "confidence") {
                 var conf = state.confidenceMapping[key];
                 if (!conf) return;
@@ -311,30 +346,50 @@
                 state.isAcceptingInput = false;
                 state.tempResult.confidence = conf;
                 state.tempResult.confidenceKey = key;
-                state.tempResult.confidenceRT = Math.round(performance.now() - state.confidenceStartTime);
+                state.tempResult.confidenceRT = Math.round(timing.now() - state.confidenceStartTime);
                 commitTrial(state.tempResult);
 
                 AudioEngine.beep();
 
                 document.getElementById("confidence-container").classList.add("hidden");
-
-                global.setTimeout(function () {
-                    state.currentTrialIndex += 1;
-                    nextTrial();
-                }, CONFIG.timing.isi);
+                scheduleBlank(state.trialLog, "response");
             }
         }
 
-        function promptConfidence() {
+        function promptConfidence(run) {
             state.phase = "confidence";
             document.getElementById("fixation-cross").classList.add("invisible");
             setFooterActive(false);
-
             document.getElementById("confidence-container").classList.remove("hidden");
 
-            state.confidenceStartTime = performance.now();
+            timing.frame(function (ts) {
+                if (state.openPhase && state.openPhase.isOpen()) {
+                    state.openPhase.close(ts, "response");
+                }
+                state.confidenceStartTime = ts;
+                var gate = run.open("confidence-gate", 250, ts);
+                run.after(ts, 250, function (openTs) {
+                    gate.close(openTs, "frame");
+                    state.openPhase = run.open("confidence", null, openTs);
+                    state.isAcceptingInput = true;
+                });
+            });
+        }
 
-            global.setTimeout(function () { state.isAcceptingInput = true; }, 250);
+        function scheduleBlank(run, endReason) {
+            timing.frame(function (ts) {
+                if (state.openPhase && state.openPhase.isOpen()) {
+                    state.openPhase.close(ts, endReason || "frame");
+                }
+                state.openPhase = null;
+                var iti = run.open("iti", CONFIG.timing.isi, ts);
+                run.after(ts, CONFIG.timing.isi, function (endTs) {
+                    iti.close(endTs, "frame");
+                    commitExport();
+                    state.currentTrialIndex += 1;
+                    nextTrial();
+                });
+            });
         }
 
         function commitTrial(result) {
@@ -342,7 +397,7 @@
             Object.assign(result, orient, { record: "trial", mode: mode, block: "main" });
             state.results.push(result);
             store.commitTrial(result, orientation.events);
-            exportLog.record({
+            state.pendingExport = {
                 trialIndex: state.results.length,
                 block: "main",
                 stimulus: "L" + result.leftColor + "/R" + result.rightColor,
@@ -366,7 +421,21 @@
                     orientation_t_ms: orient.orientationTMs,
                     orientation_reason: orient.orientationReason
                 }
-            });
+            };
+        }
+
+        function commitExport() {
+            if (!state.pendingExport || !state.trialLog) return;
+            var row = state.pendingExport;
+            var timingFields = state.trialLog.fields();
+            state.pendingExport = null;
+            row.timingMethod = timingFields.timingMethod;
+            row.refreshHz = timingFields.refreshHz;
+            row.frameMs = timingFields.frameMs;
+            row.intendedDurations = timingFields.intendedDurations;
+            row.phaseTiming = timingFields.phaseTiming;
+            row.timingFlag = timingFields.timingFlag;
+            exportLog.record(row);
         }
 
         function finishGame() {
@@ -477,6 +546,7 @@
         });
 
         document.getElementById("btn-start").addEventListener("click", function () {
+            timing.cancelAll();
             AudioEngine.start();
             state.currentTrialIndex = 0;
             state.results = [];
@@ -491,6 +561,7 @@
         });
 
         document.getElementById("btn-restart").addEventListener("click", function () {
+            timing.cancelAll();
             screens.results.classList.add("hidden");
             screens.welcome.classList.remove("hidden");
         });

@@ -437,7 +437,7 @@
             samples: steps.length,
             minStepMs: round2(steps.slice().sort(function (a, b) { return a - b; })[0]),
             medianStepMs: round2(median(steps)),
-            note: "Smallest observed change in performance.now() inside a tight loop on this page. Stimulus timing is still limited by the display and by setTimeout."
+            note: "Smallest observed change in performance.now() inside a tight loop on this page. Stimulus timing is still limited by the display. A frame stamp is when the page asks for the paint, which is earlier than the pixels."
         };
     }
 

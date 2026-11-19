@@ -93,7 +93,7 @@
         <section>
             <h2>Methods note</h2>
             <p>Both shells share the 30-trial main list, the shapes, the J key, and the timings. Classical adds the 10 practice trials. After the response is stored, the gamified shell shows CAUGHT IT!, GOOD, MISS!, or FALSE ALARM! for the 300 ms hold. Classical practice shows Correct, Incorrect, or No response. Classical main shows no word. The hold and the 400 ms blank still run. Live score, combo, accuracy, and mean RT stay off in both shells. The shape is not set on fire. For a main block without the word, use classical.</p>
-            <p>The results buttons are the shared export on <a href="researchers.html#oddball">For researchers</a>. A withhold leaves <code>rt_ms</code> blank. A press stores the unrounded time. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
+            <p>The results buttons are the shared export on <a href="researchers.html#oddball">For researchers</a>. Fixation (300 ms), the 1200 ms window, the 300 ms hold, and the 400 ms blank are scheduled from display frames. Each intended duration is the nearest whole frame. A withhold leaves <code>rt_ms</code> blank. A press stores the unrounded time from the frame that shows the shape. <code>params.timing</code> is the frame scheduler that ran. If the tab was hidden or frames were delayed, the page says so and <code>timing_flag</code> is set. The frame stamp is when the page asks for the paint. It is earlier than the pixels and earlier than the light. Practice rows are marked <code>practice</code>. Nothing is uploaded.</p>
         </section>
 
         <section>
