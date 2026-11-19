@@ -11,7 +11,11 @@
   tap tones, and the AUDIO CUES select. Classical passes a null audio
   session. This file does not call playTone, setEnabled, or bindToggle
   in that shell, and it does not write project-trial:sfx.
-  Flash timing is unchanged.
+  Flash timing is unchanged. The pre-trial delay, each highlight, the
+  gap between highlights, the pause before the go cue, the pause after
+  the last tap, and the feedback hold are scheduled by
+  assets/trial-timing.js. Response time stays the mean inter-tap
+  latency from the go cue.
 
   Classical practice shows a brief Correct or Incorrect and no tone.
   Classical main shows neither CORRECT SEQUENCE nor INCORRECT SEQUENCE.
@@ -94,6 +98,19 @@
         if (!global.TrialExport) {
             throw new Error("Corsi requires assets/trial-export.js");
         }
+        if (!global.TrialTiming) {
+            throw new Error("Corsi requires assets/trial-timing.js");
+        }
+
+        var timing = global.TrialTiming.session();
+        var HOLD_AFTER_LAST_TAP_MS = 220;
+
+        function timingParams() {
+            var snapshot = timing.policy();
+            snapshot.responseOnset = "go-cue";
+            snapshot.intervals = ["pretrial", "flash-n", "gap-n", "go-delay", "recall", "hold", "feedback"];
+            return snapshot;
+        }
 
         var exportLog = global.TrialExport.session({
             taskId: "corsi",
@@ -111,6 +128,8 @@
                     maxSpan: CONFIG.maxSpan,
                     trialsPerSpan: CONFIG.trialsPerSpan,
                     progressionMode: CONFIG.progressionMode,
+                    holdAfterLastTapMs: HOLD_AFTER_LAST_TAP_MS,
+                    timing: timingParams(),
                     presentation: {
                         policyId: policy.id,
                         practiceFeedback: policy.practiceFeedback,
@@ -149,7 +168,10 @@
           userSequence: [],
           tapTimestamps: [],
           goCueTimestamp: 0,
-          trialLogs: []
+          trialLogs: [],
+          trialLog: null,
+          openPhase: null,
+          pendingExport: null
         };
 
         /**
@@ -242,11 +264,18 @@
           });
         }
 
-        /**
-         * Utility: Promise-based sleep
-         */
-        function sleep(ms) {
-          return new Promise(resolve => setTimeout(resolve, ms));
+        function commitExport() {
+          if (!STATE.pendingExport || !STATE.trialLog) return;
+          var row = STATE.pendingExport;
+          var timingFields = STATE.trialLog.fields();
+          STATE.pendingExport = null;
+          row.timingMethod = timingFields.timingMethod;
+          row.refreshHz = timingFields.refreshHz;
+          row.frameMs = timingFields.frameMs;
+          row.intendedDurations = timingFields.intendedDurations;
+          row.phaseTiming = timingFields.phaseTiming;
+          row.timingFlag = timingFields.timingFlag;
+          exportLog.record(row);
         }
 
         /**
@@ -361,41 +390,68 @@
 
         /**
          * Run a Single Trial
+         * Sequence steps are frame-scheduled. Recall waits for the span.
          */
-        async function runTrial() {
+        function runTrial() {
+          timing.cancelAll();
           setBlocksInteractive(false);
           clearBlockTraces();
           STATE.userSequence = [];
           STATE.tapTimestamps = [];
           STATE.targetSequence = generateSequence(STATE.currentSpan);
+          STATE.openPhase = null;
+          STATE.pendingExport = null;
           updateHud();
 
-          setStatusBanner('WATCH', 'READY — WATCH SEQUENCE');
-          await sleep(CONFIG.preTrialDelayMs);
+          timing.frame(function (ts) {
+            var run = timing.trial();
+            STATE.trialLog = run;
+            setStatusBanner('WATCH', 'READY — WATCH SEQUENCE');
+            var pretrial = run.open('pretrial', CONFIG.preTrialDelayMs, ts);
+            run.after(ts, CONFIG.preTrialDelayMs, function (endTs) {
+              pretrial.close(endTs, 'frame');
+              flashStep(run, 0, endTs);
+            });
+          });
+        }
 
-          // Flash each block in targetSequence
-          for (let i = 0; i < STATE.targetSequence.length; i++) {
-            const blockId = STATE.targetSequence[i];
-            const blockEl = blockElements.get(blockId);
-
-            if (blockEl) {
-              blockEl.classList.add('lit');
-              playTone(392 + i * 28, 120, 'sine', 0.06);
-              await sleep(CONFIG.flashDurationMs);
-              blockEl.classList.remove('lit');
-            }
-
-            if (i < STATE.targetSequence.length - 1) {
-              await sleep(CONFIG.interBlockGapMs);
-            }
+        function flashStep(run, index, ts) {
+          if (index >= STATE.targetSequence.length) {
+            var delay = run.open('go-delay', CONFIG.postSequenceGoDelayMs, ts);
+            run.after(ts, CONFIG.postSequenceGoDelayMs, function (goTs) {
+              delay.close(goTs, 'frame');
+              showGoCue(run, goTs);
+            });
+            return;
           }
 
-          await sleep(CONFIG.postSequenceGoDelayMs);
+          var blockId = STATE.targetSequence[index];
+          var blockEl = blockElements.get(blockId);
+          if (blockEl) {
+            blockEl.classList.add('lit');
+            playTone(392 + index * 28, 120, 'sine', 0.06);
+          }
+          var flash = run.open('flash-' + (index + 1), CONFIG.flashDurationMs, ts);
+          run.after(ts, CONFIG.flashDurationMs, function (offTs) {
+            flash.close(offTs, 'frame');
+            if (blockEl) blockEl.classList.remove('lit');
+            if (index < STATE.targetSequence.length - 1) {
+              var gap = run.open('gap-' + (index + 1), CONFIG.interBlockGapMs, offTs);
+              run.after(offTs, CONFIG.interBlockGapMs, function (nextTs) {
+                gap.close(nextTs, 'frame');
+                flashStep(run, index + 1, nextTs);
+              });
+            } else {
+              flashStep(run, index + 1, offTs);
+            }
+          });
+        }
 
-          // Trigger Audio-Visual GO Cue
+        function showGoCue(run, ts) {
           playGoCueAudio();
           setStatusBanner('GO', 'GO! TAP BLOCKS IN ORDER');
-          STATE.goCueTimestamp = performance.now();
+          STATE.goCueTimestamp = ts;
+          STATE.openPhase = run.open('recall', null, ts);
           setBlocksInteractive(true);
         }
 
@@ -427,10 +483,22 @@
           updateHud();
           DOM.btnClearSeq.disabled = STATE.userSequence.length === 0;
 
-          // Auto-submit once sequence reaches target span length
+          // Auto-submit once sequence reaches target span length.
+          // The 220 ms pause is the existing hold before feedback.
           if (STATE.userSequence.length >= STATE.currentSpan) {
             setBlocksInteractive(false);
-            setTimeout(() => evaluateTrial(), 220);
+            var run = STATE.trialLog;
+            timing.frame(function (frameTs) {
+              if (STATE.openPhase && STATE.openPhase.isOpen()) {
+                STATE.openPhase.close(frameTs, 'response');
+              }
+              STATE.openPhase = null;
+              var hold = run.open('hold', HOLD_AFTER_LAST_TAP_MS, frameTs);
+              run.after(frameTs, HOLD_AFTER_LAST_TAP_MS, function (endTs) {
+                hold.close(endTs, 'frame');
+                evaluateTrial();
+              });
+            });
           }
         }
 
@@ -450,7 +518,7 @@
         /**
          * Evaluate Trial Accuracy, Record Telemetry, and Advance Protocol
          */
-        async function evaluateTrial() {
+        function evaluateTrial() {
           const isCorrect =
             STATE.userSequence.length === STATE.targetSequence.length &&
             STATE.userSequence.every((val, idx) => val === STATE.targetSequence[idx]);
@@ -486,7 +554,7 @@
           };
 
           STATE.trialLogs.push(trialRecord);
-          exportLog.record({
+          STATE.pendingExport = {
             trialIndex: trialRecord.trial,
             block: String(STATE.phase).toLowerCase(),
             stimulus: trialRecord.target_seq,
@@ -504,7 +572,7 @@
               total_rt_ms: totalRtMs,
               mean_tap_rt_ms: meanTapRtMs
             }
-          });
+          };
 
           if (isCorrect) {
             STATE.correctInCurrentSpan += 1;
@@ -524,8 +592,20 @@
             setStatusBanner(isCorrect ? 'FEEDBACK_OK' : 'FEEDBACK_ERR', isCorrect ? 'Correct' : 'Incorrect');
           }
 
-          await sleep(CONFIG.interTrialIntervalMs);
-          clearBlockTraces();
+          var run = STATE.trialLog;
+          timing.frame(function (ts) {
+            var feedback = run.open('feedback', CONFIG.interTrialIntervalMs, ts);
+            run.after(ts, CONFIG.interTrialIntervalMs, function (endTs) {
+              feedback.close(endTs, 'frame');
+              commitExport();
+              clearBlockTraces();
+              advanceAfterFeedback();
+            });
+          });
+          return;
+        }
+
+        function advanceAfterFeedback() {
 
           // Advance logic for PRACTICE vs MAIN phase
           if (STATE.phase === 'PRACTICE') {

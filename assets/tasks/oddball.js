@@ -21,6 +21,11 @@
   RT stay off in both shells. The shape is not set on fire. The 300 ms
   hold and 400 ms blank still run. Download CSV and Download JSON use
   TrialExport for the current run.
+
+  Fixation, the response window, the feedback hold, and the blank
+  between trials are scheduled by assets/trial-timing.js. Response time
+  starts when the oddball or standard shape is shown. A withhold stores
+  a blank time.
 */
 (function (global) {
     var CONFIG = {
@@ -76,6 +81,18 @@
         if (!global.TrialExport) {
             throw new Error("Oddball requires assets/trial-export.js");
         }
+        if (!global.TrialTiming) {
+            throw new Error("Oddball requires assets/trial-timing.js");
+        }
+
+        var timing = global.TrialTiming.session();
+
+        function timingParams() {
+            var snapshot = timing.policy();
+            snapshot.responseOnset = "stimulus";
+            snapshot.intervals = ["fixation", "stimulus", "feedback", "iti"];
+            return snapshot;
+        }
 
         var exportLog = global.TrialExport.session({
             taskId: "oddball",
@@ -96,12 +113,11 @@
                             key: CONFIG.stimuli.oddball.key
                         }
                     },
-                    timing: {
-                        fixation: CONFIG.timing.fixation,
-                        timeout: CONFIG.timing.timeout,
-                        isi: CONFIG.timing.isi,
-                        feedback: CONFIG.timing.feedback
-                    },
+                    fixationMs: CONFIG.timing.fixation,
+                    responseWindowMs: CONFIG.timing.timeout,
+                    feedbackMs: CONFIG.timing.feedback,
+                    itiMs: CONFIG.timing.isi,
+                    timing: timingParams(),
                     practiceTrials: policy.practiceTrials,
                     presentation: {
                         policyId: policy.id,
@@ -201,7 +217,9 @@
             score: 0,
             combo: 0,
             maxCombo: 0,
-            timeoutId: 0,
+            trialLog: null,
+            openPhase: null,
+            pendingExport: null,
             block: "main",
             trialFeedback: false,
             queue: null,
@@ -334,44 +352,60 @@
                 startBlock(state.queue[state.blockCursor]);
             }
 
-            var trial = state.trials[state.currentTrialIndex];
             var display = document.getElementById("display-area");
             var feedbackEl = document.getElementById("feedback-area");
             paintCounter();
             feedbackEl.textContent = "";
             feedbackEl.className = "game-title text-2xl opacity-0";
 
-            display.textContent = "+";
-            display.style.color = "#475569";
-            display.style.textShadow = "none";
-            display.classList.remove("fire-effect", "scale-110");
-
-            if (policy.audio) tones.tick();
-            global.setTimeout(function () {
-                if (state.currentTrialIndex >= state.trials.length) return;
-                display.textContent = trial.char;
-                display.style.color = trial.color;
-                if (policy.id === "arcade") {
-                    display.style.textShadow = "0 0 30px " + trial.color + "80";
-                } else {
-                    display.style.textShadow = "none";
-                }
-                display.classList.add("scale-110");
-
-                state.startTime = performance.now();
-                state.isAcceptingInput = true;
-                state.timeoutId = global.setTimeout(function () {
-                    if (state.isAcceptingInput) handleInput(null);
-                }, CONFIG.timing.timeout);
-            }, CONFIG.timing.fixation);
+            timing.frame(function (ts) {
+                display.textContent = "+";
+                display.style.color = "#475569";
+                display.style.textShadow = "none";
+                display.classList.remove("fire-effect", "scale-110");
+                if (policy.audio) tones.tick();
+                var run = timing.trial();
+                state.trialLog = run;
+                state.pendingExport = null;
+                var fixation = run.open("fixation", CONFIG.timing.fixation, ts);
+                state.openPhase = fixation;
+                run.after(ts, CONFIG.timing.fixation, function (stimTs) {
+                    fixation.close(stimTs, "frame");
+                    if (state.currentTrialIndex >= state.trials.length) return;
+                    presentShape(stimTs, run);
+                });
+            });
         }
 
-        function handleInput(key) {
-            if (!state.isAcceptingInput) return;
-            global.clearTimeout(state.timeoutId);
-            state.isAcceptingInput = false;
+        function presentShape(onsetTs, run) {
+            var trial = state.trials[state.currentTrialIndex];
+            var display = document.getElementById("display-area");
+            display.textContent = trial.char;
+            display.style.color = trial.color;
+            if (policy.id === "arcade") {
+                display.style.textShadow = "0 0 30px " + trial.color + "80";
+            } else {
+                display.style.textShadow = "none";
+            }
+            display.classList.add("scale-110");
+            state.startTime = onsetTs;
+            state.isAcceptingInput = true;
+            var stimulus = run.open("stimulus", CONFIG.timing.timeout, onsetTs);
+            state.openPhase = stimulus;
+            run.after(onsetTs, CONFIG.timing.timeout, function (endTs) {
+                if (!state.isAcceptingInput) return;
+                stimulus.close(endTs, "frame");
+                state.openPhase = null;
+                handleInput(null, endTs);
+            });
+        }
 
-            var responsePerf = performance.now();
+        function handleInput(key, scheduledTs) {
+            if (!state.isAcceptingInput) return;
+            state.isAcceptingInput = false;
+            timing.cancelAll();
+
+            var responsePerf = scheduledTs == null ? timing.now() : scheduledTs;
             var rt = responsePerf - state.startTime;
             var trial = state.trials[state.currentTrialIndex];
             var isCorrect = false;
@@ -418,7 +452,7 @@
             }, orient);
             state.results.push(stored);
             store.commitTrial(stored, orientation.events);
-            exportLog.record({
+            state.pendingExport = {
                 trialIndex: state.results.length,
                 block: state.block,
                 stimulus: trial.char,
@@ -438,7 +472,7 @@
                     orientation_t_ms: orient.orientationTMs,
                     orientation_reason: orient.orientationReason
                 }
-            });
+            };
 
             if (isCorrect) {
                 if (key !== null) {
@@ -457,13 +491,40 @@
             }
             updateUI();
 
-            global.setTimeout(function () {
-                document.getElementById("display-area").textContent = "";
-                global.setTimeout(function () {
-                    state.currentTrialIndex += 1;
-                    nextTrial();
-                }, CONFIG.timing.isi);
-            }, CONFIG.timing.feedback);
+            var run = state.trialLog;
+            var closedBy = key === null ? "frame" : "response";
+            timing.frame(function (ts) {
+                if (state.openPhase && state.openPhase.isOpen()) {
+                    state.openPhase.close(ts, closedBy);
+                }
+                state.openPhase = null;
+                var feedback = run.open("feedback", CONFIG.timing.feedback, ts);
+                run.after(ts, CONFIG.timing.feedback, function (blankTs) {
+                    feedback.close(blankTs, "frame");
+                    document.getElementById("display-area").textContent = "";
+                    var iti = run.open("iti", CONFIG.timing.isi, blankTs);
+                    run.after(blankTs, CONFIG.timing.isi, function (nextTs) {
+                        iti.close(nextTs, "frame");
+                        commitExport();
+                        state.currentTrialIndex += 1;
+                        nextTrial();
+                    });
+                });
+            });
+        }
+
+        function commitExport() {
+            if (!state.pendingExport || !state.trialLog) return;
+            var row = state.pendingExport;
+            var timingFields = state.trialLog.fields();
+            state.pendingExport = null;
+            row.timingMethod = timingFields.timingMethod;
+            row.refreshHz = timingFields.refreshHz;
+            row.frameMs = timingFields.frameMs;
+            row.intendedDurations = timingFields.intendedDurations;
+            row.phaseTiming = timingFields.phaseTiming;
+            row.timingFlag = timingFields.timingFlag;
+            exportLog.record(row);
         }
 
         function finishGame() {
@@ -569,6 +630,7 @@
         });
 
         document.getElementById("btn-start").addEventListener("click", function () {
+            timing.cancelAll();
             if (policy.audio) tones.start();
             state.score = 0;
             state.combo = 0;
@@ -600,6 +662,7 @@
         });
 
         document.getElementById("btn-restart").addEventListener("click", function () {
+            timing.cancelAll();
             screens.results.classList.add("hidden");
             screens.welcome.classList.remove("hidden");
         });

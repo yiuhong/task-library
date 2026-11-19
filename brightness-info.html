@@ -97,7 +97,7 @@
         <section>
             <h2>Methods note</h2>
             <p>Both shells share the 40 trials and the confidence rating. Neither shell says whether the choice was right, and there is no practice block. The gamified shell can play a tone after the choice is stored. It is not a correct or incorrect word. For a run without those tones, use classical. The trial counter stays. There is no running score.</p>
-            <p>The results buttons are the shared export on <a href="researchers.html#brightness">For researchers</a>. <code>rt_ms</code> is the rounded choice time and is blank on a timeout. <code>confidence_rt_ms</code> is the rating. A timeout stores confidence <code>missed</code> and skips the rating. Nothing is uploaded.</p>
+            <p>The results buttons are the shared export on <a href="researchers.html#brightness">For researchers</a>. Fixation (400 ms), the 3500 ms window, the 250 ms pause before the rating accepts a key, and the 600 ms blank are scheduled from display frames. Each intended duration is the nearest whole frame. The rating itself has no deadline. <code>rt_ms</code> is the rounded choice time from the frame that shows the patches, and is blank on a timeout. <code>confidence_rt_ms</code> starts when the rating prompt is shown, before that 250 ms pause ends. A timeout stores confidence <code>missed</code> and skips the rating. <code>params.timing</code> is the frame scheduler that ran. If the tab was hidden or frames were delayed, the page says so and <code>timing_flag</code> is set. The frame stamp is when the page asks for the paint. It is earlier than the pixels and earlier than the light. Nothing is uploaded.</p>
         </section>
 
         <section>

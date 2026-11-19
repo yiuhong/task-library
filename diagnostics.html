@@ -67,7 +67,7 @@
             <h2>What these pages can and cannot stand behind</h2>
             <ul>
                 <li>The refresh estimate is how often <code>requestAnimationFrame</code> ran while this tab was visible. It can be lower than the rate printed on the monitor. It is not when the pixels changed. A light sensor on the glass would be required to time the pixels. This site does not use one.</li>
-                <li><code>setTimeout</code> is not a vertical-blank interrupt. The tasks use it for fixation, stimuli, and inter-trial gaps. The timer page reports how late those callbacks were compared with the delay the page asked for.</li>
+                <li><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks schedule fixation, stimuli, and the gaps between trials from display frames. Spatial Go/No-Go still uses <code>setTimeout</code> for its 1200 ms window. The timer page reports how late a <code>setTimeout</code> callback was compared with the delay this page asked for.</li>
                 <li><code>performance.now()</code> is a monotonic page clock. Its origin is the page load. A small step is not proof that a stimulus lasted that many milliseconds on screen.</li>
                 <li>The page-clock number ends when the input handler runs. It includes your movement. It leaves out the display lag and most of the device lag. Do not enter it as a participant’s reaction time. If <code>event.timeStamp</code> uses another origin, the handler gap is left blank.</li>
                 <li>A background tab, a busy processor, or a low-power setting can move every number. Repeat the check on the machine and the browser you will actually use.</li>

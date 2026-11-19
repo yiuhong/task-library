@@ -10,6 +10,11 @@
   the main block. Classical practice shows Correct, Incorrect, or No
   response only. The classical main block keeps the 400 ms feedback hold
   and the 350 ms interval with the badge hidden. Saved runs append mode.
+
+  Fixation, the coherent-motion duration, the response window, the
+  feedback hold, and the blank are scheduled by assets/trial-timing.js.
+  The dot animation stays on its own requestAnimationFrame loop.
+  Response time starts when the motion phase begins.
 */
 (function (global) {
   'use strict';
@@ -70,6 +75,18 @@
     if (!global.TrialExport) {
       throw new Error('RDK requires assets/trial-export.js');
     }
+    if (!global.TrialTiming) {
+      throw new Error('RDK requires assets/trial-timing.js');
+    }
+
+    var timing = global.TrialTiming.session();
+
+    function timingParams() {
+      var snapshot = timing.policy();
+      snapshot.responseOnset = 'motion';
+      snapshot.intervals = ['fixation', 'motion', 'response', 'feedback', 'iti'];
+      return snapshot;
+    }
 
     var exportLog = global.TrialExport.session({
       taskId: 'rdk',
@@ -92,6 +109,7 @@
           }),
           practiceTrials: CONFIG.practiceTrials,
           mainTrials: CONFIG.mainTrials,
+          timing: timingParams(),
           presentation: {
             policyId: policy.id,
             trialFeedback: !!policy.trialFeedback,
@@ -141,8 +159,12 @@
       trialLogs: [],
       dots: [],
       animFrameId: null,
-      phaseTimerId: null,
+      showDots: false,
       stimulusOnsetPerf: 0,
+      trialLog: null,
+      openPhase: null,
+      motionPhase: null,
+      pendingExport: null,
       lastFramePerf: 0,
       awaitingResponse: false,
       prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -400,60 +422,74 @@
       state.currentTrial = state.trialSchedule[state.currentTrialIndex];
       updateHud();
 
-      // PHASE 1: FIXATION (500 ms)
       state.phase = 'FIXATION';
       state.awaitingResponse = false;
-      dom.trialStatusLabel.textContent = 'Fixate Center (+)'
-      renderStaticAperture(true, '#f59e0b');
-      sfx.playFixation();
+      state.showDots = false;
 
-      state.phaseTimerId = setTimeout(() => {
-        startStimulusPhase();
-      }, CONFIG.fixationMs);
+      timing.frame(function (ts) {
+        var run = timing.trial();
+        state.trialLog = run;
+        state.pendingExport = null;
+        state.motionPhase = null;
+        dom.trialStatusLabel.textContent = 'Fixate Center (+)';
+        renderStaticAperture(true, '#f59e0b');
+        sfx.playFixation();
+        var fixation = run.open('fixation', CONFIG.fixationMs, ts);
+        state.openPhase = fixation;
+        run.after(ts, CONFIG.fixationMs, function (stimTs) {
+          fixation.close(stimTs, 'frame');
+          startStimulusPhase(stimTs, run);
+        });
+      });
     }
 
-    function startStimulusPhase() {
+    function startStimulusPhase(onsetTs, run) {
       const trial = state.currentTrial;
       initDotsForTrial(trial.coherence_prop, trial.direction);
 
       state.phase = 'STIMULUS';
       state.awaitingResponse = true;
-      state.stimulusOnsetPerf = performance.now();
-      state.lastFramePerf = state.stimulusOnsetPerf;
+      state.showDots = true;
+      state.stimulusOnsetPerf = onsetTs;
+      state.lastFramePerf = onsetTs;
 
       dom.trialStatusLabel.textContent = `Respond: Left or Right (${trial.coherence_pct}% Coherence)`;
 
+      var motion = run.open('motion', CONFIG.stimulusDisplayMs, onsetTs);
+      var response = run.open('response', CONFIG.stimulusMaxMs, onsetTs);
+      state.motionPhase = motion;
+      state.openPhase = response;
+      run.after(onsetTs, CONFIG.stimulusDisplayMs, function (endTs) {
+        if (state.phase !== 'STIMULUS') return;
+        if (motion.isOpen()) motion.close(endTs, 'frame');
+        state.showDots = false;
+      });
+      run.after(onsetTs, CONFIG.stimulusMaxMs, function (endTs) {
+        if (!state.awaitingResponse) return;
+        if (response.isOpen()) response.close(endTs, 'frame');
+        state.openPhase = null;
+        handleResponse('TIMEOUT', endTs);
+      });
+
       const animate = (now) => {
         if (state.phase !== 'STIMULUS') return;
-
-        const elapsed = now - state.stimulusOnsetPerf;
         const dtSec = Math.min(0.05, Math.max(0.001, (now - state.lastFramePerf) / 1000));
         state.lastFramePerf = now;
-
-        if (elapsed >= CONFIG.stimulusMaxMs) {
-          handleResponse('TIMEOUT', CONFIG.stimulusMaxMs);
-          return;
-        }
-
-        // Display moving dots up to CONFIG.stimulusDisplayMs, then hold fixation until max window
-        const showDots = elapsed <= CONFIG.stimulusDisplayMs;
-        updateAndDrawDots(dtSec, showDots);
-
+        updateAndDrawDots(dtSec, state.showDots);
         state.animFrameId = requestAnimationFrame(animate);
       };
 
       state.animFrameId = requestAnimationFrame(animate);
     }
 
-    function handleResponse(choiceDirection, customRt = null) {
+    function handleResponse(choiceDirection, scheduledTs) {
       if (!state.awaitingResponse || state.phase !== 'STIMULUS') return;
       state.awaitingResponse = false;
-      clearTimers();
+      clearAnimation();
+      timing.cancelAll();
 
-      const responsePerf = performance.now();
-      const rtMs = customRt !== null
-        ? Math.round(customRt)
-        : Math.max(1, Math.round(responsePerf - state.stimulusOnsetPerf));
+      const responsePerf = scheduledTs == null ? timing.now() : scheduledTs;
+      const rtMs = Math.max(1, Math.round(responsePerf - state.stimulusOnsetPerf));
 
       const trial = state.currentTrial;
       const isTimeout = choiceDirection === 'TIMEOUT';
@@ -471,7 +507,7 @@
         timestamp: new Date().toISOString()
       };
       state.trialLogs.push(record);
-      exportLog.record({
+      state.pendingExport = {
         trialIndex: record.trial,
         block: record.block,
         stimulus: trial.direction + ' ' + trial.coherence_pct + '%',
@@ -487,7 +523,7 @@
           direction: trial.direction,
           timed_out: isTimeout ? 1 : 0
         }
-      });
+      };
 
       // Visual & Audio Feedback (400 ms)
       state.phase = 'FEEDBACK';
@@ -504,18 +540,43 @@
 
       updateHud();
 
-      state.phaseTimerId = setTimeout(() => {
-        dom.feedbackBadge.classList.add('hidden');
-        // ITI Phase (350 ms)
-        state.phase = 'ITI';
-        dom.trialStatusLabel.textContent = 'Next Trial...';
-        renderStaticAperture(false);
+      var run = state.trialLog;
+      var closedBy = isTimeout ? 'frame' : 'response';
+      timing.frame(function (ts) {
+        if (state.motionPhase && state.motionPhase.isOpen()) state.motionPhase.close(ts, closedBy);
+        if (state.openPhase && state.openPhase.isOpen()) state.openPhase.close(ts, closedBy);
+        state.motionPhase = null;
+        state.openPhase = null;
+        var feedback = run.open('feedback', CONFIG.feedbackMs, ts);
+        run.after(ts, CONFIG.feedbackMs, function (blankTs) {
+          feedback.close(blankTs, 'frame');
+          dom.feedbackBadge.classList.add('hidden');
+          state.phase = 'ITI';
+          dom.trialStatusLabel.textContent = 'Next Trial...';
+          renderStaticAperture(false);
+          var iti = run.open('iti', CONFIG.itiMs, blankTs);
+          run.after(blankTs, CONFIG.itiMs, function (nextTs) {
+            iti.close(nextTs, 'frame');
+            commitExport();
+            state.currentTrialIndex += 1;
+            runNextTrial();
+          });
+        });
+      });
+    }
 
-        state.phaseTimerId = setTimeout(() => {
-          state.currentTrialIndex += 1;
-          runNextTrial();
-        }, CONFIG.itiMs);
-      }, CONFIG.feedbackMs);
+    function commitExport() {
+      if (!state.pendingExport || !state.trialLog) return;
+      var row = state.pendingExport;
+      var timingFields = state.trialLog.fields();
+      state.pendingExport = null;
+      row.timingMethod = timingFields.timingMethod;
+      row.refreshHz = timingFields.refreshHz;
+      row.frameMs = timingFields.frameMs;
+      row.intendedDurations = timingFields.intendedDurations;
+      row.phaseTiming = timingFields.phaseTiming;
+      row.timingFlag = timingFields.timingFlag;
+      exportLog.record(row);
     }
 
     function showFeedbackOverlay(isCorrect, isTimeout, rtMs) {
@@ -700,15 +761,16 @@
       exportLog.downloadJson('rdk_motion_data_' + exportStamp() + '.json');
     }
 
-    function clearTimers() {
+    function clearAnimation() {
       if (state.animFrameId) {
         cancelAnimationFrame(state.animFrameId);
         state.animFrameId = null;
       }
-      if (state.phaseTimerId) {
-        clearTimeout(state.phaseTimerId);
-        state.phaseTimerId = null;
-      }
+    }
+
+    function clearTimers() {
+      clearAnimation();
+      timing.cancelAll();
     }
 
     /**
@@ -762,6 +824,7 @@
 
     // Screen Navigation Buttons
     dom.btnStartPractice.addEventListener('click', () => {
+      timing.cancelAll();
       if (mode === 'classical') { /* no audio context */ } else if (audio) { audio.ensureContext(); }
       startBlock('PRACTICE');
     });
@@ -785,6 +848,7 @@
     });
 
     dom.btnRestart.addEventListener('click', () => {
+      timing.cancelAll();
       state.trialLogs = [];
       startBlock('PRACTICE');
     });

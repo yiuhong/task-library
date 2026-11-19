@@ -79,7 +79,7 @@
         <section>
             <h2>Interpretation</h2>
             <div id="device-interpretation">
-                <p><code>performance.now()</code> is a monotonic page clock. Its origin is this page load. A small step is not proof that a stimulus lasted that many milliseconds on screen. Stimulus timing is still limited by the display and by <code>setTimeout</code>.</p>
+                <p><code>performance.now()</code> is a monotonic page clock. Its origin is this page load. A small step is not proof that a stimulus lasted that many milliseconds on screen. Stimulus timing is still limited by the display. The frame stamp is when the page asks for the paint, which is earlier than the pixels and earlier than the light.</p>
             </div>
         </section>
 
