@@ -81,7 +81,7 @@
         <section>
             <h2>Interpretation</h2>
             <div id="device-interpretation">
-                <p><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks schedule fixation, stimuli, and the gaps between trials from display frames. Spatial Go/No-Go still uses <code>setTimeout</code> for its 1200 ms window. This check reports how late a <code>setTimeout</code> callback was compared with the delay this page asked for.</p>
+                <p><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks schedule fixation, stimuli, and the gaps between trials from display frames. Spatial Go/No-Go schedules its gap and its 1200 ms window from the headset animation frame while an immersive-vr session is running, and from the page animation frame on a flat preview. This check reports how late a <code>setTimeout</code> callback was compared with the delay this page asked for.</p>
                 <p>Browsers often clamp a request of 0 ms. That row is shown here. It is not a fail on its own unless the median observed time is above 20 ms.</p>
             </div>
         </section>
@@ -136,7 +136,7 @@
         <section>
             <h2>What this page can and cannot stand behind</h2>
             <ul id="device-limits">
-                <li><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks do not use it for fixation, stimuli, or the gaps between trials. Spatial Go/No-Go still uses it for its 1200 ms window.</li>
+                <li><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks do not use it for fixation, stimuli, or the gaps between trials. Spatial Go/No-Go schedules its gap and its 1200 ms window from headset frames during immersive-vr, and from page animation frames on a flat preview.</li>
                 <li>The callback is not locked to the display. A background tab can delay it further. A hidden tab is not scored as a machine fail.</li>
                 <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
             </ul>

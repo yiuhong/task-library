@@ -60,11 +60,11 @@
                 </div>
                 <div>
                     <dt>Response window</dt>
-                    <dd>1200 ms from stimulus onset. One response counts. A second trigger in the same trial is ignored.</dd>
+                    <dd>1200 ms from the frame that shows the target, kept as the nearest whole frame. One response counts. A second trigger in the same trial is ignored.</dd>
                 </div>
                 <div>
                     <dt>Gap</dt>
-                    <dd>800–1400 ms after the previous trial ends, before the next target. The fixation plus is shown during the gap.</dd>
+                    <dd>800–1400 ms after the previous trial ends, before the next target, kept as the nearest whole frame. The fixation plus is shown during the gap.</dd>
                 </div>
                 <div>
                     <dt>Score</dt>
@@ -72,7 +72,7 @@
                 </div>
                 <div>
                     <dt>Response time</dt>
-                    <dd>Milliseconds from stimulus onset on a response. A withhold stores an empty time. Mean go response time uses hits only.</dd>
+                    <dd>Milliseconds from the frame that shows the target. In an immersive-vr session that frame is the WebXR animation-frame callback. On a flat preview it is the page animation frame. A withhold stores an empty time. Mean go response time uses hits only.</dd>
                 </div>
             </dl>
         </section>
@@ -98,7 +98,7 @@
         <section>
             <h2>Methods note</h2>
             <p>This page is one WebXR scene. It does not use the gamified or classical shell, and it does not read or write <code>project-trial:mode</code>. <code>?mode=classical</code> does not change the targets, the timings, the score, or the colors. It turns off the floating outcome words and their sounds. Any other address keeps those words. The words are drawn after the row is stored, during the existing 800–1400 ms gap before the next target. They can affect the next trial. The running score and streak stay off during the run. The trial counter stays. The results screen still shows the score. To leave the floating word off, open <a href="orbital_gonogo.html?mode=classical">?mode=classical</a>.</p>
-            <p>The download is the shared export on <a href="researchers.html#spatial">For researchers</a>. <code>rt_ms</code> is the rounded time from the moment the page asks A-Frame to add the target until the trigger handler runs. That stamp is earlier than the pixels and earlier than the light. In a headset it is also earlier than the frame that shows the object. The 1200 ms window is <code>setTimeout</code>. A click that misses the object is not a response. A window with no trigger leaves <code>rt_ms</code> blank. This page does not add a light-sensor or button-box check. Practice rows, when practice is on, stay in the file and are marked <code>practice</code>. Nothing is uploaded.</p>
+            <p>The download is the shared export on <a href="researchers.html#spatial">For researchers</a>. The gap before the target and the 1200 ms window are scheduled from frames. Each intended duration is the nearest whole frame, and a positive duration is at least one frame. In an immersive-vr session the clock is the WebXR animation frame: the time argument of <code>XRSession.requestAnimationFrame</code>, which A-Frame delivers before it renders. <code>onset_perf_ms</code> is that timestamp for the frame that adds the target before the frame is submitted. The stamp is when the page prepares the frame. Photons at the eye come later. The same frame's <code>XRFrame.predictedDisplayTime</code> is stored on the stimulus phase as <code>predictedDisplayMs</code>. That value is the browser's predicted presentation time. It is not the onset and it is not a light measurement. <code>rt_ms</code> is the rounded difference from that onset to the headset frame that handles the trigger. A trigger that arrives between headset frames uses the next one. On a flat preview, with no immersive-vr session, the same intervals use the page <code>requestAnimationFrame</code> timestamp, the export says <code>requestAnimationFrame</code>, and a trigger uses <code>performance.now()</code>. A fullscreen Enter VR preview without a headset session stays on that page clock. <code>params.timing</code> describes the policy that ran. A hidden tab or a long frame gap sets <code>timing_flag</code> and leaves a short note. A blank flag is not a headset clearance. A click that misses the object is not a response. A window with no trigger leaves <code>rt_ms</code> blank. This page does not add a light-sensor or button-box check. Practice rows, when practice is on, stay in the file and are marked <code>practice</code>. Nothing is uploaded.</p>
         </section>
 
         <section>

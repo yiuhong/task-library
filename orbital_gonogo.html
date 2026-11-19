@@ -583,6 +583,7 @@
   <script src="assets/trial-audio.js"></script>
   <script src="assets/orbital-gonogo.js"></script>
   <script src="assets/trial-export.js"></script>
+  <script src="assets/webxr-frame-timing.js"></script>
   <script>
     (function () {
       'use strict';
@@ -621,6 +622,19 @@
       if (!window.TrialExport) {
         throw new Error('Spatial Go/No-Go requires assets/trial-export.js');
       }
+      if (!window.WebxrFrameTiming) {
+        throw new Error('Spatial Go/No-Go requires assets/webxr-frame-timing.js');
+      }
+
+      var frameClock = null;
+
+      function timingParams() {
+        if (!frameClock) return null;
+        var snapshot = frameClock.policy();
+        snapshot.responseOnset = 'target';
+        snapshot.intervals = ['fixation', 'stimulus'];
+        return snapshot;
+      }
 
       var exportLog = window.TrialExport.session({
         taskId: 'orbital_gonogo',
@@ -640,6 +654,7 @@
             sizeMode: sessionSizeMode,
             fixationMode: sessionFixationMode,
             practice: sessionPractice ? 1 : 0,
+            timing: timingParams(),
             presentation: {
               shell: 'webxr',
               sceneChangesWithMode: false,
@@ -653,15 +668,18 @@
       });
 
       var activeStimulusEl = null;
-      var trialTimerId = null;
-      var itiTimerId = null;
       var trialActive = false;
+      var trialLog = null;
+      var openFixation = null;
+      var openStimulus = null;
+      var windowJob = null;
       var triggerDebounce = false;
       var currentTrialMeta = null;
       var uiButtonLock = false;
       var screenRaycaster = new THREE.Raycaster();
 
       var sceneEl = document.getElementById('mainScene');
+      frameClock = window.WebxrFrameTiming.attach(sceneEl);
       var mainCameraEl = document.getElementById('mainCamera');
       var hudClusterEl = document.getElementById('hudCluster');
       var hudTrialText = document.getElementById('hudTrialText');
@@ -898,6 +916,7 @@
           easing: 'easeOutQuad'
         });
         feedbackContainerEl.appendChild(entity);
+        // Outcome words are chrome during the gap. Removing them does not time the trial.
         setTimeout(function () {
           if (entity.parentNode) entity.parentNode.removeChild(entity);
         }, 680);
@@ -923,6 +942,7 @@
         });
         sessionLogs.push(row);
         var accurate = fields.outcome === 'HIT' || fields.outcome === 'CORRECT_REJECTION';
+        var timingFields = trialLog ? trialLog.fields() : null;
         exportLog.record({
           trialIndex: sessionLogs.length,
           block: row.block,
@@ -934,6 +954,12 @@
           timestamp: new Date().toISOString(),
           onsetPerfMs: currentTrialMeta.spawnTime,
           responsePerfMs: fields.responsePerf,
+          timingMethod: timingFields ? timingFields.timingMethod : null,
+          refreshHz: timingFields ? timingFields.refreshHz : null,
+          frameMs: timingFields ? timingFields.frameMs : null,
+          intendedDurations: timingFields ? timingFields.intendedDurations : null,
+          phaseTiming: timingFields ? timingFields.phaseTiming : null,
+          timingFlag: timingFields ? timingFields.timingFlag : null,
           extra: {
             trial_in_block: row.trial_num,
             depth_plane: row.depth_plane,
@@ -980,12 +1006,34 @@
         return n;
       }
 
+      function targetMeshReady(el) {
+        if (!el || !el.hasLoaded || !el.getObject3D) return false;
+        var mesh = el.getObject3D('mesh');
+        return !!(mesh && mesh.parent);
+      }
+
+      function stampResponse(done) {
+        var xrMethod = window.WebxrFrameTiming.METHOD_XR;
+        if (frameClock.inFrame() && frameClock.method() === xrMethod) {
+          done(frameClock.frameTime(), frameClock.currentInfo());
+          return;
+        }
+        if (frameClock.immersive()) {
+          frameClock.frame(function (ts, info) { done(ts, info); });
+          return;
+        }
+        done(performance.now(), null);
+      }
+
       function startExperiment() {
         if (!sceneReady || phase === 'run') return;
+        if (frameClock.install) frameClock.install();
         audio.ensureContext();
         detectBaseHeadHeight();
-        clearTimeout(trialTimerId);
-        clearTimeout(itiTimerId);
+        frameClock.cancelAll();
+        windowJob = null;
+        openFixation = null;
+        openStimulus = null;
         clearActiveStimulus();
 
         sessionSizeMode = selectedSizeMode();
@@ -1017,8 +1065,11 @@
       }
 
       function runNextTrial() {
-        clearTimeout(trialTimerId);
-        clearTimeout(itiTimerId);
+        frameClock.cancelAll();
+        windowJob = null;
+        openFixation = null;
+        openStimulus = null;
+        trialLog = null;
         clearActiveStimulus();
 
         if (currentTrialIndex >= runQueue.length) {
@@ -1043,29 +1094,23 @@
           });
         }
 
-        fixationCrossEl.setAttribute('position', sessionFixation.x + ' ' + sessionFixation.y + ' ' + sessionFixation.z);
-        fixationCrossEl.setAttribute('visible', 'true');
-
-        itiTimerId = setTimeout(function () {
-          if (trial.fixation_mode !== plan.FIXATION_VISIBLE) {
-            fixationCrossEl.setAttribute('visible', 'false');
-          }
-          spawnStimulus(trialNum, trial, itiMs);
-        }, itiMs);
+        frameClock.frame(function (ts, info) {
+          trialLog = frameClock.trial();
+          fixationCrossEl.setAttribute('position', sessionFixation.x + ' ' + sessionFixation.y + ' ' + sessionFixation.z);
+          fixationCrossEl.setAttribute('visible', 'true');
+          openFixation = trialLog.open('fixation', itiMs, ts, info);
+          trialLog.after(ts, itiMs, function (stimTs, stimInfo) {
+            spawnStimulus(trialNum, trial, itiMs, stimTs, stimInfo);
+          }, openFixation.frameMs);
+        });
       }
 
-      function spawnStimulus(trialNum, trial, itiMs) {
+      function spawnStimulus(trialNum, trial, itiMs, stimTs, stimInfo) {
         triggerDebounce = false;
-        trialActive = true;
 
         var radius = plan.shownRadius(trial.plane_distance_m, trial.size_mode);
         var seeThrough = trial.fixation_mode === plan.FIXATION_VISIBLE;
         var placed = plan.placeOnPlane(trial.plane_distance_m, sessionEye, baseY);
-        var eyeNow = readEye();
-        var distance = plan.distanceM(placed.x, placed.y, placed.z, eyeNow);
-        var eccentricity = plan.eccentricityDeg(placed.x, placed.y, placed.z, eyeNow, sessionFixation);
-        var visualAngle = plan.visualAngleDeg(radius, distance);
-        var occluded = plan.fixationOccluded(trial.fixation_mode, placed, radius, eyeNow, sessionFixation);
 
         var stimEl = document.createElement('a-entity');
         stimEl.setAttribute('position', placed.x + ' ' + placed.y + ' ' + placed.z);
@@ -1089,6 +1134,13 @@
           stimEl.setAttribute('material', nogoMat);
         }
 
+        if (seeThrough) {
+          stimEl.addEventListener('loaded', function () {
+            if (!stimEl.object3D) return;
+            stimEl.object3D.traverse(function (node) { node.renderOrder = 2; });
+          });
+        }
+
         stimEl.classList.add('clickable');
         stimEl.addEventListener('mousedown', onStimulusTriggerDown);
         stimEl.addEventListener('click', onStimulusTriggerDown);
@@ -1096,38 +1148,65 @@
         activeStimulusEl = stimEl;
         refreshAllRaycasters();
 
-        currentTrialMeta = {
-          trial_num: trialNum,
-          trial_type: trial.trial_type,
-          depth_plane: trial.depth_plane,
-          plane_distance_m: trial.plane_distance_m,
-          distance_m: distance,
-          visual_angle_deg: visualAngle,
-          angle_h_deg: placed.angle_h_deg,
-          angle_v_deg: placed.angle_v_deg,
-          iti_ms: itiMs,
-          x_pos: placed.x,
-          y_pos: placed.y,
-          z_pos: placed.z,
-          eccentricity_deg: eccentricity,
-          stimulus_radius_m: radius,
-          size_mode: trial.size_mode,
-          fixation_mode: trial.fixation_mode,
-          fixation_occluded: occluded,
-          block: trial.block,
-          spawnTime: performance.now()
-        };
+        var armed = false;
+        var waits = 0;
 
-        if (seeThrough) {
-          stimEl.addEventListener('loaded', function () {
-            stimEl.object3D.traverse(function (node) { node.renderOrder = 2; });
-          });
+        function armStimulus(ts, info) {
+          if (armed || activeStimulusEl !== stimEl) return;
+          armed = true;
+          if (trial.fixation_mode !== plan.FIXATION_VISIBLE) {
+            fixationCrossEl.setAttribute('visible', 'false');
+          }
+          if (openFixation && openFixation.isOpen()) openFixation.close(ts, 'frame', info);
+          openFixation = null;
+          trialActive = true;
+          var eyeNow = readEye();
+          var distance = plan.distanceM(placed.x, placed.y, placed.z, eyeNow);
+          var eccentricity = plan.eccentricityDeg(placed.x, placed.y, placed.z, eyeNow, sessionFixation);
+          var visualAngle = plan.visualAngleDeg(radius, distance);
+          var occluded = plan.fixationOccluded(trial.fixation_mode, placed, radius, eyeNow, sessionFixation);
+          currentTrialMeta = {
+            trial_num: trialNum,
+            trial_type: trial.trial_type,
+            depth_plane: trial.depth_plane,
+            plane_distance_m: trial.plane_distance_m,
+            distance_m: distance,
+            visual_angle_deg: visualAngle,
+            angle_h_deg: placed.angle_h_deg,
+            angle_v_deg: placed.angle_v_deg,
+            iti_ms: itiMs,
+            x_pos: placed.x,
+            y_pos: placed.y,
+            z_pos: placed.z,
+            eccentricity_deg: eccentricity,
+            stimulus_radius_m: radius,
+            size_mode: trial.size_mode,
+            fixation_mode: trial.fixation_mode,
+            fixation_occluded: occluded,
+            block: trial.block,
+            spawnTime: ts
+          };
+          openStimulus = trialLog.open('stimulus', plan.STIMULUS_TIMEOUT_MS, ts, info);
+          windowJob = trialLog.after(ts, plan.STIMULUS_TIMEOUT_MS, function (endTs, endInfo) {
+            if (!trialActive) return;
+            if (openStimulus && openStimulus.isOpen()) openStimulus.close(endTs, 'frame', endInfo);
+            handleTrialTimeout(endTs);
+          }, openStimulus.frameMs);
         }
 
-        trialTimerId = setTimeout(function () {
-          if (!trialActive) return;
-          handleTrialTimeout();
-        }, plan.STIMULUS_TIMEOUT_MS);
+        function waitForMesh() {
+          if (armed || activeStimulusEl !== stimEl) return;
+          waits += 1;
+          if (targetMeshReady(stimEl) || waits > 90) {
+            var info = frameClock.currentInfo();
+            armStimulus(frameClock.frameTime(), info);
+            return;
+          }
+          frameClock.nextFrame(waitForMesh);
+        }
+
+        if (targetMeshReady(stimEl)) armStimulus(stimTs, stimInfo);
+        else waitForMesh();
       }
 
       function advanceTrial() {
@@ -1139,54 +1218,56 @@
         if (!trialActive || triggerDebounce) return;
         triggerDebounce = true;
         trialActive = false;
-        clearTimeout(trialTimerId);
+        if (windowJob) windowJob.cancel();
+        windowJob = null;
         audio.ensureContext();
 
-        var responsePerf = performance.now();
-        var rtMs = Math.max(1, Math.round(responsePerf - currentTrialMeta.spawnTime));
-        var pos = {
-          x: currentTrialMeta.x_pos,
-          y: currentTrialMeta.y_pos,
-          z: currentTrialMeta.z_pos
-        };
-        var practice = currentTrialMeta.block === plan.BLOCK_PRACTICE;
-        clearActiveStimulus();
+        var spawnTime = currentTrialMeta.spawnTime;
+        var meta = currentTrialMeta;
+        stampResponse(function (responsePerf, info) {
+          if (openStimulus && openStimulus.isOpen()) openStimulus.close(responsePerf, 'response', info);
+          var rtMs = Math.max(1, Math.round(responsePerf - spawnTime));
+          var pos = { x: meta.x_pos, y: meta.y_pos, z: meta.z_pos };
+          var practice = meta.block === plan.BLOCK_PRACTICE;
+          clearActiveStimulus();
 
-        if (currentTrialMeta.trial_type === 'GO') {
-          var speedBonus = Math.round((plan.STIMULUS_TIMEOUT_MS - rtMs) / 10);
-          var pointsEarned = 100 + Math.max(0, speedBonus);
-          if (!practice) {
-            scoreTotal += pointsEarned;
-            currentStreak += 1;
+          if (meta.trial_type === 'GO') {
+            var speedBonus = Math.round((plan.STIMULUS_TIMEOUT_MS - rtMs) / 10);
+            var pointsEarned = 100 + Math.max(0, speedBonus);
+            if (!practice) {
+              scoreTotal += pointsEarned;
+              currentStreak += 1;
+            }
+            recordTrialOutcome({
+              response_made: 1,
+              outcome: 'HIT',
+              rt_ms: rtMs,
+              responsePerf: responsePerf
+            });
+            showOutcome(practice ? 'PRACTICE HIT' : ('+' + pointsEarned + ' (' + rtMs + 'ms)'), '#00F5D4', pos, 'hit');
+          } else {
+            if (!practice) {
+              scoreTotal -= 150;
+              currentStreak = 0;
+            }
+            recordTrialOutcome({
+              response_made: 1,
+              outcome: 'FALSE_ALARM',
+              rt_ms: rtMs,
+              responsePerf: responsePerf
+            });
+            showOutcome(practice ? 'PRACTICE FA' : 'FALSE ALARM! -150', '#FF2A85', pos, 'error');
           }
-          recordTrialOutcome({
-            response_made: 1,
-            outcome: 'HIT',
-            rt_ms: rtMs,
-            responsePerf: responsePerf
-          });
-          showOutcome(practice ? 'PRACTICE HIT' : ('+' + pointsEarned + ' (' + rtMs + 'ms)'), '#00F5D4', pos, 'hit');
-        } else {
-          if (!practice) {
-            scoreTotal -= 150;
-            currentStreak = 0;
-          }
-          recordTrialOutcome({
-            response_made: 1,
-            outcome: 'FALSE_ALARM',
-            rt_ms: rtMs,
-            responsePerf: responsePerf
-          });
-          showOutcome(practice ? 'PRACTICE FA' : 'FALSE ALARM! -150', '#FF2A85', pos, 'error');
-        }
 
-        advanceTrial();
+          advanceTrial();
+        });
       }
 
-      function handleTrialTimeout() {
+      function handleTrialTimeout(responsePerf) {
         if (!trialActive) return;
         trialActive = false;
         triggerDebounce = true;
+        windowJob = null;
         var pos = {
           x: currentTrialMeta.x_pos,
           y: currentTrialMeta.y_pos,
@@ -1195,7 +1276,6 @@
         var practice = currentTrialMeta.block === plan.BLOCK_PRACTICE;
         clearActiveStimulus();
 
-        var responsePerf = performance.now();
         if (currentTrialMeta.trial_type === 'GO') {
           if (!practice) currentStreak = 0;
           recordTrialOutcome({
@@ -1362,6 +1442,7 @@
       function withUiDebounce(callback) {
         if (uiButtonLock) return;
         uiButtonLock = true;
+        // Panel-button debounce is chrome, not a trial interval.
         setTimeout(function () { uiButtonLock = false; }, 350);
         callback();
       }
@@ -1481,6 +1562,7 @@
       function onSceneReady() {
         if (sceneReady) return;
         sceneReady = true;
+        if (frameClock.install) frameClock.install();
         immersive = !!(sceneEl.is && sceneEl.is('vr-mode'));
         detectBaseHeadHeight();
         htmlStart.disabled = false;
