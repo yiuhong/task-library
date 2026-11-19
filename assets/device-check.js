@@ -2,8 +2,9 @@
   Device check for Project Trial.
 
   One page runs one check: the animation callback, setTimeout lateness,
-  the step of performance.now(), or the page clock from a color change
-  to an input event. The researcher runs it on their own machine.
+  the step of performance.now(), the page clock from a color change
+  to an input event, or an immersive-vr session for Spatial Go/No-Go.
+  The researcher runs it on their own machine.
 
   Nothing is uploaded. Nothing is written to localStorage except a
   one-key probe that is removed before the function returns. Verdicts
@@ -27,13 +28,24 @@
     var TIMER_LATENESS_MS = 8;
     var TIMER_ZERO_FAIL_MS = 20;
     var CLOCK_MAX_MEDIAN_MS = 1;
+    /*
+      v2 is the shared file envelope. The headset check adds a check
+      name and its own measurements object. It does not add a top-level
+      field, so the schema version stays v2.
+    */
     var SCHEMA = "project-trial.device-check.v2";
+    var HEADSET_SPACES = ["local-floor", "local", "viewer", "bounded-floor", "unbounded"];
+    var HEADSET_OPTIONAL = ["local-floor", "bounded-floor", "unbounded"];
+    var HEADSET_SESSION_MS = 45000;
+    var HEADSET_FRAMES = 30;
+    var HEADSET_FRAME_MS = 800;
 
     var PAGES = {
         refresh: "diagnostics-refresh.html",
         timers: "diagnostics-timers.html",
         clock: "diagnostics-clock.html",
-        "page-clock": "diagnostics-page-clock.html"
+        "page-clock": "diagnostics-page-clock.html",
+        headset: "diagnostics-headset.html"
     };
 
     var MARKS = {
@@ -169,6 +181,23 @@
                 pass: "The median performance.now() step is 1 ms or less.",
                 fail: "The median step is coarser than 1 ms, or the clock did not move in the sample loop.",
                 couldNotRun: "The tab was hidden, or performance.now() is missing. This is not a machine fail."
+            };
+        }
+        if (check === "headset") {
+            return {
+                kind: "rules-of-thumb",
+                notALabCertificate: true,
+                task: "orbital_gonogo",
+                sessionMode: "immersive-vr",
+                optionalFeatures: HEADSET_OPTIONAL.slice(),
+                referenceSpacesProbed: HEADSET_SPACES.slice(),
+                taskReferenceSpace: "local-floor",
+                frameBudget: HEADSET_FRAMES,
+                frameBudgetMs: HEADSET_FRAME_MS,
+                sessionWaitMs: HEADSET_SESSION_MS,
+                pass: "This tab was visible, an immersive-vr session started and ended, and a local-floor reference space was available. Seeing no controller does not fail the check.",
+                fail: "This browser reported immersive-vr support, then did not start a session after the button press, or the session started but local-floor was not available, or the session did not end cleanly.",
+                couldNotRun: "This browser has no WebXR API, it does not offer immersive-vr, this tab was hidden, the prompt was dismissed, or the run stopped. A desktop or phone without a headset is could not run. That is not a machine fail."
             };
         }
         return {
@@ -510,9 +539,124 @@
         verdictTimers: verdictTimers,
         verdictClock: verdictClock,
         verdictPageClock: verdictPageClock,
+        verdictHeadset: verdictHeadset,
         median: median,
         round2: round2
     };
+
+    function errorInfo(err) {
+        if (!err) return null;
+        var name = err.name ? String(err.name) : "Error";
+        var message = err.message ? String(err.message) : String(err);
+        message = message.replace(/\s+/g, " ").trim();
+        if (message.length > 240) message = message.slice(0, 237) + "...";
+        return { name: name, message: message };
+    }
+
+    function isUserDecline(info) {
+        if (!info || !info.name) return false;
+        if (info.name === "NotAllowedError" || info.name === "AbortError") return true;
+        if (info.name === "SecurityError" && /user gesture|user activation|transient activation/i.test(info.message || "")) {
+            return true;
+        }
+        return false;
+    }
+
+    function errorTail(info) {
+        if (!info || !info.name) return "";
+        if (!info.message) return " " + info.name + ".";
+        return " " + info.name + ". " + info.message;
+    }
+
+    function inputPhrase(list) {
+        if (!list || !list.length) {
+            return "No input sources were seen. Some headsets start with gaze only, so that is not a fail by itself.";
+        }
+        var bits = list.map(function (item) {
+            var hand = item.handedness && item.handedness !== "none" ? item.handedness + " " : "";
+            return hand + (item.targetRayMode || "input");
+        });
+        var noun = list.length === 1 ? "input source was" : "input sources were";
+        return list.length + " " + noun + " seen (" + bits.join(", ") + ").";
+    }
+
+    function verdictHeadset(result) {
+        if (!result) {
+            return { outcome: null, summary: "Not run yet." };
+        }
+        if (result.hidden) {
+            return {
+                outcome: "could_not_run",
+                summary: (result.note || "This tab was in the background.") + " This is not a machine fail."
+            };
+        }
+        if (result.stopped || result.timedOut) {
+            return {
+                outcome: "could_not_run",
+                summary: (result.note || "The run stopped before the session finished.") + " This is not a machine fail."
+            };
+        }
+        if (!result.webxrPresent) {
+            return {
+                outcome: "could_not_run",
+                summary: "This browser has no navigator.xr, so an immersive-vr session was not requested. This is not a machine fail."
+            };
+        }
+        if (result.sessionStarted) {
+            if (result.endedEarly) {
+                return {
+                    outcome: "could_not_run",
+                    summary: "The session ended before the check finished. This is not a machine fail."
+                };
+            }
+            if (!result.sessionEndedCleanly) {
+                return {
+                    outcome: "fail",
+                    summary: "The immersive-vr session started but did not end cleanly." + errorTail(result.endError)
+                };
+            }
+            var floor = result.referenceSpaces && result.referenceSpaces["local-floor"];
+            if (!floor || !floor.available) {
+                var local = result.referenceSpaces && result.referenceSpaces.local;
+                var extra = local && local.available
+                    ? " local was available. Spatial Go/No-Go requests local-floor, so local alone is not enough for that scene."
+                    : " local was not available either.";
+                return {
+                    outcome: "fail",
+                    summary: "The session started and ended, but local-floor was not available." + extra
+                };
+            }
+            var summary = "An immersive-vr session started and ended, and local-floor was available. " + inputPhrase(result.inputSources);
+            if (result.webglLayer === false) {
+                summary += " A WebGL layer was not attached, so this page did not present frames.";
+            } else if (!(result.framesPresented > 0)) {
+                summary += " No frame was presented.";
+            }
+            return { outcome: "pass", summary: summary };
+        }
+        if (result.supported === false) {
+            return {
+                outcome: "could_not_run",
+                summary: "This browser does not offer an immersive-vr session. A desktop or phone without a headset often reports this. This is not a machine fail."
+            };
+        }
+        if (isUserDecline(result.sessionError)) {
+            return {
+                outcome: "could_not_run",
+                summary: "The immersive-vr request did not start. This is what the browser returns when the prompt is dismissed. This is not a machine fail."
+            };
+        }
+        if (result.supported === true) {
+            return {
+                outcome: "fail",
+                summary: "This browser reported immersive-vr support, then did not start a session." + errorTail(result.sessionError)
+            };
+        }
+        return {
+            outcome: "could_not_run",
+            summary: (result.note || "This check did not finish.") + " This is not a machine fail."
+        };
+    }
 
     function boot() {
         var check = global.document.body && global.document.body.getAttribute("data-device-check");
@@ -520,7 +664,8 @@
         if (check === "refresh") initRefresh();
         else if (check === "timers") initTimers();
         else if (check === "clock") initClock();
-        else initPageClock();
+        else if (check === "page-clock") initPageClock();
+        else if (check === "headset") initHeadset();
     }
 
     function mount(check) {
@@ -1112,6 +1257,591 @@
         if (ui.btnStop) ui.btnStop.addEventListener("click", stopClock);
         global.document.addEventListener("keydown", onKey);
         if (pad) pad.addEventListener("pointerdown", onPointer);
+    }
+
+    function baseHeadsetMeasurements() {
+        return {
+            secureContext: null,
+            webxrPresent: false,
+            supportApi: "",
+            supported: null,
+            supportError: null,
+            sessionRequested: false,
+            sessionStarted: false,
+            sessionEndedCleanly: false,
+            sessionError: null,
+            endError: null,
+            endedEarly: false,
+            stopped: false,
+            timedOut: false,
+            hidden: false,
+            visibilityAtStart: "",
+            optionalFeatures: HEADSET_OPTIONAL.slice(),
+            referenceSpaces: null,
+            taskReferenceSpace: "local-floor",
+            enabledFeatures: null,
+            inputSources: null,
+            inputSourceCount: 0,
+            webglKind: null,
+            webglLayer: false,
+            webglError: null,
+            framesPresented: 0,
+            frameError: null,
+            userAgent: "",
+            note: ""
+        };
+    }
+
+    function queryImmersiveSupport(xr) {
+        if (xr && typeof xr.isSessionSupported === "function") {
+            return xr.isSessionSupported("immersive-vr").then(function (value) {
+                return { api: "isSessionSupported", supported: value === true, error: null };
+            }, function (err) {
+                return { api: "isSessionSupported", supported: null, error: errorInfo(err) };
+            });
+        }
+        if (xr && typeof xr.supportsSession === "function") {
+            return xr.supportsSession("immersive-vr").then(function () {
+                return { api: "supportsSession", supported: true, error: null };
+            }, function (err) {
+                return { api: "supportsSession", supported: false, error: errorInfo(err) };
+            });
+        }
+        return Promise.resolve({ api: "missing", supported: null, error: null });
+    }
+
+    function createHeadsetGl() {
+        var canvas = global.document.createElement("canvas");
+        canvas.width = 32;
+        canvas.height = 32;
+        var gl = null;
+        var kind = "missing";
+        try {
+            gl = canvas.getContext("webgl2", { xrCompatible: true, antialias: false, alpha: false });
+            if (gl) kind = "webgl2";
+        } catch (err) {
+            gl = null;
+        }
+        if (!gl) {
+            try {
+                gl = canvas.getContext("webgl", { xrCompatible: true, antialias: false, alpha: false });
+                if (gl) kind = "webgl";
+            } catch (err2) {
+                gl = null;
+            }
+        }
+        return { canvas: canvas, gl: gl, kind: kind };
+    }
+
+    function releaseHeadsetGl(glPack) {
+        if (!glPack || !glPack.gl) return;
+        var ext = null;
+        try {
+            ext = glPack.gl.getExtension("WEBGL_lose_context");
+        } catch (err) {
+            ext = null;
+        }
+        if (!ext) return;
+        try {
+            ext.loseContext();
+        } catch (err) {}
+    }
+
+    function describeInputSource(source, index) {
+        var gamepad = source && source.gamepad ? source.gamepad : null;
+        var profiles = [];
+        var p;
+        if (source && source.profiles) {
+            for (p = 0; p < source.profiles.length; p++) profiles.push(String(source.profiles[p]));
+        }
+        return {
+            index: index,
+            handedness: source && source.handedness ? String(source.handedness) : "",
+            targetRayMode: source && source.targetRayMode ? String(source.targetRayMode) : "",
+            profiles: profiles,
+            hasGamepad: !!gamepad,
+            buttonCount: gamepad && gamepad.buttons ? gamepad.buttons.length : 0,
+            axesCount: gamepad && gamepad.axes ? gamepad.axes.length : 0,
+            hasGripSpace: !!(source && source.gripSpace),
+            hasTargetRaySpace: !!(source && source.targetRaySpace)
+        };
+    }
+
+    function snapshotInputSources(session) {
+        var list = [];
+        var sources = session && session.inputSources ? session.inputSources : [];
+        var i;
+        for (i = 0; i < sources.length; i++) list.push(describeInputSource(sources[i], i));
+        return list;
+    }
+
+    function preferInputSources(previous, next) {
+        if (!next || !next.length) return previous || [];
+        if (!previous || next.length >= previous.length) return next;
+        return previous;
+    }
+
+    function waitForImmersiveSession(sessionPromise, state) {
+        return new Promise(function (resolve) {
+            var finished = false;
+            var timer = global.setTimeout(function () {
+                state.timedOut = true;
+                finish({ timeout: true, stopped: false, session: null, error: null });
+            }, HEADSET_SESSION_MS);
+            function finish(payload) {
+                if (finished) return;
+                finished = true;
+                global.clearTimeout(timer);
+                state.settled = true;
+                resolve(payload);
+            }
+            state.finishWait = function () {
+                state.stopped = true;
+                finish({ timeout: false, stopped: true, session: null, error: null });
+            };
+            sessionPromise.then(function (session) {
+                if (finished || state.stopped || state.timedOut) {
+                    if (session && typeof session.end === "function") {
+                        session.end().then(function () {}, function () {});
+                    }
+                    return;
+                }
+                finish({ timeout: false, stopped: false, session: session, error: null });
+            }, function (err) {
+                finish({ timeout: false, stopped: !!state.stopped, session: null, error: err });
+            });
+        });
+    }
+
+    async function probeReferenceSpaces(session, state) {
+        var out = {};
+        var i;
+        for (i = 0; i < HEADSET_SPACES.length; i++) {
+            var name = HEADSET_SPACES[i];
+            if (state.stopped || state.endedEarly) {
+                out[name] = {
+                    available: false,
+                    error: { name: "Aborted", message: "The session ended before this space was requested." }
+                };
+                continue;
+            }
+            try {
+                await session.requestReferenceSpace(name);
+                out[name] = { available: true, error: null };
+            } catch (err) {
+                out[name] = { available: false, error: errorInfo(err) };
+            }
+        }
+        return out;
+    }
+
+    async function attachHeadsetLayer(session, glPack) {
+        if (!glPack.gl || typeof global.XRWebGLLayer !== "function") {
+            return {
+                attached: false,
+                layer: null,
+                error: { name: "Missing", message: "This browser has no WebGL layer for the session." }
+            };
+        }
+        try {
+            if (typeof glPack.gl.makeXRCompatible === "function") await glPack.gl.makeXRCompatible();
+            var layer = new global.XRWebGLLayer(session, glPack.gl);
+            var updated = session.updateRenderState({ baseLayer: layer });
+            if (updated && typeof updated.then === "function") await updated;
+            return { attached: true, layer: layer, error: null };
+        } catch (err) {
+            return { attached: false, layer: null, error: errorInfo(err) };
+        }
+    }
+
+    function presentHeadsetFrames(session, gl, layer, state) {
+        return new Promise(function (resolve) {
+            var started = global.performance.now();
+            var settled = false;
+            function finish() {
+                if (settled) return;
+                settled = true;
+                resolve();
+            }
+            function onFrame() {
+                if (state.stopped || state.endedEarly) {
+                    finish();
+                    return;
+                }
+                try {
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, layer.framebuffer);
+                    gl.clearColor(0.02, 0.03, 0.07, 1);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                } catch (err) {
+                    state.frameError = errorInfo(err);
+                    finish();
+                    return;
+                }
+                state.frames += 1;
+                state.inputSources = preferInputSources(state.inputSources, snapshotInputSources(session));
+                if (state.frames >= HEADSET_FRAMES || global.performance.now() - started >= HEADSET_FRAME_MS) {
+                    finish();
+                    return;
+                }
+                try {
+                    session.requestAnimationFrame(onFrame);
+                } catch (err) {
+                    state.frameError = errorInfo(err);
+                    finish();
+                }
+            }
+            state.finishFrames = finish;
+            try {
+                session.requestAnimationFrame(onFrame);
+            } catch (err) {
+                state.frameError = errorInfo(err);
+                finish();
+            }
+        });
+    }
+
+    async function endHeadsetSession(session, state) {
+        if (!session || state.sawEnd || state.endedEarly) {
+            return { clean: false, error: null };
+        }
+        state.ending = true;
+        try {
+            var pending = session.end();
+            if (pending && typeof pending.then === "function") await pending;
+            return { clean: true, error: null };
+        } catch (err) {
+            if (state.sawEnd) return { clean: true, error: null };
+            return { clean: false, error: errorInfo(err) };
+        }
+    }
+
+    function initHeadset() {
+        var ui = mount("headset");
+        var state = {
+            running: false,
+            stopped: false,
+            timedOut: false,
+            ending: false,
+            endedEarly: false,
+            sawEnd: false,
+            settled: false,
+            session: null,
+            frames: 0,
+            frameError: null,
+            inputSources: [],
+            finishWait: null,
+            finishFrames: null
+        };
+
+        function spaceLabel(spaces, name) {
+            if (!spaces) return "—";
+            var row = spaces[name];
+            if (!row) return "not probed";
+            if (row.available) return "available";
+            var extra = row.error && row.error.name ? " (" + row.error.name + ")" : "";
+            return "not available" + extra;
+        }
+
+        function inputsLabel(measurements) {
+            if (!measurements || !measurements.sessionStarted || !measurements.inputSources) return "—";
+            if (!measurements.inputSources.length) return "none seen";
+            return measurements.inputSources.map(function (item) {
+                var hand = item.handedness && item.handedness !== "none" ? item.handedness + " " : "";
+                var profiles = item.profiles && item.profiles.length ? " · " + item.profiles.join(", ") : "";
+                return hand + (item.targetRayMode || "input") + profiles;
+            }).join("; ");
+        }
+
+        function paint(measurements) {
+            if (!measurements) {
+                ui.setText("fact-xr", "not run yet");
+                ui.setText("fact-support", "not run yet");
+                ui.setText("fact-session", "not run yet");
+                ui.setText("fact-end", "—");
+                ui.setText("fact-floor", "—");
+                ui.setText("fact-local", "—");
+                ui.setText("fact-viewer", "—");
+                ui.setText("fact-bounded", "—");
+                ui.setText("fact-unbounded", "—");
+                ui.setText("fact-features", "—");
+                ui.setText("fact-inputs", "—");
+                ui.setText("fact-webgl", "—");
+                ui.setText("fact-frames", "—");
+                ui.setText("fact-ua", "not run yet");
+                ui.setText("fact-note", "Not run yet.");
+                return;
+            }
+            ui.setText("fact-xr", measurements.webxrPresent ? "present" : "missing");
+            if (measurements.supported === true) ui.setText("fact-support", "immersive-vr offered");
+            else if (measurements.supported === false) ui.setText("fact-support", "immersive-vr not offered");
+            else ui.setText("fact-support", measurements.webxrPresent ? "support query did not finish" : "not offered");
+            if (!measurements.sessionRequested) ui.setText("fact-session", "not requested");
+            else if (measurements.sessionStarted) ui.setText("fact-session", "started");
+            else if (measurements.timedOut) ui.setText("fact-session", "did not finish");
+            else {
+                var sessionExtra = measurements.sessionError && measurements.sessionError.name
+                    ? " (" + measurements.sessionError.name + ")"
+                    : "";
+                ui.setText("fact-session", "not started" + sessionExtra);
+            }
+            if (!measurements.sessionStarted) ui.setText("fact-end", "—");
+            else if (measurements.endedEarly) ui.setText("fact-end", "ended before the check finished");
+            else if (measurements.sessionEndedCleanly) ui.setText("fact-end", "ended");
+            else {
+                var endExtra = measurements.endError && measurements.endError.name
+                    ? " (" + measurements.endError.name + ")"
+                    : "";
+                ui.setText("fact-end", "did not end cleanly" + endExtra);
+            }
+            ui.setText("fact-floor", spaceLabel(measurements.referenceSpaces, "local-floor"));
+            ui.setText("fact-local", spaceLabel(measurements.referenceSpaces, "local"));
+            ui.setText("fact-viewer", spaceLabel(measurements.referenceSpaces, "viewer"));
+            ui.setText("fact-bounded", spaceLabel(measurements.referenceSpaces, "bounded-floor"));
+            ui.setText("fact-unbounded", spaceLabel(measurements.referenceSpaces, "unbounded"));
+            if (!measurements.sessionStarted) ui.setText("fact-features", "—");
+            else if (measurements.enabledFeatures && measurements.enabledFeatures.length) {
+                ui.setText("fact-features", measurements.enabledFeatures.join(", "));
+            } else ui.setText("fact-features", "not reported");
+            ui.setText("fact-inputs", inputsLabel(measurements));
+            if (!measurements.sessionStarted) ui.setText("fact-webgl", "—");
+            else if (measurements.webglLayer) ui.setText("fact-webgl", measurements.webglKind + ", layer attached");
+            else if (measurements.webglKind === "missing") ui.setText("fact-webgl", "no WebGL context");
+            else ui.setText("fact-webgl", measurements.webglKind + ", layer not attached");
+            ui.setText("fact-frames", measurements.sessionStarted ? String(measurements.framesPresented || 0) : "—");
+            ui.setText("fact-ua", measurements.userAgent || "blank");
+            ui.setText("fact-note", measurements.note || "Not run yet.");
+        }
+
+        function stopRun() {
+            if (!state.running) return;
+            state.stopped = true;
+            if (typeof state.finishWait === "function") state.finishWait();
+            if (typeof state.finishFrames === "function") state.finishFrames();
+            if (state.session && !state.ending && typeof state.session.end === "function") {
+                state.session.end().then(function () {}, function () {});
+            }
+        }
+
+        function onKey(event) {
+            if (event.key === "Escape" && state.running) {
+                event.preventDefault();
+                stopRun();
+            }
+        }
+
+        function onPageHide() {
+            if (!state.running) return;
+            stopRun();
+        }
+
+        async function run() {
+            if (ui.isBusy()) return;
+            state = {
+                running: true,
+                stopped: false,
+                timedOut: false,
+                ending: false,
+                endedEarly: false,
+                sawEnd: false,
+                settled: false,
+                session: null,
+                frames: 0,
+                frameError: null,
+                inputSources: [],
+                finishWait: null,
+                finishFrames: null
+            };
+            var glPack = null;
+            var measurements = baseHeadsetMeasurements();
+            ui.report.measurements = measurements;
+            ui.setBusy(true);
+            if (ui.btnStop) ui.btnStop.disabled = false;
+            ui.running("Checking immersive-vr. Accept the prompt if this browser shows one. Keep this tab visible.");
+            paint(null);
+
+            function show(result) {
+                if (state.stopped) result.stopped = true;
+                if (state.timedOut) result.timedOut = true;
+                if (state.endedEarly && result.sessionStarted) result.endedEarly = true;
+                result.inputSourceCount = result.inputSources ? result.inputSources.length : 0;
+                ui.report.measurements = result;
+                paint(result);
+                ui.touchVisibility();
+                ui.showVerdict(verdictHeadset(result));
+                if (result.stopped || result.endedEarly) {
+                    ui.say("Stopped. Download writes a JSON file on this computer. It was not uploaded.");
+                } else {
+                    ui.say("Headset check finished. Download writes a JSON file on this computer. It was not uploaded.");
+                }
+            }
+
+            try {
+                var xr = global.navigator && global.navigator.xr;
+                measurements.webxrPresent = !!(xr && typeof xr.requestSession === "function");
+                measurements.userAgent = (global.navigator && global.navigator.userAgent) || "";
+                measurements.visibilityAtStart = global.document.visibilityState || "";
+                measurements.secureContext = typeof global.isSecureContext === "boolean" ? global.isSecureContext : null;
+                if (global.document.hidden) {
+                    measurements.hidden = true;
+                    measurements.note = "This tab was in the background. Leave it visible and check the headset again.";
+                    show(measurements);
+                    return;
+                }
+                if (!measurements.webxrPresent) {
+                    measurements.note = "This browser has no navigator.xr, so an immersive-vr session was not requested.";
+                    show(measurements);
+                    return;
+                }
+
+                // Support is asked first so a desktop that cannot offer
+                // immersive-vr does not open a session. The button press
+                // is still the gesture, and this query is short.
+                var support = await queryImmersiveSupport(xr);
+                measurements.supportApi = support.api;
+                measurements.supported = support.supported;
+                measurements.supportError = support.error;
+                if (state.stopped) {
+                    measurements.note = "The run stopped before the session finished.";
+                    show(measurements);
+                    return;
+                }
+                if (support.supported === false) {
+                    measurements.note = "This browser does not offer an immersive-vr session.";
+                    show(measurements);
+                    return;
+                }
+
+                glPack = createHeadsetGl();
+                measurements.webglKind = glPack.kind;
+                var sessionPromise;
+                try {
+                    sessionPromise = xr.requestSession("immersive-vr", {
+                        optionalFeatures: HEADSET_OPTIONAL.slice()
+                    });
+                    measurements.sessionRequested = true;
+                } catch (err) {
+                    measurements.sessionRequested = true;
+                    sessionPromise = Promise.reject(err);
+                }
+
+                var waited = await waitForImmersiveSession(sessionPromise, state);
+                if (state.stopped || waited.stopped) {
+                    measurements.note = "The run stopped before the session finished.";
+                    show(measurements);
+                    return;
+                }
+                if (waited.timeout || state.timedOut) {
+                    measurements.timedOut = true;
+                    measurements.note = "The session request did not finish.";
+                    show(measurements);
+                    return;
+                }
+                if (!waited.session) {
+                    measurements.sessionError = errorInfo(waited.error);
+                    measurements.note = measurements.supported === true
+                        ? "This browser reported immersive-vr support, then did not start a session."
+                        : "An immersive-vr session was not started.";
+                    show(measurements);
+                    return;
+                }
+
+                var session = waited.session;
+                state.session = session;
+                measurements.sessionStarted = true;
+                measurements.enabledFeatures = session.enabledFeatures && session.enabledFeatures.length
+                    ? Array.prototype.slice.call(session.enabledFeatures)
+                    : null;
+                session.addEventListener("end", function () {
+                    state.sawEnd = true;
+                    if (!state.ending) state.endedEarly = true;
+                    if (typeof state.finishFrames === "function") state.finishFrames();
+                });
+                session.addEventListener("inputsourceschange", function () {
+                    state.inputSources = preferInputSources(state.inputSources, snapshotInputSources(session));
+                });
+                ui.running("Session started. Checking reference spaces, then ending it.");
+
+                if (state.endedEarly || state.stopped) {
+                    measurements.inputSources = state.inputSources;
+                    measurements.note = state.stopped
+                        ? "The run stopped before the session finished."
+                        : "The session ended before the check finished.";
+                    show(measurements);
+                    return;
+                }
+
+                measurements.referenceSpaces = await probeReferenceSpaces(session, state);
+                state.inputSources = preferInputSources(state.inputSources, snapshotInputSources(session));
+                measurements.inputSources = state.inputSources.slice();
+                if (state.endedEarly || state.stopped) {
+                    measurements.note = state.stopped
+                        ? "The run stopped before the session finished."
+                        : "The session ended before the check finished.";
+                    show(measurements);
+                    return;
+                }
+
+                var layer = await attachHeadsetLayer(session, glPack);
+                measurements.webglLayer = !!layer.attached;
+                measurements.webglError = layer.error;
+                if (layer.attached && !state.endedEarly && !state.stopped) {
+                    await presentHeadsetFrames(session, glPack.gl, layer.layer, state);
+                }
+                measurements.framesPresented = state.frames || 0;
+                measurements.frameError = state.frameError;
+                state.inputSources = preferInputSources(state.inputSources, snapshotInputSources(session));
+                measurements.inputSources = state.inputSources.slice();
+                if (state.stopped) {
+                    measurements.note = "The run stopped before the session finished.";
+                    if (!state.sawEnd) await endHeadsetSession(session, state);
+                    show(measurements);
+                    return;
+                }
+                if (state.endedEarly) {
+                    measurements.note = "The session ended before the check finished.";
+                    show(measurements);
+                    return;
+                }
+
+                var ended = await endHeadsetSession(session, state);
+                measurements.sessionEndedCleanly = !!ended.clean;
+                measurements.endError = ended.error;
+                if (ended.clean) {
+                    var floor = measurements.referenceSpaces && measurements.referenceSpaces["local-floor"];
+                    measurements.note = floor && floor.available
+                        ? "The immersive-vr session started and ended. local-floor was available."
+                        : "The immersive-vr session started and ended. local-floor was not available.";
+                    if (!layer.attached) {
+                        measurements.note += " A WebGL layer was not attached, so this page did not present frames.";
+                    } else if (!(state.frames > 0)) {
+                        measurements.note += " No frame was presented.";
+                    }
+                } else {
+                    measurements.note = "The immersive-vr session started but did not end cleanly.";
+                }
+                show(measurements);
+            } catch (err) {
+                if (state.session && !state.sawEnd && !state.ending && typeof state.session.end === "function") {
+                    state.session.end().then(function () {}, function () {});
+                }
+                measurements.stopped = true;
+                measurements.sessionError = measurements.sessionError || errorInfo(err);
+                measurements.note = "The check stopped before it finished.";
+                show(measurements);
+            } finally {
+                state.running = false;
+                ui.setBusy(false);
+                if (ui.btnStop) ui.btnStop.disabled = true;
+                releaseHeadsetGl(glPack);
+            }
+        }
+
+        paint(null);
+        ui.say("Environment is filled in. Check the headset from this tab. A desktop without a headset should read could not run.");
+        if (ui.btnRun) ui.btnRun.addEventListener("click", function () { run(); });
+        if (ui.btnStop) ui.btnStop.addEventListener("click", stopRun);
+        global.document.addEventListener("keydown", onKey);
+        global.addEventListener("pagehide", onPageHide);
     }
 
     if (global.document) {

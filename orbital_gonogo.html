@@ -212,7 +212,33 @@
       color: #041018;
     }
 
-    .primary:disabled { opacity: 0.55; cursor: wait; }
+    .primary:disabled, .ghost:disabled { opacity: 0.55; cursor: wait; }
+
+    .actions .enter-vr {
+      flex: 1 1 100%;
+      border-color: var(--line);
+      color: var(--cyan);
+    }
+
+    .actions .vr-status {
+      flex: 1 1 100%;
+      margin: 0;
+    }
+
+    .actions .vr-status:empty { display: none; }
+
+    .sheet p a {
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    /*
+      The start sheet has Enter VR. It calls scene.enterVR, the same
+      click path as A-Frame's xr-mode-ui button. That corner button stays
+      in the scene so the component can still offer a session, and it is
+      hidden here so the sheet does not compete with a second control.
+    */
+    a-scene > .a-enter-vr { display: none !important; }
 
     .ghost {
       border: 1px solid rgba(255, 255, 255, 0.18);
@@ -421,7 +447,7 @@
       <a-plane width="2.9" height="3.06" color="#091326" material="shader: flat; opacity: 0.94; transparent: true">
         <a-text value="ORBITAL ENERGY SORTER" color="#00F5D4" align="center" position="0 1.32 0.01" width="4"></a-text>
         <a-text value="Spatial Go/No-Go  ·  30 trials" color="#A9BCD0" align="center" position="0 1.12 0.01" width="2.6"></a-text>
-        <a-text value="WebXR, tested on VIVE Focus 3" color="#E0FBFC" align="center" position="0 0.94 0.01" width="2.5"></a-text>
+        <a-text value="WebXR. Headset support not confirmed." color="#E0FBFC" align="center" position="0 0.94 0.01" width="2.5"></a-text>
         <a-sphere radius="0.08" position="-1.15 0.66 0.08" material="shader: standard; color: #00F5D4; emissive: #00F5D4; emissiveIntensity: 0.65"></a-sphere>
         <a-text value="CYAN SPHERE (GO 70%)\nTrigger within 1200 ms" color="#E0FBFC" align="left" position="-0.95 0.66 0.01" width="2.15"></a-text>
         <a-octahedron radius="0.09" position="-1.15 0.30 0.08" material="shader: standard; color: #FF2A85; emissive: #FF2A85; emissiveIntensity: 0.65"></a-octahedron>
@@ -469,14 +495,15 @@
       <p class="wordmark">Spatial Go/No-Go<span>Orbital Energy Sorter</span></p>
       <p class="html-hud" id="htmlHud" aria-live="polite">Trial 0 / 30</p>
       <button id="sfxToggle" class="sfx-btn" type="button" aria-label="Toggle sound effects" aria-pressed="true">SFX: ON</button>
-      <p class="device-note">Responses stay on this device. WebXR, tested on VIVE Focus 3. A headset is optional.</p>
+      <p class="device-note">Responses stay on this device. This task uses WebXR. A headset is optional. Headset support is not confirmed.</p>
     </header>
 
     <div class="sheet-wrap">
       <section class="sheet" id="startSheet" aria-labelledby="startTitle">
         <p class="kicker">Project Trial · Attention</p>
         <h1 id="startTitle">Spatial Go/No-Go</h1>
-        <p>Orbital Energy Sorter. Thirty trials, always in front of you. WebXR, tested on VIVE Focus 3. No headset required.</p>
+        <p>Orbital Energy Sorter. Thirty trials, always in front of you. This task uses WebXR. No headset is required to play on this screen. Headset support is not confirmed.</p>
+        <p id="vrHelp">Enter VR uses this scene’s WebXR session. With no headset, the same control fills the screen. On a headset browser, run the <a href="diagnostics-headset.html">headset device check</a> first. On VIVE Focus 3, Wolvic is often a more reliable WebXR browser than the built-in VIVE Browser.</p>
         <p class="turn-hint">On a phone, turn sideways. Landscape keeps the frontal field on screen.</p>
         <ul class="legend">
           <li><span class="swatch go" aria-hidden="true"></span><span>Cyan sphere — GO, 70%. Tap, click, or trigger it within 1200 ms.</span></li>
@@ -511,11 +538,14 @@
         <p id="setupNote">Near, mid, and far use the same physical size, so closer targets look bigger. The plus hides when the target appears. Both shapes stay still.</p>
         <p>Tap the object. Empty space does not count. Responses stay on this device.</p>
         <div class="actions">
+          <button id="htmlEnterVr" class="ghost enter-vr" type="button" disabled>Enter VR</button>
           <button id="htmlStart" class="primary" type="button" disabled>Loading scene…</button>
+          <p id="vrStatus" class="vr-status" aria-live="polite"></p>
         </div>
         <div class="links">
           <a class="text-link" href="index.html">Back to hub</a>
           <a class="text-link" href="orbital_gonogo-info.html">Parameters</a>
+          <a class="text-link" href="diagnostics-headset.html">Headset check</a>
         </div>
       </section>
 
@@ -661,6 +691,8 @@
 
       var htmlHud = document.getElementById('htmlHud');
       var htmlStart = document.getElementById('htmlStart');
+      var htmlEnterVr = document.getElementById('htmlEnterVr');
+      var vrStatus = document.getElementById('vrStatus');
       var htmlAgain = document.getElementById('htmlAgain');
       var htmlCsv = document.getElementById('htmlCsv');
       var htmlJson = document.getElementById('htmlJson');
@@ -1391,13 +1423,59 @@
         downloadSessionJson();
       });
 
+      function paintEnterVr() {
+        if (!htmlEnterVr) return;
+        var inVr = !!(sceneEl && sceneEl.is && sceneEl.is('vr-mode'));
+        htmlEnterVr.textContent = inVr ? 'Exit VR' : 'Enter VR';
+        htmlEnterVr.setAttribute('aria-pressed', inVr ? 'true' : 'false');
+        htmlEnterVr.disabled = !sceneReady;
+      }
+
+      function onEnterVrClick() {
+        if (!sceneReady || !sceneEl || typeof sceneEl.enterVR !== 'function') return;
+        var entering = !(sceneEl.is && sceneEl.is('vr-mode'));
+        htmlEnterVr.disabled = true;
+        var pending;
+        try {
+          pending = entering ? sceneEl.enterVR() : sceneEl.exitVR();
+        } catch (err) {
+          if (vrStatus) {
+            vrStatus.textContent = entering
+              ? ' This scene did not enter VR. The headset device check can say why.'
+              : ' This scene did not exit VR.';
+          }
+          paintEnterVr();
+          return;
+        }
+        if (!pending || typeof pending.then !== 'function') {
+          if (vrStatus) vrStatus.textContent = '';
+          paintEnterVr();
+          return;
+        }
+        pending.then(function () {
+          if (vrStatus) vrStatus.textContent = '';
+          paintEnterVr();
+        }, function () {
+          if (vrStatus) {
+            vrStatus.textContent = entering
+              ? ' This scene did not enter VR. The headset device check can say why.'
+              : ' This scene did not exit VR.';
+          }
+          paintEnterVr();
+        });
+      }
+
+      if (htmlEnterVr) htmlEnterVr.addEventListener('click', onEnterVrClick);
+
       sceneEl.addEventListener('enter-vr', function () {
         immersive = true;
         syncChrome();
+        paintEnterVr();
       });
       sceneEl.addEventListener('exit-vr', function () {
         immersive = false;
         syncChrome();
+        paintEnterVr();
       });
 
       function onSceneReady() {
@@ -1407,6 +1485,7 @@
         detectBaseHeadHeight();
         htmlStart.disabled = false;
         paintOptions();
+        paintEnterVr();
         if (sceneEl.canvas) {
           sceneEl.canvas.addEventListener('pointerdown', onCanvasPointerDown);
         }

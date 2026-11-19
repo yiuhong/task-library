@@ -20,23 +20,26 @@
                 · <a href="diagnostics-timers.html">Timers</a>
                 · <a href="diagnostics-clock.html">Clock step</a>
                 · <a href="diagnostics-page-clock.html">Page clock</a>
+                · <a href="diagnostics-headset.html">Headset</a>
             </p>
         </header>
 
         <section>
-            <h2>Four checks</h2>
-            <p>Each check is its own page. Each page has a run control, a pass or fail mark, the numbers, a plain-language interpretation, and a JSON file you can download. Run a check with this tab in front of you. A hidden tab will slow the timers, and a refresh sample taken in the background is discarded. The numbers describe this moment. Run the checks again on each machine you care about. The file stays on this computer.</p>
+            <h2>Five checks</h2>
+            <p>Each check is its own page. Each page has a run control, a pass or fail mark, the numbers, a plain-language interpretation, and a JSON file you can download. Run a check with this tab in front of you. A hidden tab will slow the timers, and a refresh sample taken in the background is discarded. The headset check asks for an immersive-vr session, so a computer with no headset cannot run it. The numbers describe this moment. Run the checks again on each machine you care about. The file stays on this computer.</p>
             <ul>
                 <li><a href="diagnostics-refresh.html">Refresh estimate</a>. How often <code>requestAnimationFrame</code> called back. The sample is 120 frames, and the first 5 intervals are left out.</li>
                 <li><a href="diagnostics-timers.html">Timer lateness</a>. <code>setTimeout</code> delays of 0, 16, and 50 ms, five times each.</li>
                 <li><a href="diagnostics-clock.html">Clock step</a>. The step of <code>performance.now()</code> in a tight loop.</li>
                 <li><a href="diagnostics-page-clock.html">Page clock</a>. Five flashes. The time from the frame callback to a key or a click.</li>
+                <li><a href="diagnostics-headset.html">Headset</a>. Whether <code>navigator.xr</code> can start and end an <code>immersive-vr</code> session, which reference spaces are available, and which input sources appear. For Spatial Go/No-Go.</li>
             </ul>
             <div class="trial-actions">
                 <a class="trial-btn" href="diagnostics-refresh.html">Refresh estimate</a>
                 <a class="trial-btn" href="diagnostics-timers.html">Timer lateness</a>
                 <a class="trial-btn" href="diagnostics-clock.html">Clock step</a>
                 <a class="trial-btn" href="diagnostics-page-clock.html">Page clock</a>
+                <a class="trial-btn" href="diagnostics-headset.html">Headset</a>
             </div>
         </section>
 
@@ -54,10 +57,10 @@
                 </li>
                 <li>
                     <span class="device-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8 12 h8" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
-                    <span><strong>Could not run.</strong> The tab was in the background, you stopped a run, or the browser lacks the API. This is not a machine fail.</span>
+                    <span><strong>Could not run.</strong> The tab was in the background, you stopped a run, or the browser lacks the API. On the headset page, a desktop or phone that does not offer immersive-vr is also could not run. This is not a machine fail.</span>
                 </li>
             </ul>
-            <p>The download schema is <code>project-trial.device-check.v2</code>. Each file names the check, the library version, this browser, the measurements, the verdict, and the thresholds. <code>verdict</code> is <code>pass</code>, <code>fail</code>, or <code>could_not_run</code>.</p>
+            <p>The download schema is <code>project-trial.device-check.v2</code>. Each file names the check, the library version, this browser, the measurements, the verdict, and the thresholds. <code>verdict</code> is <code>pass</code>, <code>fail</code>, or <code>could_not_run</code>. The headset check uses that same file shape, so the schema version is unchanged.</p>
         </section>
 
         <section>
@@ -68,6 +71,7 @@
                 <li><code>performance.now()</code> is a monotonic page clock. Its origin is the page load. A small step is not proof that a stimulus lasted that many milliseconds on screen.</li>
                 <li>The page-clock number ends when the input handler runs. It includes your movement. It leaves out the display lag and most of the device lag. Do not enter it as a participant’s reaction time. If <code>event.timeStamp</code> uses another origin, the handler gap is left blank.</li>
                 <li>A background tab, a busy processor, or a low-power setting can move every number. Repeat the check on the machine and the browser you will actually use.</li>
+                <li>The headset check can start an immersive-vr session only in a browser that offers one. A desktop or phone without a headset is could not run. A session that starts without the local-floor space Spatial Go/No-Go requests is a fail. Seeing no controller is not a fail by itself.</li>
                 <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
             </ul>
             <noscript>
