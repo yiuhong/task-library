@@ -41,7 +41,7 @@ Approved black-and-white lockup, outlined in `assets/`:
 - **Corsi Span** — [`corsi_game.html`](corsi_game.html). Tap a flashed block sequence back in order. Parameters: [`corsi-info.html`](corsi-info.html).
 - **Reversal Learning** — [`bandit_game.html`](bandit_game.html). Two-armed bandit with a silent switch of the better option. Parameters: [`bandit-info.html`](bandit-info.html).
 
-Hub overview: [`about.html`](about.html). For researchers: [`researchers.html`](researchers.html). Device check: [`diagnostics.html`](diagnostics.html) (a hub; each check is its own page, with a verdict). Citation and reuse: [`cite.html`](cite.html).
+Hub overview: [`about.html`](about.html). For researchers: [`researchers.html`](researchers.html). Device check: [`diagnostics.html`](diagnostics.html) (a hub; each check is its own page, with a verdict). The headset check is [`diagnostics-headset.html`](diagnostics-headset.html). Citation and reuse: [`cite.html`](cite.html).
 
 ## Shared look
 
