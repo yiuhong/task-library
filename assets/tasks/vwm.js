@@ -19,8 +19,10 @@
 
   Download CSV and Download JSON use TrialExport. Cowan's K and
   Pashler's K in the file are the set-size values this core already
-  computes for the results screen. Trial counts, colors, timings, and
-  those formulas stay as they are.
+  computes for the results screen. Trial counts, colors, intended
+  timings, and those formulas stay as they are. Fixation, the sample,
+  the delay, and the interval after the choice are scheduled by
+  assets/trial-timing.js. The probe waits for a response.
 
   CONFIG is frozen. Nothing assigns to it.
 */
@@ -90,6 +92,18 @@
         if (!global.TrialExport) {
             throw new Error("VWM requires assets/trial-export.js");
         }
+        if (!global.TrialTiming) {
+            throw new Error("VWM requires assets/trial-timing.js");
+        }
+
+        var timing = global.TrialTiming.session();
+
+        function timingParams() {
+            var policy = timing.policy();
+            policy.responseOnset = "probe";
+            policy.intervals = ["fixation", "sample", "delay", "probe", "iti"];
+            return policy;
+        }
 
         function round3(n) {
             return Math.round(n * 1000) / 1000;
@@ -129,7 +143,8 @@
                         mainFeedback: policy.mainFeedback,
                         audio: false,
                         score: false
-                    }
+                    },
+                    timing: timingParams()
                 };
             },
             summary: function () {
@@ -161,7 +176,9 @@
           awaitingResponse: false,
           probeOnsetTime: 0,
           allLogs: [],             // Every recorded trial across blocks
-          activeTimers: []
+          trialLog: null,
+          openPhase: null,
+          pendingExport: null
         };
 
         /********************************************************************
@@ -218,15 +235,8 @@
         }
 
         function clearTimers() {
-          while (STATE.activeTimers.length > 0) {
-            clearTimeout(STATE.activeTimers.pop());
-          }
-        }
-
-        function schedule(fn, delayMs) {
-          const id = setTimeout(fn, delayMs);
-          STATE.activeTimers.push(id);
-          return id;
+          timing.cancelAll();
+          STATE.pendingExport = null;
         }
 
         /**
@@ -489,35 +499,45 @@
           el.hudTrialVal.textContent = `${STATE.currentTrialIndex + 1} / ${STATE.trialQueue.length}`;
           el.feedbackBadge.style.opacity = '0';
 
-          // PHASE 1: Fixation Cross (500 ms)
-          el.phaseIndicator.textContent = 'FIXATE (500 MS)';
-          clearCanvas();
-          drawFixation('#38bdf8');
+          timing.frame(function (ts) {
+            var run = timing.trial();
+            STATE.trialLog = run;
 
-          schedule(() => {
-            // PHASE 2: Sample Array (250 ms)
-            el.phaseIndicator.textContent = `SAMPLE ARRAY [N=${spec.setSize}]`;
-            renderSampleArray(STATE.currentTrial);
+            // PHASE 1: Fixation Cross (500 ms), on the frame that shows it.
+            el.phaseIndicator.textContent = 'FIXATE (500 MS)';
+            clearCanvas();
+            drawFixation('#38bdf8');
+            var fixation = run.open('fixation', CONFIG.fixationMs, ts);
+            run.after(ts, CONFIG.fixationMs, function (sampleTs) {
+              fixation.close(sampleTs, 'frame');
 
-            schedule(() => {
-              // PHASE 3: Blank Retention Interval with Fixation (900 ms)
-              el.phaseIndicator.textContent = 'RETENTION DELAY (900 MS)';
-              clearCanvas();
-              drawFixation('#f1f5f9');
+              // PHASE 2: Sample Array (250 ms)
+              el.phaseIndicator.textContent = `SAMPLE ARRAY [N=${spec.setSize}]`;
+              renderSampleArray(STATE.currentTrial);
+              var sample = run.open('sample', CONFIG.sampleMs, sampleTs);
+              run.after(sampleTs, CONFIG.sampleMs, function (delayTs) {
+                sample.close(delayTs, 'frame');
 
-              schedule(() => {
-                // PHASE 4: Test Probe (Until Response)
-                el.phaseIndicator.textContent = 'TEST PROBE — SAME OR DIFFERENT?';
-                STATE.currentTrial.presentedProbeMode = STATE.probeMode;
-                renderProbeArray(STATE.currentTrial);
-                STATE.probeOnsetTime = performance.now();
-                STATE.awaitingResponse = true;
-                setPadsEnabled(true);
-              }, CONFIG.delayMs);
+                // PHASE 3: Blank Retention Interval with Fixation (900 ms)
+                el.phaseIndicator.textContent = 'RETENTION DELAY (900 MS)';
+                clearCanvas();
+                drawFixation('#f1f5f9');
+                var delay = run.open('delay', CONFIG.delayMs, delayTs);
+                run.after(delayTs, CONFIG.delayMs, function (probeTs) {
+                  delay.close(probeTs, 'frame');
 
-            }, CONFIG.sampleMs);
-
-          }, CONFIG.fixationMs);
+                  // PHASE 4: Test Probe (Until Response). No deadline.
+                  el.phaseIndicator.textContent = 'TEST PROBE — SAME OR DIFFERENT?';
+                  STATE.currentTrial.presentedProbeMode = STATE.probeMode;
+                  renderProbeArray(STATE.currentTrial);
+                  STATE.probeOnsetTime = probeTs;
+                  STATE.openPhase = run.open('probe', null, probeTs);
+                  STATE.awaitingResponse = true;
+                  setPadsEnabled(true);
+                });
+              });
+            });
+          });
         }
 
         function handleResponse(responseChoice) {
@@ -568,7 +588,7 @@
             response_perf_ms: responsePerf
           };
           STATE.allLogs.push(record);
-          exportLog.record({
+          STATE.pendingExport = {
             trialIndex: record.trial,
             block: record.block,
             stimulus: 'N=' + STATE.currentTrial.setSize + ' ' + STATE.currentTrial.trialType + ' ' + probeModeShown + ' sample=' + sampleItem.color + ' probe=' + STATE.currentTrial.probeColor,
@@ -594,7 +614,7 @@
               miss: miss,
               correct_rejection: correctRejection
             }
-          });
+          };
 
           // Persist immediately to localStorage
           saveToLocalStorage();
@@ -618,11 +638,35 @@
             el.feedbackBadge.style.opacity = '0';
           }
 
-          clearCanvas();
-          drawFixation(isCorrect ? '#10b981' : '#f43f5e');
-
           STATE.currentTrialIndex++;
-          schedule(runNextTrial, CONFIG.itiMs);
+          var run = STATE.trialLog;
+          var probePhase = STATE.openPhase;
+          var pending = STATE.pendingExport;
+          timing.frame(function (ts) {
+            if (probePhase && probePhase.isOpen()) probePhase.close(ts, 'response');
+            STATE.openPhase = null;
+            clearCanvas();
+            drawFixation(isCorrect ? '#10b981' : '#f43f5e');
+            var iti = run.open('iti', CONFIG.itiMs, ts);
+            run.after(ts, CONFIG.itiMs, function (nextTs) {
+              iti.close(nextTs, 'frame');
+              commitExport(pending, run);
+              runNextTrial();
+            });
+          });
+        }
+
+        function commitExport(pending, run) {
+          if (!pending || !run) return;
+          if (STATE.pendingExport === pending) STATE.pendingExport = null;
+          var timingFields = run.fields();
+          pending.timingMethod = timingFields.timingMethod;
+          pending.refreshHz = timingFields.refreshHz;
+          pending.frameMs = timingFields.frameMs;
+          pending.intendedDurations = timingFields.intendedDurations;
+          pending.phaseTiming = timingFields.phaseTiming;
+          pending.timingFlag = timingFields.timingFlag;
+          exportLog.record(pending);
         }
 
         function showPracticeTransition() {

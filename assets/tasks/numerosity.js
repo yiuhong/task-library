@@ -10,6 +10,11 @@
   practice shows Correct, Incorrect, or No response only. The classical
   main block keeps the 450 ms feedback hold and the 350 ms interval
   with the banner blank. Saved runs append mode.
+
+  Intended durations are unchanged. Fixation, the dot arrays, the mask,
+  the end of the response window, the feedback hold, and the blank
+  between trials are scheduled by assets/trial-timing.js. Response time
+  still starts when the dots appear.
 */
 (function (global) {
   'use strict';
@@ -73,6 +78,18 @@
     if (!global.TrialExport) {
       throw new Error('Numerosity requires assets/trial-export.js');
     }
+    if (!global.TrialTiming) {
+      throw new Error('Numerosity requires assets/trial-timing.js');
+    }
+
+    var timing = global.TrialTiming.session();
+
+    function timingParams() {
+      var policy = timing.policy();
+      policy.responseOnset = 'stimulus';
+      policy.intervals = ['fixation', 'stimulus', 'mask', 'response', 'feedback', 'iti'];
+      return policy;
+    }
 
     var exportLog = global.TrialExport.session({
       taskId: 'numerosity',
@@ -98,7 +115,8 @@
             practiceFeedback: !!policy.practiceFeedback,
             audio: !!policy.audio,
             score: false
-          }
+          },
+          timing: timingParams()
         };
       },
       summary: function () { return lastSummary; }
@@ -113,7 +131,9 @@
         currentTrial: null,
         stimOnsetTime: 0,
         responseOpenTime: 0,
-        activeTimers: [],
+        trialLog: null,
+        openPhase: null,
+        pendingExport: null,
         allResults: []
       };
 
@@ -195,18 +215,12 @@
       window.addEventListener('resize', setupCanvases);
 
       /**
-       * Timer Management Utility
+       * Timer Management Utility. Trial intervals use the frame scheduler.
+       * Pad flashes below stay on a short timeout. They are chrome.
        */
-      function scheduleTimer(fn, delay) {
-        const id = window.setTimeout(fn, delay);
-        state.activeTimers.push(id);
-        return id;
-      }
-
       function clearAllTimers() {
-        while (state.activeTimers.length > 0) {
-          window.clearTimeout(state.activeTimers.pop());
-        }
+        timing.cancelAll();
+        state.pendingExport = null;
       }
 
       /**
@@ -448,69 +462,82 @@
         el.feedbackBanner.classList.replace('opacity-100', 'opacity-0');
         setResponsePadsEnabled(false);
 
-        // 1. FIXATION PHASE
         state.phase = 'FIXATION';
-        el.arenaPhaseLabel.textContent = 'FIXATE AT CENTER';
-        el.fixationCross.textContent = '+';
-        el.fixationCross.className = 'text-2xl sm:text-3xl font-mono font-light text-emerald-400 leading-none';
+        state.pendingExport = null;
 
-        scheduleTimer(() => {
-          // 2. STIMULUS PHASE (Dots presented)
-          state.phase = 'STIMULUS';
-          el.arenaPhaseLabel.textContent = 'OBSERVE';
-          el.boxLeftContainer.classList.add('active-stim');
-          el.boxRightContainer.classList.add('active-stim');
+        timing.frame(function (ts) {
+          var run = timing.trial();
+          state.trialLog = run;
 
-          drawDots(el.canvasLeft, leftDots);
-          drawDots(el.canvasRight, rightDots);
+          // 1. FIXATION PHASE, on the frame that shows the cross.
+          el.arenaPhaseLabel.textContent = 'FIXATE AT CENTER';
+          el.fixationCross.textContent = '+';
+          el.fixationCross.className = 'text-2xl sm:text-3xl font-mono font-light text-emerald-400 leading-none';
+          var fixation = run.open('fixation', CONFIG.fixationMs, ts);
+          run.after(ts, CONFIG.fixationMs, function (stimTs) {
+            if (state.phase !== 'FIXATION') return;
+            fixation.close(stimTs, 'frame');
 
-          state.stimOnsetTime = performance.now();
-          state.responseOpenTime = state.stimOnsetTime;
-          setResponsePadsEnabled(true); // Allow responses starting from stimulus onset
+            // 2. STIMULUS PHASE (Dots presented). Response time starts here.
+            state.phase = 'STIMULUS';
+            el.arenaPhaseLabel.textContent = 'OBSERVE';
+            el.boxLeftContainer.classList.add('active-stim');
+            el.boxRightContainer.classList.add('active-stim');
+            drawDots(el.canvasLeft, leftDots);
+            drawDots(el.canvasRight, rightDots);
+            state.stimOnsetTime = stimTs;
+            state.responseOpenTime = stimTs;
+            setResponsePadsEnabled(true);
+            var stimulus = run.open('stimulus', CONFIG.stimulusMs, stimTs);
+            state.openPhase = stimulus;
+            run.after(stimTs, CONFIG.stimulusMs, function (maskTs) {
+              if (state.phase !== 'STIMULUS') return;
+              stimulus.close(maskTs, 'frame');
 
-          scheduleTimer(() => {
-            // Only transition to MASK if participant hasn't already responded during stimulus
-            if (state.phase !== 'STIMULUS') return;
+              // 3. BRIEF VISUAL MASK PHASE
+              state.phase = 'MASK';
+              drawVisualMask(el.canvasLeft);
+              drawVisualMask(el.canvasRight);
+              el.boxLeftContainer.classList.remove('active-stim');
+              el.boxRightContainer.classList.remove('active-stim');
+              var mask = run.open('mask', CONFIG.maskMs, maskTs);
+              state.openPhase = mask;
+              run.after(maskTs, CONFIG.maskMs, function (respTs) {
+                if (state.phase !== 'MASK') return;
+                mask.close(respTs, 'frame');
 
-            // 3. BRIEF VISUAL MASK PHASE
-            state.phase = 'MASK';
-            drawVisualMask(el.canvasLeft);
-            drawVisualMask(el.canvasRight);
-            el.boxLeftContainer.classList.remove('active-stim');
-            el.boxRightContainer.classList.remove('active-stim');
-
-            scheduleTimer(() => {
-              if (state.phase !== 'MASK') return;
-
-              // 4. BLANK RESPONSE WINDOW
-              state.phase = 'RESPONSE';
-              clearCanvas(el.canvasLeft);
-              clearCanvas(el.canvasRight);
-              el.arenaPhaseLabel.textContent = 'WHICH SIDE HAD MORE DOTS?';
-              el.fixationCross.textContent = '?';
-              el.fixationCross.className = 'text-2xl sm:text-3xl font-mono font-bold text-slate-200 leading-none';
-
-              // Timeout guard
-              scheduleTimer(() => {
-                if (state.phase === 'RESPONSE') {
-                  handleParticipantChoice('timeout');
-                }
-              }, CONFIG.responseTimeoutMs);
-
-            }, CONFIG.maskMs);
-          }, CONFIG.stimulusMs);
-        }, CONFIG.fixationMs);
+                // 4. BLANK RESPONSE WINDOW
+                state.phase = 'RESPONSE';
+                clearCanvas(el.canvasLeft);
+                clearCanvas(el.canvasRight);
+                el.arenaPhaseLabel.textContent = 'WHICH SIDE HAD MORE DOTS?';
+                el.fixationCross.textContent = '?';
+                el.fixationCross.className = 'text-2xl sm:text-3xl font-mono font-bold text-slate-200 leading-none';
+                var response = run.open('response', CONFIG.responseTimeoutMs, respTs);
+                state.openPhase = response;
+                run.after(respTs, CONFIG.responseTimeoutMs, function (endTs) {
+                  if (state.phase !== 'RESPONSE') return;
+                  response.close(endTs, 'frame');
+                  state.openPhase = null;
+                  handleParticipantChoice('timeout', endTs);
+                });
+              });
+            });
+          });
+        });
       }
 
       /**
        * Process Participant Choice ('left' | 'right' | 'timeout')
        */
-      function handleParticipantChoice(choice) {
+      function handleParticipantChoice(choice, atTs) {
         if (state.phase !== 'STIMULUS' && state.phase !== 'MASK' && state.phase !== 'RESPONSE') {
           return;
         }
 
-        const now = performance.now();
+        const now = atTs == null ? timing.now() : atTs;
+        const openPhase = state.openPhase;
+        const closedBy = choice === 'timeout' ? 'frame' : 'response';
         clearAllTimers();
         state.phase = 'FEEDBACK';
         setResponsePadsEnabled(false);
@@ -550,7 +577,7 @@
           timestamp: new Date().toISOString()
         };
         state.allResults.push(trialRecord);
-        exportLog.record({
+        state.pendingExport = {
           trialIndex: trialRecord.trial,
           block: trialRecord.block,
           stimulus: 'L' + trialRecord.left_n + ' R' + trialRecord.right_n,
@@ -570,7 +597,7 @@
             correct_side: trialRecord.correct_side,
             timed_out: isTimeout ? 1 : 0
           }
-        });
+        };
 
         // Render Non-Color-Only Accessible Feedback.
         // Classical practice is one word and no tone. Classical main leaves
@@ -622,16 +649,38 @@
         state.currentTrialIndex += 1;
         updateHUD();
 
-        // Advance after Feedback + ITI
-        scheduleTimer(() => {
-          el.feedbackBanner.classList.replace('opacity-100', 'opacity-0');
-          el.fixationCross.textContent = '';
-          el.arenaPhaseLabel.textContent = '';
+        var run = state.trialLog;
+        var pending = state.pendingExport;
+        timing.frame(function (ts) {
+          if (openPhase && openPhase.isOpen()) openPhase.close(ts, closedBy);
+          state.openPhase = null;
+          var feedback = run.open('feedback', CONFIG.feedbackMs, ts);
+          run.after(ts, CONFIG.feedbackMs, function (blankTs) {
+            feedback.close(blankTs, 'frame');
+            el.feedbackBanner.classList.replace('opacity-100', 'opacity-0');
+            el.fixationCross.textContent = '';
+            el.arenaPhaseLabel.textContent = '';
+            var iti = run.open('iti', CONFIG.itiMs, blankTs);
+            run.after(blankTs, CONFIG.itiMs, function (nextTs) {
+              iti.close(nextTs, 'frame');
+              commitExport(pending, run);
+              runNextTrial();
+            });
+          });
+        });
+      }
 
-          scheduleTimer(() => {
-            runNextTrial();
-          }, CONFIG.itiMs);
-        }, CONFIG.feedbackMs);
+      function commitExport(pending, run) {
+        if (!pending || !run) return;
+        if (state.pendingExport === pending) state.pendingExport = null;
+        var timingFields = run.fields();
+        pending.timingMethod = timingFields.timingMethod;
+        pending.refreshHz = timingFields.refreshHz;
+        pending.frameMs = timingFields.frameMs;
+        pending.intendedDurations = timingFields.intendedDurations;
+        pending.phaseTiming = timingFields.phaseTiming;
+        pending.timingFlag = timingFields.timingFlag;
+        exportLog.record(pending);
       }
 
       /**

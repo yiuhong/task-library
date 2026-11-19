@@ -41,7 +41,16 @@
 
   Shared CSV columns, in order, then extra keys in first-seen order:
     task_id, mode, params_json, trial_index, block, stimulus, condition,
-    response, accuracy, rt_ms, timestamp, onset_perf_ms, response_perf_ms
+    response, accuracy, rt_ms, timestamp, onset_perf_ms, response_perf_ms,
+    timing_method, refresh_hz, frame_ms, intended_durations_json,
+    phase_timing_json, timing_flag
+
+  The six timing columns are additive. Tasks that have not adopted
+  assets/trial-timing.js leave them blank. A task that has adopted it
+  passes timingMethod, refreshHz, frameMs, intendedDurations,
+  phaseTiming, and timingFlag on record(). timing_flag is hidden,
+  throttled, or hidden+throttled. Blank means that task did not flag
+  the run. It is not a light-sensor clearance.
 
   JSON is schema "project-trial.export.v1". params and summary sit once
   on the wrapper. Trial fields use the same names as the CSV, without
@@ -49,8 +58,8 @@
   TrialSite has loaded. It is not a release bump by itself.
 
   rt_ms stays the millisecond value the task already scores. The perf
-  stamps are performance.now() around that value. A blank rt is stored
-  as null in JSON and an empty CSV cell.
+  stamps are the performance timeline around that value. A blank rt is
+  stored as null in JSON and an empty CSV cell.
 */
 (function (global) {
     "use strict";
@@ -70,7 +79,13 @@
         "rt_ms",
         "timestamp",
         "onset_perf_ms",
-        "response_perf_ms"
+        "response_perf_ms",
+        "timing_method",
+        "refresh_hz",
+        "frame_ms",
+        "intended_durations_json",
+        "phase_timing_json",
+        "timing_flag"
     ];
 
     function copyValue(value) {
@@ -147,6 +162,12 @@
                 timestamp: isBlank(source.timestamp) ? "" : source.timestamp,
                 onset_perf_ms: isBlank(source.onsetPerfMs) ? null : source.onsetPerfMs,
                 response_perf_ms: isBlank(source.responsePerfMs) ? null : source.responsePerfMs,
+                timing_method: isBlank(source.timingMethod) ? null : String(source.timingMethod),
+                refresh_hz: isBlank(source.refreshHz) || !isFinite(source.refreshHz) ? null : source.refreshHz,
+                frame_ms: isBlank(source.frameMs) || !isFinite(source.frameMs) ? null : source.frameMs,
+                intended_durations_json: source.intendedDurations == null ? null : copyValue(source.intendedDurations),
+                phase_timing_json: source.phaseTiming == null ? null : copyValue(source.phaseTiming),
+                timing_flag: isBlank(source.timingFlag) ? null : String(source.timingFlag),
                 extra: extra
             };
             rows.push(stored);
@@ -197,7 +218,13 @@
                     rt_ms: row.rt_ms,
                     timestamp: row.timestamp,
                     onset_perf_ms: row.onset_perf_ms,
-                    response_perf_ms: row.response_perf_ms
+                    response_perf_ms: row.response_perf_ms,
+                    timing_method: row.timing_method,
+                    refresh_hz: row.refresh_hz,
+                    frame_ms: row.frame_ms,
+                    intended_durations_json: row.intended_durations_json,
+                    phase_timing_json: row.phase_timing_json,
+                    timing_flag: row.timing_flag
                 };
                 extraKeys.forEach(function (key) {
                     var value = row.extra[key];

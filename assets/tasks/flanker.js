@@ -15,7 +15,9 @@
   during a trial. The results screen still reports accuracy and mean RT.
 
   Download CSV and Download JSON use TrialExport. The trial list, the
-  timings, and the conflict-effect formula are unchanged.
+  intended timings, and the conflict-effect formula are unchanged.
+  Fixation, the response window, the feedback hold, and the blank
+  between trials are scheduled by assets/trial-timing.js.
 */
 (function (global) {
   var CONFIG = {
@@ -64,6 +66,18 @@
     if (!global.TrialExport) {
       throw new Error("Flanker requires assets/trial-export.js");
     }
+    if (!global.TrialTiming) {
+      throw new Error("Flanker requires assets/trial-timing.js");
+    }
+
+    var timing = global.TrialTiming.session();
+
+    function timingParams() {
+      var policy = timing.policy();
+      policy.responseOnset = "stimulus";
+      policy.intervals = ["fixation", "stimulus", "feedback", "iti"];
+      return policy;
+    }
 
     var exportLog = global.TrialExport.session({
       taskId: "flanker",
@@ -92,7 +106,8 @@
             practiceFeedback: !!policy.practiceFeedback,
             audio: false,
             score: false
-          }
+          },
+          timing: timingParams()
         };
       },
       summary: function () {
@@ -109,7 +124,9 @@
       awaitingResponse: false,
       stimOnsetPerf: 0,
       currentFixationMs: null,
-      activeTimeoutId: null,
+      trialLog: null,
+      openPhase: null,
+      pendingExport: null,
       results: [] // Stores all trials (practice + main)
     };
 
@@ -251,7 +268,8 @@
      * Start a Block ("practice" or "main")
      */
     function startBlock(blockType) {
-      clearTimeout(state.activeTimeoutId);
+      timing.cancelAll();
+      state.pendingExport = null;
       state.block = blockType;
       state.trialIndex = 0;
 
@@ -278,12 +296,7 @@
 
       updateHUD();
       state.awaitingResponse = false;
-
-      // 1. Fixation Cross
-      el.stimulusDisplay.className =
-        "stimulus-array text-4xl sm:text-6xl font-bold text-slate-400 select-none text-center";
-      el.stimulusDisplay.textContent = "+";
-      el.feedbackSubtext.textContent = "";
+      state.pendingExport = null;
 
       const fixationDuration =
         Math.floor(
@@ -291,15 +304,29 @@
         ) + CONFIG.fixationMinMs;
       state.currentFixationMs = fixationDuration;
 
-      state.activeTimeoutId = setTimeout(() => {
-        presentStimulus();
-      }, fixationDuration);
+      timing.frame(function (ts) {
+        var run = timing.trial();
+        state.trialLog = run;
+
+        // 1. Fixation cross, on the frame that shows it.
+        el.stimulusDisplay.className =
+          "stimulus-array text-4xl sm:text-6xl font-bold text-slate-400 select-none text-center";
+        el.stimulusDisplay.textContent = "+";
+        el.feedbackSubtext.textContent = "";
+
+        var fixation = run.open("fixation", fixationDuration, ts);
+        state.openPhase = fixation;
+        run.after(ts, fixationDuration, function (endTs) {
+          fixation.close(endTs, "frame");
+          presentStimulus(endTs, run);
+        });
+      });
     }
 
     /**
      * Present the 5-character horizontal flanker array
      */
-    function presentStimulus() {
+    function presentStimulus(onsetTs, run) {
       const currentTrial = state.trialQueue[state.trialIndex];
 
       el.stimulusDisplay.className =
@@ -307,15 +334,17 @@
       el.stimulusDisplay.textContent = currentTrial.stimulus;
       el.feedbackSubtext.textContent = "";
 
+      state.stimOnsetPerf = onsetTs;
       state.awaitingResponse = true;
-      state.stimOnsetPerf = performance.now();
 
-      // Timeout handler (1500 ms)
-      state.activeTimeoutId = setTimeout(() => {
-        if (state.awaitingResponse) {
-          handleResponse("timeout", null, performance.now());
-        }
-      }, CONFIG.stimulusTimeoutMs);
+      var stimulus = run.open("stimulus", CONFIG.stimulusTimeoutMs, onsetTs);
+      state.openPhase = stimulus;
+      run.after(onsetTs, CONFIG.stimulusTimeoutMs, function (endTs) {
+        if (!state.awaitingResponse) return;
+        stimulus.close(endTs, "frame");
+        state.openPhase = null;
+        handleResponse("timeout", null, endTs);
+      });
     }
 
     /**
@@ -324,7 +353,7 @@
     function handleResponse(responseDir, rtMs, responsePerfMs) {
       if (!state.awaitingResponse) return;
       state.awaitingResponse = false;
-      clearTimeout(state.activeTimeoutId);
+      timing.cancelAll();
 
       const currentTrial = state.trialQueue[state.trialIndex];
       const isTimeout = responseDir === "timeout";
@@ -352,7 +381,7 @@
       };
 
       state.results.push(trialRecord);
-      exportLog.record({
+      state.pendingExport = {
         trialIndex: trialRecord.trial,
         block: trialRecord.block,
         stimulus: currentTrial.stimulus,
@@ -370,60 +399,87 @@
           fixation_ms: state.currentFixationMs,
           timed_out: isTimeout ? 1 : 0
         }
-      });
+      };
 
-      // Visual pad press feedback
+      // Visual pad press feedback. The 120 ms flash is chrome, not a trial interval.
       if (responseDir === "left") flashPad(el.padLeft);
       if (responseDir === "right") flashPad(el.padRight);
 
-      // 3. Accessible Feedback (400 ms). Hold and ITI below stay on both shells.
-      if (mode !== "classical") {
-        if (isTimeout) {
-          el.stimulusDisplay.className =
-            "font-mono text-2xl sm:text-4xl font-bold text-amber-400 select-none text-center";
-          el.stimulusDisplay.textContent = "TOO SLOW";
-          el.feedbackSubtext.textContent = "Respond within 1500 ms";
-        } else if (isCorrect) {
-          el.stimulusDisplay.className =
-            "font-mono text-2xl sm:text-4xl font-bold text-emerald-400 select-none text-center";
-          el.stimulusDisplay.textContent = "✓ CORRECT";
-          el.feedbackSubtext.textContent = `${trialRecord.rt_ms} ms`;
-        } else {
-          el.stimulusDisplay.className =
-            "font-mono text-2xl sm:text-4xl font-bold text-accent neon-text select-none text-center";
-          el.stimulusDisplay.textContent = "✕ INCORRECT";
-          el.feedbackSubtext.textContent = `Target was ${currentTrial.target_dir.toUpperCase()}`;
-        }
-      } else if (state.block === "practice" && policy.practiceFeedback) {
-        el.stimulusDisplay.className =
-          "font-mono text-2xl sm:text-4xl font-bold text-slate-100 select-none text-center";
-        el.feedbackSubtext.textContent = "";
-        if (isTimeout) {
-          el.stimulusDisplay.textContent = "No response";
-        } else if (isCorrect) {
-          el.stimulusDisplay.textContent = "Correct";
-        } else {
-          el.stimulusDisplay.textContent = "Incorrect";
-        }
-      } else {
-        el.stimulusDisplay.className =
-          "stimulus-array text-4xl sm:text-6xl font-bold text-slate-100 select-none text-center";
-        el.stimulusDisplay.textContent = "";
-        el.feedbackSubtext.textContent = "";
-      }
-
       updateHUD();
 
-      state.activeTimeoutId = setTimeout(() => {
-        // 4. Blank ITI (350 ms)
-        el.stimulusDisplay.textContent = "";
-        el.feedbackSubtext.textContent = "";
+      var run = state.trialLog;
+      var closedBy = isTimeout ? "frame" : "response";
+      timing.frame(function (ts) {
+        if (state.openPhase && state.openPhase.isOpen()) {
+          state.openPhase.close(ts, closedBy);
+        }
+        state.openPhase = null;
+        paintFeedback();
+        var feedback = run.open("feedback", CONFIG.feedbackDurationMs, ts);
+        run.after(ts, CONFIG.feedbackDurationMs, function (blankTs) {
+          feedback.close(blankTs, "frame");
+          el.stimulusDisplay.textContent = "";
+          el.feedbackSubtext.textContent = "";
+          var iti = run.open("iti", CONFIG.itiDurationMs, blankTs);
+          run.after(blankTs, CONFIG.itiDurationMs, function (nextTs) {
+            iti.close(nextTs, "frame");
+            commitExport();
+            state.trialIndex += 1;
+            runNextTrial();
+          });
+        });
+      });
 
-        state.activeTimeoutId = setTimeout(() => {
-          state.trialIndex += 1;
-          runNextTrial();
-        }, CONFIG.itiDurationMs);
-      }, CONFIG.feedbackDurationMs);
+      function paintFeedback() {
+        if (mode !== "classical") {
+          if (isTimeout) {
+            el.stimulusDisplay.className =
+              "font-mono text-2xl sm:text-4xl font-bold text-amber-400 select-none text-center";
+            el.stimulusDisplay.textContent = "TOO SLOW";
+            el.feedbackSubtext.textContent = "Respond within 1500 ms";
+          } else if (isCorrect) {
+            el.stimulusDisplay.className =
+              "font-mono text-2xl sm:text-4xl font-bold text-emerald-400 select-none text-center";
+            el.stimulusDisplay.textContent = "✓ CORRECT";
+            el.feedbackSubtext.textContent = `${trialRecord.rt_ms} ms`;
+          } else {
+            el.stimulusDisplay.className =
+              "font-mono text-2xl sm:text-4xl font-bold text-accent neon-text select-none text-center";
+            el.stimulusDisplay.textContent = "✕ INCORRECT";
+            el.feedbackSubtext.textContent = `Target was ${currentTrial.target_dir.toUpperCase()}`;
+          }
+        } else if (state.block === "practice" && policy.practiceFeedback) {
+          el.stimulusDisplay.className =
+            "font-mono text-2xl sm:text-4xl font-bold text-slate-100 select-none text-center";
+          el.feedbackSubtext.textContent = "";
+          if (isTimeout) {
+            el.stimulusDisplay.textContent = "No response";
+          } else if (isCorrect) {
+            el.stimulusDisplay.textContent = "Correct";
+          } else {
+            el.stimulusDisplay.textContent = "Incorrect";
+          }
+        } else {
+          el.stimulusDisplay.className =
+            "stimulus-array text-4xl sm:text-6xl font-bold text-slate-100 select-none text-center";
+          el.stimulusDisplay.textContent = "";
+          el.feedbackSubtext.textContent = "";
+        }
+      }
+    }
+
+    function commitExport() {
+      if (!state.pendingExport || !state.trialLog) return;
+      var row = state.pendingExport;
+      var timingFields = state.trialLog.fields();
+      state.pendingExport = null;
+      row.timingMethod = timingFields.timingMethod;
+      row.refreshHz = timingFields.refreshHz;
+      row.frameMs = timingFields.frameMs;
+      row.intendedDurations = timingFields.intendedDurations;
+      row.phaseTiming = timingFields.phaseTiming;
+      row.timingFlag = timingFields.timingFlag;
+      exportLog.record(row);
     }
 
     /**
@@ -625,6 +681,10 @@
       });
 
       function resetRun() {
+        timing.cancelAll();
+        state.awaitingResponse = false;
+        state.pendingExport = null;
+        state.openPhase = null;
         state.results = [];
         state.globalTrialCounter = 0;
         lastSummary = null;

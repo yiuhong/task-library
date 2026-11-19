@@ -14,6 +14,8 @@ First-party canvas and the shared shells are the default for 2D tasks:
 
 No bundler. Load code with plain script tags, consistent with [`assets/SHELL_CONTRACT.md`](../assets/SHELL_CONTRACT.md).
 
+A new scored two-dimensional task does not ship until it uses [`assets/trial-timing.js`](../assets/trial-timing.js), the timing fields on [`assets/trial-export.js`](../assets/trial-export.js), a methods note, and both shells. The rules are in [`rigor-standard.md`](rigor-standard.md). Spatial Go/No-Go is the WebXR special case. Noematachograph is not a scored trial task.
+
 ## Tailwind
 
 Hub and task chrome load a compiled Tailwind CSS 3.4 sheet with a Trial theme:

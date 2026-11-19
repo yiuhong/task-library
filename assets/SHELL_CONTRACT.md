@@ -121,7 +121,9 @@ Call `log.record` once per finished trial, with `trialIndex`, `block`, `stimulus
 
 The results screen has two buttons. They call `log.downloadCsv(filename)` and `log.downloadJson(filename)` from a click handler. That is the only way the file leaves the page. Do not `fetch` the payload. Do not add a server.
 
-JSON schema is `project-trial.export.v1`. The wrapper holds `taskId`, `mode`, `libraryVersion`, `params`, `summary`, and `trials`. CSV columns start with `task_id`, `mode`, `params_json`, `trial_index`, `block`, `stimulus`, `condition`, `response`, `accuracy`, `rt_ms`, `timestamp`, `onset_perf_ms`, `response_perf_ms`, then `extra` keys. `rt_ms` stays the millisecond value the task already scores.
+JSON schema is `project-trial.export.v1`. The wrapper holds `taskId`, `mode`, `libraryVersion`, `params`, `summary`, and `trials`. CSV columns start with `task_id`, `mode`, `params_json`, `trial_index`, `block`, `stimulus`, `condition`, `response`, `accuracy`, `rt_ms`, `timestamp`, `onset_perf_ms`, `response_perf_ms`, then `timing_method`, `refresh_hz`, `frame_ms`, `intended_durations_json`, `phase_timing_json`, `timing_flag`, then `extra` keys. Tasks that have not adopted the frame scheduler leave the timing columns blank. `rt_ms` stays the millisecond value the task already scores.
+
+`assets/trial-timing.js` schedules brief intervals from display frames. Visual working memory, numerosity comparison, and Eriksen flanker load it before the task script. Their `params.timing` is the policy that ran. The rules for a scored task are in [`docs/rigor-standard.md`](../docs/rigor-standard.md).
 
 For a wired task, keep a running score and a running mean RT off the trial, in both shells. A short word after the response, or a summary after the block, can stay. Say what the gamified shell shows, on the parameters page, including the cue that can affect the next trial. The cue must not change the stimulus, the scheduled intervals, the randomisation, or the score.
 
