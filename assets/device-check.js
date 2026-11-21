@@ -730,10 +730,12 @@
                 box.setAttribute("aria-busy", result && result.inProgress ? "true" : "false");
             }
             if (mark) mark.innerHTML = MARKS[outcome] || "";
-            if (label) label.textContent = (result && result.label) || VERDICT_LABEL[outcome] || "Not run yet";
-            if (text) text.textContent = result && result.summary ? result.summary : "";
+            var summaryText = result && result.summary ? result.summary : "";
+            var labelText = (result && result.label) || VERDICT_LABEL[outcome] || "Not run yet.";
+            if (label) label.textContent = labelText;
+            if (text) text.textContent = summaryText === labelText ? "" : summaryText;
             report.verdict = outcome || null;
-            report.verdictSummary = result && result.summary ? result.summary : "";
+            report.verdictSummary = summaryText;
             report.inProgress = !!(result && result.inProgress);
         }
 
@@ -745,7 +747,8 @@
         report.environment = readEnvironment(null);
         paintEnvironment(report.environment);
         showVerdict({
-            summary: "Not run yet. Pass uses a check icon and the word Pass. Fail uses a cross icon and the word Fail."
+            label: "Not run yet.",
+            summary: "Not run yet."
         });
 
         function download() {
@@ -783,7 +786,7 @@
             link.click();
             global.document.body.removeChild(link);
             global.setTimeout(function () { global.URL.revokeObjectURL(url); }, 1500);
-            say("Report downloaded on this computer. It was not uploaded.");
+            say("Report downloaded. Nothing was uploaded.");
         }
 
         if (btnDownload) btnDownload.addEventListener("click", download);
@@ -846,7 +849,7 @@
         }
 
         paint(null);
-        ui.say("Environment is filled in. Estimate the refresh while this tab is visible.");
+        ui.say("Estimate the refresh while this tab is visible.");
 
         async function run() {
             if (ui.isBusy()) return;
@@ -916,7 +919,7 @@
         }
 
         paint(null);
-        ui.say("Environment is filled in. Check the timers while this tab is visible.");
+        ui.say("Check the timers while this tab is visible.");
 
         async function run() {
             if (ui.isBusy()) return;
@@ -977,7 +980,7 @@
         }
 
         paint(null);
-        ui.say("Environment is filled in. Check the clock step while this tab is visible.");
+        ui.say("Check the clock step while this tab is visible.");
 
         function run() {
             if (ui.isBusy()) return;
@@ -1252,7 +1255,7 @@
         }
 
         renderPresses();
-        ui.say("Environment is filled in. Start the flashes while this tab is visible.");
+        ui.say("Start the flashes while this tab is visible.");
         if (ui.btnRun) ui.btnRun.addEventListener("click", startClock);
         if (ui.btnStop) ui.btnStop.addEventListener("click", stopClock);
         global.document.addEventListener("keydown", onKey);
@@ -1837,7 +1840,7 @@
         }
 
         paint(null);
-        ui.say("Environment is filled in. Check the headset from this tab. A desktop without a headset should read could not run.");
+        ui.say("Check the headset from this tab. A desktop without a headset should read could not run.");
         if (ui.btnRun) ui.btnRun.addEventListener("click", function () { run(); });
         if (ui.btnStop) ui.btnStop.addEventListener("click", stopRun);
         global.document.addEventListener("keydown", onKey);

@@ -14,7 +14,7 @@
             <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
             <p class="trial-kicker">Device check</p>
             <h1>Headset</h1>
-            <p class="lede">Whether this browser can start an <code>immersive-vr</code> session, which reference spaces it offers, and which input sources appear. For <a href="orbital_gonogo.html">Spatial Go/No-Go</a>. A support step on this tab. It is not a study. It is not a photodiode or light-sensor validation. Nothing is uploaded.</p>
+            <p class="lede">Whether this browser can start an <code>immersive-vr</code> session, which reference spaces it offers, and which input sources appear. For <a href="orbital_gonogo.html">Spatial Go/No-Go</a>. Nothing is uploaded.</p>
             <p class="trial-toc">
                 <a href="diagnostics.html">All checks</a>
                 · <a href="diagnostics-refresh.html">Refresh</a>
@@ -27,18 +27,17 @@
 
         <section>
             <h2>The rule on this page</h2>
-            <p>These are conservative rules of thumb for a browser tab, not a lab certificate. The same thresholds are written into the JSON. Open this page in the browser you will use, including a headset browser.</p>
+            <p>Open this page in the browser you will use, including a headset browser.</p>
             <ul>
                 <li>Pass if this tab was visible, an <code>immersive-vr</code> session started and ended, and a <code>local-floor</code> reference space was available. Seeing no controller does not fail the check.</li>
                 <li>Fail if this browser reported <code>immersive-vr</code> support, then did not start a session after the button press, or the session started but <code>local-floor</code> was not available, or the session did not end cleanly. Spatial Go/No-Go requests <code>local-floor</code>. <code>local</code> alone is not enough for that scene.</li>
                 <li>Could not run if this browser has no WebXR API, it does not offer <code>immersive-vr</code>, this tab was hidden, the prompt was dismissed, or you stopped the run. A desktop or phone without a headset is could not run. That is not a machine fail.</li>
             </ul>
-            <p>The button press is the gesture. The session asks for <code>local-floor</code>, <code>bounded-floor</code>, and <code>unbounded</code> as optional features, then requests <code>local-floor</code>, <code>local</code>, <code>viewer</code>, <code>bounded-floor</code>, and <code>unbounded</code>. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail. Could not run is a dash icon and those words.</p>
         </section>
 
         <section>
             <h2>Run this check</h2>
-            <p>Leave this tab visible. Accept the prompt if this browser shows one. The headset view may go dark for a moment, then this page returns. Stop, or leaving the session early, is could not run. Escape stops the run. Download writes a JSON file on this computer. The schema is <code>project-trial.device-check.v2</code>, the same file shape as the other checks. Nothing is uploaded.</p>
+            <p>Leave this tab visible. Accept the prompt if this browser shows one. The headset view may go dark for a moment, then this page returns. Stop, or leaving the session early, is could not run. Escape stops the run.</p>
             <p id="device-status" aria-live="polite">Loading the check.</p>
             <div class="trial-actions">
                 <button type="button" class="trial-btn" id="btn-run">Check the headset</button>
@@ -52,8 +51,8 @@
             <div id="device-verdict" class="device-verdict is-idle" data-outcome="" aria-live="polite">
                 <span id="device-mark" class="device-mark" aria-hidden="true"></span>
                 <span class="device-verdict-copy">
-                    <span id="device-verdict-label" class="device-verdict-label">Not run yet</span>
-                    <span id="device-verdict-text" class="device-verdict-text">Run the check with this tab visible. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail.</span>
+                    <span id="device-verdict-label" class="device-verdict-label">Not run yet.</span>
+                    <span id="device-verdict-text" class="device-verdict-text"></span>
                 </span>
             </div>
         </section>
@@ -124,10 +123,13 @@
         <section>
             <h2>Interpretation</h2>
             <div id="device-interpretation">
-                <p>When this browser offers <code>immersive-vr</code>, the button press asks for a session with <code>local-floor</code>, <code>bounded-floor</code>, and <code>unbounded</code> as optional features, then requests each reference space. <code>local</code> and <code>viewer</code> are baseline spaces and do not have to be listed. Spatial Go/No-Go’s scene requests <code>local-floor</code>. A session that starts without that space fails this check.</p>
-                <p>Zero input sources are reported and do not fail the check. Some headsets start with gaze only, and a controller can connect after this short session. A missing WebGL layer is reported. It does not, by itself, change the pass or fail.</p>
-                <p>A desktop or phone without a headset, a missing WebXR API, a hidden tab, a dismissed prompt, or a run that stops early is could not run. That is not a machine fail. A browser that reports <code>immersive-vr</code> support and then rejects the session after the button press is a fail.</p>
+                <p>Spatial Go/No-Go’s scene requests <code>local-floor</code>. A session that starts without that space fails this check. Zero input sources are reported and do not fail the check.</p>
             </div>
+            <details class="trial-disclosure">
+                <summary>What this session asks for</summary>
+                <p>The button press is the gesture. The session asks for <code>local-floor</code>, <code>bounded-floor</code>, and <code>unbounded</code> as optional features, then requests <code>local-floor</code>, <code>local</code>, <code>viewer</code>, <code>bounded-floor</code>, and <code>unbounded</code>. <code>local</code> and <code>viewer</code> are baseline spaces and do not have to be listed.</p>
+                <p>A missing WebGL layer is reported. It does not, by itself, change the pass or fail.</p>
+            </details>
         </section>
 
         <section>
@@ -174,17 +176,23 @@
                     <dd id="fact-raf">—</dd>
                 </div>
             </dl>
-            <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+            <details class="trial-disclosure">
+                <summary>About these browser hints</summary>
+                <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+            </details>
         </section>
 
         <section>
-            <h2>What this page can and cannot stand behind</h2>
-            <ul id="device-limits">
-                <li>The check is this browser at this moment. It is not a certificate that a later session, or another browser on the same headset, will behave the same way.</li>
-                <li>The session is short. Controllers that connect later are not counted. Gaze-only play can show zero input sources, and that is not a fail by itself.</li>
-                <li>A background tab, a dismissed prompt, or a stop is could not run. Repeat the check on the browser you will actually use, with this tab visible.</li>
-                <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
-            </ul>
+            <details class="trial-disclosure">
+                <summary>Limits of this number</summary>
+                <ul id="device-limits">
+                    <li>The check is this browser at this moment. It is not a certificate that a later session, or another browser on the same headset, will behave the same way.</li>
+                    <li>The session is short. Controllers that connect later are not counted. Gaze-only play can show zero input sources, and that is not a fail by itself.</li>
+                    <li>A background tab, a dismissed prompt, or a stop is could not run. Repeat the check on the browser you will actually use, with this tab visible.</li>
+                    <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
+                    <li>It is not a study. It is not a photodiode or light-sensor validation.</li>
+                </ul>
+            </details>
             <noscript>
                 <p>JavaScript is off, so the measurement cannot run. The browser clock is not a lab rig.</p>
             </noscript>
