@@ -14,7 +14,7 @@
             <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
             <p class="trial-kicker">Device check</p>
             <h1>Device check</h1>
-            <p class="lede">A support step on this tab, before you run a task. It reads this browser at this moment. It is not a study. It is not a photodiode or light-sensor validation. Nothing is uploaded.</p>
+            <p class="lede">A support step on this tab, before you run a task. It reads this browser at this moment. Nothing is uploaded.</p>
             <p class="trial-toc">
                 <a href="diagnostics-refresh.html">Refresh</a>
                 · <a href="diagnostics-timers.html">Timers</a>
@@ -25,8 +25,8 @@
         </header>
 
         <section>
-            <h2>Five checks</h2>
-            <p>Each check is its own page. Each page has a run control, a pass or fail mark, the numbers, a plain-language interpretation, and a JSON file you can download. Run a check with this tab in front of you. A hidden tab will slow the timers, and a refresh sample taken in the background is discarded. The headset check asks for an immersive-vr session, so a computer with no headset cannot run it. The numbers describe this moment. Run the checks again on each machine you care about. The file stays on this computer.</p>
+            <h2>Checks</h2>
+            <p>Run a check with this tab in front of you. A hidden tab will slow the timers, and a refresh sample taken in the background is discarded. The headset check asks for an immersive-vr session, so a computer with no headset cannot run it. Run the checks again on each machine you care about.</p>
             <ul>
                 <li><a href="diagnostics-refresh.html">Refresh estimate</a>. How often <code>requestAnimationFrame</code> called back. The sample is 120 frames, and the first 5 intervals are left out.</li>
                 <li><a href="diagnostics-timers.html">Timer lateness</a>. <code>setTimeout</code> delays of 0, 16, and 50 ms, five times each.</li>
@@ -45,27 +45,25 @@
 
         <section>
             <h2>How a verdict is marked</h2>
-            <p>These are conservative rules of thumb for a browser tab, not a lab certificate. The rule for each check is written on that page and copied into the JSON. The mark is an icon plus words, so the result does not depend on color.</p>
-            <ul class="device-outcomes">
-                <li>
-                    <span class="device-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.2 12.5 l3.1 3.1 6.6-7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <span><strong>Pass.</strong> The check finished and met the rule on that page.</span>
-                </li>
-                <li>
-                    <span class="device-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8.2 8.2 l7.6 7.6 M15.8 8.2 l-7.6 7.6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
-                    <span><strong>Fail.</strong> The check finished and did not meet the rule on that page.</span>
-                </li>
-                <li>
-                    <span class="device-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8 12 h8" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
-                    <span><strong>Could not run.</strong> The tab was in the background, you stopped a run, or the browser lacks the API. On the headset page, a desktop or phone that does not offer immersive-vr is also could not run. This is not a machine fail.</span>
-                </li>
-            </ul>
-            <p>The download schema is <code>project-trial.device-check.v2</code>. Each file names the check, the library version, this browser, the measurements, the verdict, and the thresholds. <code>verdict</code> is <code>pass</code>, <code>fail</code>, or <code>could_not_run</code>. The headset check uses that same file shape, so the schema version is unchanged.</p>
-        </section>
-
-        <section>
-            <h2>What these pages can and cannot stand behind</h2>
-            <ul>
+            <p>These are conservative rules of thumb for a browser tab, not a lab certificate. Could not run is not a machine fail: a hidden tab, a stopped run, a missing API, or a computer with no headset.</p>
+            <details class="trial-disclosure">
+                <summary>Pass, fail, and the download</summary>
+                <ul class="device-outcomes">
+                    <li>
+                        <span class="device-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.2 12.5 l3.1 3.1 6.6-7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        <span><strong>Pass.</strong> The check finished and met the rule on that page.</span>
+                    </li>
+                    <li>
+                        <span class="device-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8.2 8.2 l7.6 7.6 M15.8 8.2 l-7.6 7.6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
+                        <span><strong>Fail.</strong> The check finished and did not meet the rule on that page.</span>
+                    </li>
+                </ul>
+                <p>The rule for each check is written on that page and copied into the JSON. The mark is an icon plus words, so the result does not depend on color.</p>
+                <p>The download schema is <code>project-trial.device-check.v2</code>. Each file names the check, the library version, this browser, the measurements, the verdict, and the thresholds. <code>verdict</code> is <code>pass</code>, <code>fail</code>, or <code>could_not_run</code>. The headset check uses that same file shape, so the schema version is unchanged.</p>
+            </details>
+            <details class="trial-disclosure">
+                <summary>What these pages can and cannot stand behind</summary>
+                <ul>
                 <li>The refresh estimate is how often <code>requestAnimationFrame</code> ran while this tab was visible. It can be lower than the rate printed on the monitor. It is not when the pixels changed. A light sensor on the glass would be required to time the pixels. This site does not use one.</li>
                 <li><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks schedule fixation, stimuli, and the gaps between trials from display frames. Spatial Go/No-Go schedules its gap and its 1200 ms window from the headset animation frame while an immersive-vr session is running, and from the page animation frame on a flat preview. The timer page reports how late a <code>setTimeout</code> callback was compared with the delay this page asked for.</li>
                 <li><code>performance.now()</code> is a monotonic page clock. Its origin is the page load. A small step is not proof that a stimulus lasted that many milliseconds on screen.</li>
@@ -73,7 +71,8 @@
                 <li>A background tab, a busy processor, or a low-power setting can move every number. Repeat the check on the machine and the browser you will actually use.</li>
                 <li>The headset check can start an immersive-vr session only in a browser that offers one. A desktop or phone without a headset is could not run. A session that starts without the local-floor space Spatial Go/No-Go requests is a fail. Seeing no controller is not a fail by itself.</li>
                 <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
-            </ul>
+                </ul>
+            </details>
             <noscript>
                 <p>JavaScript is off, so the measurements cannot run. The limits in the list above still apply to every task on this site: the browser clock is not a lab rig.</p>
             </noscript>

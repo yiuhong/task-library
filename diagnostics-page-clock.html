@@ -14,7 +14,7 @@
             <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
             <p class="trial-kicker">Device check</p>
             <h1>Page clock</h1>
-            <p class="lede">Five flashes. The page clock runs from the frame callback that turns the square light to your key or click. A support step on this tab. It is not a study. It is not a photodiode or light-sensor validation. Nothing is uploaded.</p>
+            <p class="lede">Five flashes. The page clock runs from the frame callback that turns the square light to your key or click. Nothing is uploaded.</p>
             <p class="trial-toc">
                 <a href="diagnostics.html">All checks</a>
                 · <a href="diagnostics-refresh.html">Refresh</a>
@@ -27,18 +27,18 @@
 
         <section>
             <h2>The rule on this page</h2>
-            <p>These are conservative rules of thumb for a browser tab, not a lab certificate. The same thresholds are written into the JSON. The millisecond value is not scored.</p>
+            <p>The millisecond value is not scored.</p>
             <ul>
                 <li>Pass only if all five flashes got a press, a key or a click, and returned a page-clock number.</li>
                 <li>Fail if any flash was missed, or if a flash did not return a number.</li>
                 <li>Could not run if you stop before five flashes finish, if this tab is hidden, or if the browser has no <code>requestAnimationFrame</code>. A hidden tab stops the remaining flashes. That is not a machine fail.</li>
             </ul>
-            <p>Each flash waits 500 to 900 ms, then the next animation frame turns the square light. The response window is 3000 ms. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail. Could not run is a dash icon and those words.</p>
+            <p>Each flash waits 500 to 900 ms, then the next animation frame turns the square light. The response window is 3000 ms.</p>
         </section>
 
         <section>
             <h2>Run this check</h2>
-            <p>Leave this tab visible. Wait for the square to turn light, then press any key or click the square. Escape stops the run. Download writes a JSON file on this computer. The schema is <code>project-trial.device-check.v2</code>. Nothing is uploaded.</p>
+            <p>Leave this tab visible. Wait for the square to turn light, then press any key or click the square. Escape stops the run.</p>
             <p id="device-status" aria-live="polite">Loading the check.</p>
             <div class="trial-actions">
                 <button type="button" class="trial-btn" id="btn-run">Check the page clock</button>
@@ -53,8 +53,8 @@
             <div id="device-verdict" class="device-verdict is-idle" data-outcome="" aria-live="polite">
                 <span id="device-mark" class="device-mark" aria-hidden="true"></span>
                 <span class="device-verdict-copy">
-                    <span id="device-verdict-label" class="device-verdict-label">Not run yet</span>
-                    <span id="device-verdict-text" class="device-verdict-text">Run the check with this tab visible. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail.</span>
+                    <span id="device-verdict-label" class="device-verdict-label">Not run yet.</span>
+                    <span id="device-verdict-text" class="device-verdict-text"></span>
                 </span>
             </div>
         </section>
@@ -83,7 +83,6 @@
             <h2>Interpretation</h2>
             <div id="device-interpretation">
                 <p>The page clock is the time from the animation-frame callback that turns the square light to the key or click handler. It includes your movement. It leaves out the display lag and most of the device lag. Do not enter this number as a participant’s reaction time.</p>
-                <p>The pass or fail mark does not use the millisecond value. It only asks whether all five flashes returned a number.</p>
             </div>
         </section>
 
@@ -131,16 +130,21 @@
                     <dd id="fact-raf">—</dd>
                 </div>
             </dl>
-            <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+            <details class="trial-disclosure">
+                <summary>About these browser hints</summary>
+                <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+            </details>
         </section>
 
         <section>
-            <h2>What this page can and cannot stand behind</h2>
-            <ul id="device-limits">
-                <li>The page-clock number ends when the input handler runs. Time in the keyboard, touchscreen, operating system, and the display is outside it. If <code>event.timeStamp</code> uses another origin, the handler gap is left blank.</li>
-                <li>Do not enter the page-clock number as a participant’s reaction time. The verdict does not use the millisecond value.</li>
-                <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
-            </ul>
+            <details class="trial-disclosure">
+                <summary>Limits of this number</summary>
+                <ul id="device-limits">
+                    <li>The page-clock number ends when the input handler runs. Time in the keyboard, touchscreen, operating system, and the display is outside it. If <code>event.timeStamp</code> uses another origin, the handler gap is left blank.</li>
+                    <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
+                    <li>It is not a study. It is not a photodiode or light-sensor validation.</li>
+                </ul>
+            </details>
             <noscript>
                 <p>JavaScript is off, so the flashes cannot run. The browser clock is not a lab rig.</p>
             </noscript>

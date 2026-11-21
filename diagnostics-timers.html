@@ -14,7 +14,7 @@
             <a href="index.html"><img class="trial-doc-mark" src="assets/project-trial-wordmark-dark.svg" alt="Project Trial" width="1098" height="309"></a>
             <p class="trial-kicker">Device check</p>
             <h1>Timer lateness</h1>
-            <p class="lede">How late <code>setTimeout</code> was, compared with the delay this page asked for. A support step on this tab. It is not a study. It is not a photodiode or light-sensor validation. Nothing is uploaded.</p>
+            <p class="lede">How late <code>setTimeout</code> was, compared with the delay this page asked for. Nothing is uploaded.</p>
             <p class="trial-toc">
                 <a href="diagnostics.html">All checks</a>
                 · <a href="diagnostics-refresh.html">Refresh</a>
@@ -27,19 +27,18 @@
 
         <section>
             <h2>The rule on this page</h2>
-            <p>These are conservative rules of thumb for a browser tab, not a lab certificate. The same thresholds are written into the JSON.</p>
             <ul>
                 <li>Pass if this tab stayed visible and, for the 16 ms and 50 ms delays, the median of observed minus requested is 8 ms or less.</li>
                 <li>The 0 ms delay is reported. Browsers often clamp it. That row does not fail the check on its own unless its median observed time is above 20 ms.</li>
                 <li>Fail if the 16 ms or the 50 ms median lateness is above 8 ms, or if the 0 ms median observed time is above 20 ms.</li>
                 <li>Could not run if this tab was hidden during the check. That is not a machine fail.</li>
             </ul>
-            <p>Each delay is requested 5 times. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail. Could not run is a dash icon and those words.</p>
+            <p>Each delay is requested 5 times.</p>
         </section>
 
         <section>
             <h2>Run this check</h2>
-            <p>Leave this tab visible until the five repetitions of each delay finish. Download writes a JSON file on this computer. The schema is <code>project-trial.device-check.v2</code>. Nothing is uploaded.</p>
+            <p>Leave this tab visible until the five repetitions of each delay finish.</p>
             <p id="device-status" aria-live="polite">Loading the check.</p>
             <div class="trial-actions">
                 <button type="button" class="trial-btn" id="btn-run">Check timers</button>
@@ -52,8 +51,8 @@
             <div id="device-verdict" class="device-verdict is-idle" data-outcome="" aria-live="polite">
                 <span id="device-mark" class="device-mark" aria-hidden="true"></span>
                 <span class="device-verdict-copy">
-                    <span id="device-verdict-label" class="device-verdict-label">Not run yet</span>
-                    <span id="device-verdict-text" class="device-verdict-text">Run the check with this tab visible. Pass is a check icon and the word Pass. Fail is a cross icon and the word Fail.</span>
+                    <span id="device-verdict-label" class="device-verdict-label">Not run yet.</span>
+                    <span id="device-verdict-text" class="device-verdict-text"></span>
                 </span>
             </div>
         </section>
@@ -81,8 +80,7 @@
         <section>
             <h2>Interpretation</h2>
             <div id="device-interpretation">
-                <p><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks schedule fixation, stimuli, and the gaps between trials from display frames. Spatial Go/No-Go schedules its gap and its 1200 ms window from the headset animation frame while an immersive-vr session is running, and from the page animation frame on a flat preview. This check reports how late a <code>setTimeout</code> callback was compared with the delay this page asked for.</p>
-                <p>Browsers often clamp a request of 0 ms. That row is shown here. It is not a fail on its own unless the median observed time is above 20 ms.</p>
+                <p><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks schedule fixation, stimuli, and the gaps between trials from display frames. Spatial Go/No-Go schedules its gap and its 1200 ms window from the headset animation frame while an immersive-vr session is running, and from the page animation frame on a flat preview.</p>
             </div>
         </section>
 
@@ -130,16 +128,21 @@
                     <dd id="fact-raf">—</dd>
                 </div>
             </dl>
-            <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+            <details class="trial-disclosure">
+                <summary>About these browser hints</summary>
+                <p><code>navigator.deviceMemory</code>, when the browser sends it, is a coarse bucket, often capped. The CPU value is a hint. The storage line is a one-key probe: the page writes <code>project-trial:device-check-probe</code>, reads it back, and removes it. Verdicts are not stored. Trial rows are not stored here.</p>
+            </details>
         </section>
 
         <section>
-            <h2>What this page can and cannot stand behind</h2>
-            <ul id="device-limits">
-                <li><code>setTimeout</code> is not a vertical-blank interrupt. The scored two-dimensional tasks do not use it for fixation, stimuli, or the gaps between trials. Spatial Go/No-Go schedules its gap and its 1200 ms window from headset frames during immersive-vr, and from page animation frames on a flat preview.</li>
-                <li>The callback is not locked to the display. A background tab can delay it further. A hidden tab is not scored as a machine fail.</li>
-                <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
-            </ul>
+            <details class="trial-disclosure">
+                <summary>Limits of this number</summary>
+                <ul id="device-limits">
+                    <li>The callback is not locked to the display. A background tab can delay it further. A hidden tab is not scored as a machine fail.</li>
+                    <li>The download is a JSON file you choose to save. This site does not receive it. The check does not open a task, does not score a person, and does not ask for consent because it is not a study.</li>
+                    <li>It is not a study. It is not a photodiode or light-sensor validation.</li>
+                </ul>
+            </details>
             <noscript>
                 <p>JavaScript is off, so the measurement cannot run. The browser clock is not a lab rig.</p>
             </noscript>
