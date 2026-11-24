@@ -1,4 +1,12 @@
-# Project Trial
+<p>
+  <a href="https://yiuhong.github.io/task-library/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/project-trial-wordmark-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="assets/project-trial-wordmark.svg">
+      <img alt="Project Trial" src="assets/project-trial-wordmark.svg" width="440">
+    </picture>
+  </a>
+</p>
 
 Gamified cognitive and behavioral tasks you can run in the browser.
 
